@@ -1,0 +1,64 @@
+
+import { DataTypes } from 'sequelize' ;
+import sequelize from '../dbConnect.js';
+
+const doctorModel = sequelize.define('doctor', {
+  doctor_id: {
+    type: DataTypes.INTEGER,
+    primaryKey: true,
+    autoIncrement: true,
+    allowNull: false,
+  },
+  doctor_name: {
+    type: DataTypes.STRING,
+    allowNull: true,
+    unique: false,
+  },
+  department_id: {
+    type: DataTypes.STRING,
+    allowNull: true,
+    unique: false,
+  },
+  entity_id: {
+    type: DataTypes.STRING,
+    allowNull: true,
+    unique: false,
+  },
+
+  phone: {
+    type: DataTypes.STRING,
+    allowNull: true,
+    unique: false,
+  },
+  consultation_time: {
+    type: DataTypes.INTEGER, // 20mins
+    allowNull: true,
+    unique: false,
+  },
+
+  consultation_charge: {
+    type: DataTypes.INTEGER,
+    allowNull: true,
+    unique: false,
+  },
+  status: {
+    type: DataTypes.INTEGER, // 1: active, 0: inactive
+    allowNull: true,
+    unique: false,
+  },
+  created_date_time: {
+    type: DataTypes.DATE,
+    defaultValue: DataTypes.NOW,
+    allowNull: false,
+  },
+
+  update_date_time: {
+    type: DataTypes.DATE,
+    defaultValue: DataTypes.NOW,
+    allowNull: false,
+  },
+  
+});
+
+export default doctorModel;
+
