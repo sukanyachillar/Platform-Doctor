@@ -10,7 +10,7 @@ const entityModel = sequelize.define('entity', {
     allowNull: false,
   },
   entity_type: {
-    type: DataTypes.INTEGER,
+    type: DataTypes.INTEGER, 
     allowNull: true,
     unique: false,
   },
