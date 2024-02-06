@@ -96,11 +96,11 @@ const addProfile = async(userData,res)=>{
       statusCode:200,
       message:"Profile created succesfully",
       data:{
-          entity_id: addedUser.entity_id,
-          phone: addedUser.phone,
-          profile_completed: addedUser.profile_completed,
-          status: addedUser.status,
-		      entity_type: addedUser.entity_type,
+          entity_id: entityData.entity_id,
+          phone: entityData.phone,
+          profile_completed: entityData.profile_completed,
+          status: entityData.status,
+		      entity_type: entityData.entity_type,
           profile
       }
     })
