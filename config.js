@@ -13,7 +13,9 @@ const config = {
     // email: "vijith.v@chillarcards.com",
     // password: "Vijith@123",
     JWT_SECRET: "tfi_valut_secrete",
-    JWT_REFRESH_EXPIRATION: "1h"
+    JWT_REFRESH_EXPIRATION: "1h",
+    REFRESH_JWT_SECRET:"njuyhbvgtrfcxdeplm",
+    REFRESH_EXPIRY:"10h"
     // SMS_SERVER: "https://sapteleservices.in/SMS_API/sendsms.php",
     // SMS_USER: "chillar",
     // SMS_PASSWORD: "chillar123",
