@@ -16,10 +16,19 @@ const addProfile =async(req,res)=>{
   }catch(error){
     console.log({error})
   }
-}
+};
+
+const getProfile =async(req,res)=>{
+  try{
+    const getProfile = await authenticationService.getProfile(req.body, res);
+    return getProfile;
+  }catch(error){
+    console.log({error})
+  }
+};
 
 
-export default { register,addProfile };
+export default { register, addProfile, getProfile };
 
 
 
