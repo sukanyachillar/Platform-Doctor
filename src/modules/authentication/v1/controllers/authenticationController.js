@@ -9,8 +9,17 @@ const register = async(req, res) => {
   }
 };
 
+const addProfile =async(req,res)=>{
+  try{
+    const profileAdded = await authenticationService.addProfile(req.body,res);
+    return profileAdded;
+  }catch(error){
+    console.log({error})
+  }
+}
 
-export default { register  };
+
+export default { register,addProfile };
 
 
 

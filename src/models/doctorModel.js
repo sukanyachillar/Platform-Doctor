@@ -19,12 +19,15 @@ const doctorModel = sequelize.define('doctor', {
     allowNull: true,
     unique: false,
   },
+  qualification:{
+    type:DataTypes.STRING,
+    allowNull:true
+  },
   entity_id: {
     type: DataTypes.STRING,
     allowNull: true,
     unique: false,
   },
-
   phone: {
     type: DataTypes.STRING,
     allowNull: true,
@@ -51,7 +54,6 @@ const doctorModel = sequelize.define('doctor', {
     defaultValue: DataTypes.NOW,
     allowNull: false,
   },
-
   update_date_time: {
     type: DataTypes.DATE,
     defaultValue: DataTypes.NOW,
