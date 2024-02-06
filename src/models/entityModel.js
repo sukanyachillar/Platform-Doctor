@@ -26,12 +26,13 @@ const entityModel = sequelize.define('entity', {
   },
   location: {
     type: DataTypes.JSON,
-    allowNull: false,
-    unique: true,
+    allowNull: true,
+    defaultValue: {},
+    unique :false
   },
   email: {
     type: DataTypes.STRING,
-    allowNull: false,
+    allowNull: true,
     validate: {
       isEmail: true,
     },
@@ -63,13 +64,15 @@ const entityModel = sequelize.define('entity', {
   },
 
   status: {
-    type: DataTypes.STRING,
-    allowNull: true
+    type: DataTypes.INTEGER,
+    allowNull: true,
+    defaultValue: 1
   },
  
   profile_completed: {
-    type: DataTypes.BOOLEAN, //true: completed
-    allowNull: true
+    type: DataTypes.INTEGER, //1: completed
+    allowNull: true,
+    defaultValue: 0
   },
   created_date_time: {
     type: DataTypes.DATE,

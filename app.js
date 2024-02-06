@@ -1,7 +1,6 @@
 import express from "express";
 import morgan from 'morgan'
-// import adminRouter from './src/v1/routes/adminRoutes.js'
-// import userRouter from './src/v1/routes/userRoutes.js'
+import authRouter from './src/modules/authentication/v1/routes/authRoutes.js'
 import cors from 'cors';
 import currentConfig from './config.js'
 import Sequelize from './src/dbConnect.js';
@@ -65,8 +64,7 @@ app.get("/", (req, res) => {
     });
 })
 
-// app.use('/api/v1/admin', adminRouter);
-// app.use('/api/v1/user', userRouter);
+app.use('/api/v1/auth', authRouter);
 
 app.get('*', (req, res) => {
     res.status(404).json({
