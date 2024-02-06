@@ -15,7 +15,7 @@ const config = {
     JWT_SECRET: "tfi_valut_secrete",
     JWT_REFRESH_EXPIRATION: "1h",
     REFRESH_JWT_SECRET:"njuyhbvgtrfcxdeplm",
-    REFRESH_EXPIRY:"10h"
+    REFRESH_EXPIRY:"10h",
     // SMS_SERVER: "https://sapteleservices.in/SMS_API/sendsms.php",
     // SMS_USER: "chillar",
     // SMS_PASSWORD: "chillar123",
@@ -46,6 +46,13 @@ const config = {
     // CONNECTION_LINK: "54.179.191.116",
     // OTP_PAGE_LINK: "http://54.179.191.116",
     // OTP_PAGE: "server",
+    MYSQL_USER: 'root',
+    MYSQL_PASSWORD: 'MyNewPass1!',
+    JWT_SECRET: "1234",
+    JWT_REFRESH_EXPIRATION: "1h",
+    REFRESH_JWT_SECRET:"njuyhbvgtrfcxdeplm",
+    REFRESH_EXPIRY:"10h",
+
   },
 };
 
