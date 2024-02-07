@@ -1,10 +1,11 @@
 
-import { where } from 'sequelize';
 import authenticationModel from '../../../../models/entityModel.js';
 import profileModel from '../../../../models/doctorModel.js';
 import deptModel from '../../../../models/departmentModel.js';
 import { handleResponse } from '../../../../utils/handlers.js';
-import {generateTokens} from '../../../../utils/token.js'
+import {generateTokens} from '../../../../utils/token.js';
+// import upload from '../../../../middlewares/multerConfig.js';
+import awsUtils from '../../../../utils/aws.js';
 
 
 const register = async (userData, res) => {
@@ -49,20 +50,22 @@ const register = async (userData, res) => {
   }
 };
 
-const addProfile = async(userData,res)=>{
+const addProfile = async(userData, image, res)=>{
   try{
     let {
-      phone,entity_name,
-      email,business_type,
-      account_no,ifsc_code,
-      bank_name,account_holder_name,
-      doctor_name,qualification,
-      consultation_time,consultation_charge,
-      department_id,description
+      phone, entity_name,
+      email, business_type,
+      account_no, ifsc_code,
+      bank_name, account_holder_name,
+      doctor_name, qualification,
+      consultation_time, consultation_charge,
+      department_id, description,
     } = userData;
-
-    let getUser = await authenticationModel.findOne({where:{phone}});
-
+   
+    let getUser = await authenticationModel.findOne({ where:{ phone } });
+    
+    let imageUrl = await awsUtils.uploadToS3(image);
+    console.log('imageUrl', imageUrl.Location)    
     getUser.entity_name = entity_name;
     getUser.business_type_id = business_type =='individual'? 1 : 0 ;
     getUser.email = email;
@@ -91,6 +94,8 @@ const addProfile = async(userData,res)=>{
       userProfile.profile_completed = profile_completed ;
       userProfile.department_id = department_id;
       userProfile.description = description;
+      userProfile.profileImageUrl = imageUrl.Location ? imageUrl.Location: "" ;
+
     }
     let profile = await userProfile.save();
     return handleResponse({
@@ -128,7 +133,8 @@ const getProfile = async({ phone }, res)=>{
           qualification: userProfile.qualification,
           consultation_time: userProfile.consultation_time,
           consultation_charge: userProfile.consultation_charge,
-          doctor_id :userProfile.doctor_id
+          doctor_id :userProfile.doctor_id,
+          profileImageUrl: userProfile.profileImageUrl,
       }
     })
 

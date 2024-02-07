@@ -13,8 +13,8 @@ const register = async(req, res) => {
 const addProfile =async(req,res)=>{
   
   try{
-    console.log('inside add profile')
-    const profileAdded = await authenticationService.addProfile(req.body,res);
+    console.log(req)
+    const profileAdded = await authenticationService.addProfile(req.body, req.file, res);
     return profileAdded;
   }catch(error){
     console.log({error})
