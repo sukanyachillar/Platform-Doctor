@@ -114,6 +114,7 @@ const getProfile = async({ phone }, res)=>{
   try{
     let getUser = await authenticationModel.findOne({ where:{ phone } });
     let userProfile = await profileModel.findOne({ where:{ entity_id: getUser.entity_id } });
+    console.log('userProfile', userProfile)
     return handleResponse({
       res,
       statusCode:200,
