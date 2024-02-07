@@ -1,6 +1,7 @@
 import express from "express";
 import morgan from 'morgan'
 import authRouter from './src/modules/authentication/v1/routes/authRoutes.js'
+import workRouter from './src/modules/workSchedule/v1/routes/workScheduleRoutes.js'
 import cors from 'cors';
 import currentConfig from './config.js'
 import Sequelize from './src/dbConnect.js';
@@ -65,6 +66,7 @@ app.get("/", (req, res) => {
 })
 
 app.use('/api/v1/auth', authRouter);
+app.use('/api/v1/work',workRouter);
 
  
 app.post('*', (req, res) => {

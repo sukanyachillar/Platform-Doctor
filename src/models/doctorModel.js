@@ -55,6 +55,7 @@ const doctorModel = sequelize.define('doctor', {
   },
   profileImageUrl:{
     type:DataTypes.STRING,
+    type:DataTypes.TEXT,
     allowNull:true
   },
   created_date_time: {
