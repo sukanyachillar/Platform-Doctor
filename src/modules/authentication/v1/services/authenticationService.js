@@ -110,6 +110,29 @@ const addProfile = async(userData,res)=>{
   }
 }
 
+const getProfile = async({ phone }, res)=>{
+  try{
+    let getUser = await authenticationModel.findOne({ where:{ phone } });
+    let userProfile = await profileModel.findOne({ where:{ entity_id: getUser.entity_id } });
+    return handleResponse({
+      res,
+      statusCode:200,
+      message:"Profile fetched succesfully",
+      data:{
+          entity_id: getUser.entity_id,
+          phone: getUser.phone,
+          doctor_name: userProfile.doctor_name,
+          qualification: userProfile.qualification,
+          consultation_time: userProfile.consultation_time,
+          consultation_charge: userProfile.consultation_charge
+      }
+    })
+
+  } catch(error) {
+    console.log({error})
+  }
+}
+
 const addDept = async(deptData,userData,res)=>{
   try{
     let {department_name} = deptData ;
@@ -139,4 +162,4 @@ const addDept = async(deptData,userData,res)=>{
   }
 };
 
-export default { register ,addProfile, addDept};
+export default { register, addProfile, addDept, getProfile};
