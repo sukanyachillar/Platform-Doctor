@@ -66,12 +66,7 @@ app.get("/", (req, res) => {
 
 app.use('/api/v1/auth', authRouter);
 
-app.get('*', (req, res) => {
-    res.status(404).json({
-        status: false,
-        message: "Unknown path specified...."
-    })
-})
+ 
 app.post('*', (req, res) => {
     res.status(404).json({
         status: false,

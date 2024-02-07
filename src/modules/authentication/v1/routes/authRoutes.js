@@ -1,5 +1,5 @@
 import authenticationController from '../controllers/authenticationController.js';
-import {verifyToken} from '../../../../utils/token.js'
+import {verifyRefreshToken, verifyToken} from '../../../../utils/token.js'
 
 import express from 'express';
 
@@ -9,5 +9,6 @@ router.post("/register", authenticationController.register);
 router.get("/getProfile", verifyToken, authenticationController.getProfile);
 router.post("/addprofile",  authenticationController.addProfile);
 router.post('/adddept', verifyToken, authenticationController.addDept);
+router.post('/refreshToken',verifyRefreshToken)
 
-export default router
+export default router;

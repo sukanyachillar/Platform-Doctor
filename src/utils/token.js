@@ -41,21 +41,33 @@ export const verifyToken =async(req,res,next)=>{
         }
     }catch(err){
         console.log({err});
-        return res.status(403).json({ statusCode:403, message:'Unauthorized' });;
+
+        return res.status(403).json({ statusCode:403, message:'Unauthorized' });
     }
 }
 
-export const verifyRefreshToken =async(refreshToken)=>{
+export const verifyRefreshToken =async(req,res)=>{
     try{
         let authHeader = req.headers.authorization;
         let refreshToken = authHeader.split(' ')[1];
         let verify = jwt.verify(refreshToken,refreshTokenSecret)
-        //generate token
-        next();
+        
+
+        let accessToken = jwt.sign({phone:verify.phone},accessTokenSecret, {
+            expiresIn: accessExpiry
+        });
+        return res.status(200).json({
+            statusCode:200,
+            message:"Successfully generated access token.",
+            data:{
+                accessToken
+            }
+        })
 
     }catch(err){
         console.log({err});
-        return false;
+        return res.status(403).json({ statusCode:403, message:'Unauthorized' });
+
     }
 }
 
