@@ -51,7 +51,6 @@ const register = async (userData, res) => {
 
 const addProfile = async(userData,res)=>{
   try{
-
     let {
       phone,entity_name,
       email,business_type,

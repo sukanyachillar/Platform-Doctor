@@ -41,6 +41,7 @@ export const verifyToken =async(req,res,next)=>{
         }
     }catch(err){
         console.log({err});
+
         return res.status(403).json({ statusCode:403, message:'Unauthorized' });
     }
 }

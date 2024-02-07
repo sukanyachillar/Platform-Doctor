@@ -2,6 +2,7 @@ import authenticationService from "../services/authenticationService.js";
 
 const register = async(req, res) => {
   try {
+    console.log('inside register');
     const registerResponse = await authenticationService.register(req.body, res);
     return registerResponse
   } catch (error) {
