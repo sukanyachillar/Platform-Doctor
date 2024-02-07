@@ -57,7 +57,8 @@ const addProfile = async(userData,res)=>{
       account_no,ifsc_code,
       bank_name,account_holder_name,
       doctor_name,qualification,
-      consultation_time,consultation_charge,department_id
+      consultation_time,consultation_charge,
+      department_id,description
     } = userData;
 
     let getUser = await authenticationModel.findOne({where:{phone}});
@@ -79,7 +80,7 @@ const addProfile = async(userData,res)=>{
       userProfile = new profileModel({
       doctor_name,qualification,
       consultation_charge,consultation_time,
-      entity_id,profile_completed,phone});
+      entity_id,profile_completed,phone,department_id,description});
     }else{
       userProfile.doctor_name =doctor_name;
       userProfile.phone = phone;
@@ -89,6 +90,7 @@ const addProfile = async(userData,res)=>{
       userProfile.entity_id = entity_id ;
       userProfile.profile_completed = profile_completed ;
       userProfile.department_id = department_id;
+      userProfile.description = description;
     }
     let profile = await userProfile.save();
     return handleResponse({
