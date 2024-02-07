@@ -50,7 +50,7 @@ const doctorModel = sequelize.define('doctor', {
     unique: false,
   },
   description:{
-    type:DataTypes.STRING,
+    type:DataTypes.TEXT,
     allowNull:true
   },
   created_date_time: {
