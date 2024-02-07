@@ -20,7 +20,7 @@ const addProfile =async(req,res)=>{
 
 const addDept = async(req,res) =>{
   try{
-    const dept = await authenticationService.addDept(req.body,res);
+    const dept = await authenticationService.addDept(req.body,req.user,res);
     return dept;
   }catch(error){
     console.log({error})

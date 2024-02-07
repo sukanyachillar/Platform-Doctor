@@ -1,7 +1,8 @@
 
 import { where } from 'sequelize';
 import authenticationModel from '../../../../models/entityModel.js';
-import profileModel from '../../../../models/doctorModel.js'
+import profileModel from '../../../../models/doctorModel.js';
+import deptModel from '../../../../models/departmentModel.js';
 import { handleResponse } from '../../../../utils/handlers.js';
 import {generateTokens} from '../../../../utils/token.js'
 
@@ -109,21 +110,28 @@ const addProfile = async(userData,res)=>{
   }
 }
 
-const addDept = async(deptData,res)=>{
+const addDept = async(deptData,userData,res)=>{
   try{
-    let {entity_id,department_name} = deptData ;
+    let {department_name} = deptData ;
+    let {entity_id} = userData;
     let status = 1 ;
-    let newDept = new deptModel({entity_id,department_name,status}) ;
-    let addedDept = await newDept.save();
+    let dept ,message;
+    dept  = await deptModel.findOne({where:{entity_id,department_name}})
+    message = 'Department already exist.'
+    if(!dept){  
+      let newDept = new deptModel({entity_id,department_name,status}) ;
+      dept = await newDept.save();
+      message = 'Department added'
+    }
     return handleResponse({ 
       res, 
       statusCode: "200", 
-      message: "Department added", 
+      message, 
       data: {
-        department_id:addDepartment.department_id,
-        entity_id: addedDept.entity_id,
-        status: addedDept.status,
-        department_name: addedDept.department_name
+        department_id:dept.department_id,
+        entity_id: dept.entity_id,
+        status: dept.status,
+        department_name: dept.department_name
       }
     })
   }catch(error){
