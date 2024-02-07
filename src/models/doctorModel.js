@@ -49,6 +49,10 @@ const doctorModel = sequelize.define('doctor', {
     allowNull: true,
     unique: false,
   },
+  description:{
+    type:DataTypes.STRING,
+    allowNull:true
+  },
   created_date_time: {
     type: DataTypes.DATE,
     defaultValue: DataTypes.NOW,
