@@ -34,6 +34,10 @@ const workScheduleModel = sequelize.define('workSchedule', {
     allowNull: true,
     unique: false,
   },
+  session:{
+    
+
+  },
   status: {
     type: DataTypes.INTEGER, 
     allowNull: true,

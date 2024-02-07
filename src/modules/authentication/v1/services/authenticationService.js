@@ -125,7 +125,8 @@ const getProfile = async({ phone }, res)=>{
           doctor_name: userProfile.doctor_name,
           qualification: userProfile.qualification,
           consultation_time: userProfile.consultation_time,
-          consultation_charge: userProfile.consultation_charge
+          consultation_charge: userProfile.consultation_charge,
+          doctor_id :userProfile.doctor_id
       }
     })
 
