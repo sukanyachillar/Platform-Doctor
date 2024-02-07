@@ -160,4 +160,4 @@ const addDept = async(deptData,res)=>{
   }
 };
 
-export default { register, addProfile, addDept};
+export default { register, addProfile, addDept, getProfile};
