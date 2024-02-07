@@ -51,14 +51,13 @@ const register = async (userData, res) => {
 
 const addProfile = async(userData,res)=>{
   try{
-
     let {
       phone,entity_name,
       email,business_type,
       account_no,ifsc_code,
       bank_name,account_holder_name,
       doctor_name,qualification,
-      consultation_time,consultation_charge
+      consultation_time,consultation_charge,department_id
     } = userData;
 
     let getUser = await authenticationModel.findOne({where:{phone}});
@@ -89,6 +88,7 @@ const addProfile = async(userData,res)=>{
       userProfile.consultation_time = consultation_time;
       userProfile.entity_id = entity_id ;
       userProfile.profile_completed = profile_completed ;
+      userProfile.department_id = department_id;
     }
     let profile = await userProfile.save();
     return handleResponse({
