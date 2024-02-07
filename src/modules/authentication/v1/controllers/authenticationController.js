@@ -18,8 +18,17 @@ const addProfile =async(req,res)=>{
   }
 }
 
+const addDept = async(req,res) =>{
+  try{
+    const dept = await authenticationService.addDept(req.body,res);
+    return dept;
+  }catch(error){
+    console.log({error})
+  }
+}
 
-export default { register,addProfile };
+
+export default { register,addProfile ,addDept };
 
 
 

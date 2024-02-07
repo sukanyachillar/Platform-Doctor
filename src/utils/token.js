@@ -1,5 +1,7 @@
 import jwt from 'jsonwebtoken';
 import config from '../../config.js'
+import { handleResponse } from './handlers.js';
+import entityModel from '../models/entityModel.js'
 
 let accessTokenSecret = config.JWT_SECRET;
 let accessExpiry = config.JWT_REFRESH_EXPIRATION;
@@ -24,11 +26,18 @@ export const generateTokens = async(phone)=>{
     }
 }
 
-export const verifyToken =async(accessToken)=>{
+export const verifyToken =async(req,res,next)=>{
     try{
+        let authHeader = req.headers.authorization;
+        let accessToken = authHeader.split(' ')[1];
         let verify = jwt.verify(accessToken,accessTokenSecret)
-        return verify;
-
+        if(!verify)
+            return  res.status(403).json({ statusCode:403, message:'Authorization failed.' });
+        let entity = await entityModel.findOne({where:{phone:verify.phone},attributes:['entity_id']})
+        let dataValues = entity.get();
+        verify.entity_id = dataValues.entity_id
+        req.user = verify
+        next();
     }catch(err){
         console.log({err});
         return false;
