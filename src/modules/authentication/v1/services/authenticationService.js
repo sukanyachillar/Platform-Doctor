@@ -1,12 +1,9 @@
 
-import { where } from 'sequelize';
 import authenticationModel from '../../../../models/entityModel.js';
 import profileModel from '../../../../models/doctorModel.js'
 import { handleResponse } from '../../../../utils/handlers.js';
 import {generateTokens} from '../../../../utils/token.js'
-// import bcrypt from 'bcrypt';
-// import jwt from 'jsonwebtoken';
-// import currentConfig from '../../config.js'
+
 
 const register = async (userData, res) => {
   try {
@@ -79,11 +76,12 @@ const addProfile = async(userData,res)=>{
     let userProfile = await profileModel.findOne({where:{phone}});
     if(!userProfile){
       userProfile = new profileModel({
-        doctor_name,qualification,
-        consultation_charge,consultation_time,
-        entity_id,profile_completed});
+      doctor_name,qualification,
+      consultation_charge,consultation_time,
+      entity_id,profile_completed,phone});
     }else{
       userProfile.doctor_name =doctor_name;
+      userProfile.phone = phone;
       userProfile.qualification = qualification;
       userProfile.consultation_charge = consultation_charge ;
       userProfile.consultation_time = consultation_time;
@@ -140,4 +138,26 @@ const getProfile = async({ phone }, res)=>{
   }
 }
 
-export default { register, addProfile, getProfile };
+const addDept = async(deptData,res)=>{
+  try{
+    let {entity_id,department_name} = deptData ;
+    let status = 1 ;
+    let newDept = new deptModel({entity_id,department_name,status}) ;
+    let addedDept = await newDept.save();
+    return handleResponse({ 
+      res, 
+      statusCode: "200", 
+      message: "Department added", 
+      data: {
+        department_id:addDepartment.department_id,
+        entity_id: addedDept.entity_id,
+        status: addedDept.status,
+        department_name: addedDept.department_name
+      }
+    })
+  }catch(error){
+    console.log({error})
+  }
+};
+
+export default { register, addProfile, addDept};

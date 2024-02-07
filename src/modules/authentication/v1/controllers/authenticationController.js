@@ -27,8 +27,17 @@ const getProfile =async(req,res)=>{
   }
 };
 
+const addDept = async(req,res) =>{
+  try{
+    const dept = await authenticationService.addDept(req.body,res);
+    return dept;
+  }catch(error){
+    console.log({error})
+  }
+}
 
-export default { register, addProfile, getProfile };
+export default { register, addProfile, getProfile, addDept };
+
 
 
 
