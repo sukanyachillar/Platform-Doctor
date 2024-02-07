@@ -30,24 +30,28 @@ export const verifyToken =async(req,res,next)=>{
     try{
         let authHeader = req.headers.authorization;
         let accessToken = authHeader.split(' ')[1];
+        console.log(accessToken)
         let verify = jwt.verify(accessToken,accessTokenSecret)
-        if(!verify)
-            return  res.status(403).json({ statusCode:403, message:'Authorization failed.' });
-        let entity = await entityModel.findOne({where:{phone:verify.phone},attributes:['entity_id']})
-        let dataValues = entity.get();
-        verify.entity_id = dataValues.entity_id
-        req.user = verify
-        next();
+        if(verify){
+            let entity = await entityModel.findOne({where:{phone:verify.phone},attributes:['entity_id']})
+            let dataValues = entity.get();
+            verify.entity_id = dataValues.entity_id
+            req.user = verify
+            next();
+        }
     }catch(err){
         console.log({err});
-        return false;
+        return res.status(403).json({ statusCode:403, message:'Unauthorization' });;
     }
 }
 
 export const verifyRefreshToken =async(refreshToken)=>{
     try{
+        let authHeader = req.headers.authorization;
+        let refreshToken = authHeader.split(' ')[1];
         let verify = jwt.verify(refreshToken,refreshTokenSecret)
-        return verify;
+        //generate token
+        next();
 
     }catch(err){
         console.log({err});
