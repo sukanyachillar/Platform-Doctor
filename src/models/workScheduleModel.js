@@ -20,12 +20,17 @@ const workScheduleModel = sequelize.define('workSchedule', {
     unique: false,
   },
   startTime: {
-    type: DataTypes.DATE,
+    type: DataTypes.STRING,
+    allowNull: true,
+    unique: false,
+  },
+  session:{
+    type: DataTypes.STRING,
     allowNull: true,
     unique: false,
   },
   endTime: {
-    type: DataTypes.DATE,
+    type: DataTypes.STRING,
     allowNull: true,
     unique: false,
   },
@@ -34,12 +39,8 @@ const workScheduleModel = sequelize.define('workSchedule', {
     allowNull: true,
     unique: false,
   },
-  session:{
-    
-
-  },
   status: {
-    type: DataTypes.INTEGER, 
+    type: DataTypes.INTEGER, //1=active , 0=inactive
     allowNull: true,
     unique: false,
   },

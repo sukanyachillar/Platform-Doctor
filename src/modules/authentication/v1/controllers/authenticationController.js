@@ -2,7 +2,6 @@ import authenticationService from "../services/authenticationService.js";
 
 const register = async(req, res) => {
   try {
-    console.log('inside register');
     const registerResponse = await authenticationService.register(req.body, res);
     return registerResponse
   } catch (error) {
@@ -11,9 +10,7 @@ const register = async(req, res) => {
 };
 
 const addProfile =async(req,res)=>{
-  
   try{
-    console.log('inside add profile')
     const profileAdded = await authenticationService.addProfile(req.body,res);
     return profileAdded;
   }catch(error){
@@ -22,8 +19,6 @@ const addProfile =async(req,res)=>{
 };
 
 const getProfile =async(req,res)=>{
-  console.log('inside get profile')
-
   try{
     const getProfile = await authenticationService.getProfile(req.body, res);
     return getProfile;
