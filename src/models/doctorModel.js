@@ -50,6 +50,11 @@ const doctorModel = sequelize.define('doctor', {
     unique: false,
   },
   description:{
+    type:DataTypes.CHAR,
+    allowNull:true
+  },
+  profileImageUrl:{
+    type:DataTypes.STRING,
     type:DataTypes.TEXT,
     allowNull:true
   },
