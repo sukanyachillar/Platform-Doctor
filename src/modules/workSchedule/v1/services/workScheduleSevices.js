@@ -11,12 +11,13 @@ const addWorkSchedule = async(data,userData,res)=>{
         let  workData ;
         workData = await workScheduleModel.findOne({where:{entity_id,day,doctor_id,startTime,endTime}})
         if(!workData){
-            workData = new workScheduleModel({entity_id,day,session,endTime,startTime,day,status})
+            workData = new workScheduleModel({entity_id,day,session,endTime,startTime,day,status,doctor_id})
             message = 'Succesfully added work schedule.'
         }else{
             workData.startTime = startTime;
             workData.endTime = endTime;
             workData.status = status ;
+            workData.doctor_id = doctor_id;
             message = 'Successfully updated work schedule.'
         }
         let workSchedule = await workData.save()
