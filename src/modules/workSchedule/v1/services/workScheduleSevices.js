@@ -1,3 +1,5 @@
+import doctorModel from "../../../../models/doctorModel.js";
+import weeklyTimeSlots from "../../../../models/weeklyTimeSlots.js";
 import workScheduleModel from "../../../../models/workScheduleModel.js";
 import { handleResponse } from "../../../../utils/handlers.js";
 
@@ -6,19 +8,48 @@ const addWorkSchedule = async(data,userData,res)=>{
     try{
         let {entity_id} = userData ;
         let {day, startTime,endTime,doctor_id,session} = data;
+        let dayOfWeek = await getDayOfWeekIndex(day);
+        let datefromDay = await dateFromDay(dayOfWeek);
         let status = 1 ;
         let message ;
         let  workData ;
-        workData = await workScheduleModel.findOne({where:{entity_id,day,doctor_id,startTime,endTime}})
-        if(!workData){
-            workData = new workScheduleModel({entity_id,day,session,endTime,startTime,day,status,doctor_id})
-            message = 'Succesfully added work schedule.'
+        let time_slots ;
+        workData = await workScheduleModel.findOne({where:{entity_id,day,doctor_id,startTime,endTime}});
+        let doctorData = await doctorModel.findOne({where:{status:1,doctor_id},attributes:['consultation_time']});
+        if(!doctorData){
+            return handleResponse({
+                res,
+                message:'Please enable your status to active.',
+                statusCode:204
+            })
         }else{
-            workData.startTime = startTime;
-            workData.endTime = endTime;
-            workData.status = status ;
-            workData.doctor_id = doctor_id;
-            message = 'Successfully updated work schedule.'
+            time_slots = await generateTimeSlots(startTime,endTime,doctorData.consultation_time);
+            const currentDate = new Date(datefromDay);
+            const year = currentDate.getFullYear();
+            const month = String(currentDate.getMonth() + 1).padStart(2, '0'); // Adding 1 to month as it's zero-based
+            const date = String(currentDate.getDate()).padStart(2, '0');
+            const formattedDate = `${year}-${month}-${date}`;
+            time_slots.map(async(ele)=>{
+                let newTimeSlot = new weeklyTimeSlots({
+                    date:formattedDate,
+                    day,
+                    time_slot:ele,
+                    doctor_id
+                });
+                let data = await newTimeSlot.save()
+            })
+            if(!workData){
+                workData = new workScheduleModel({entity_id,day,session,endTime,startTime,day,status,doctor_id})
+                message = 'Succesfully added work schedule.';
+               
+            }else{
+                workData.startTime = startTime;
+                workData.endTime = endTime;
+                workData.status = status ;
+                workData.doctor_id = doctor_id;
+                message = 'Successfully updated work schedule.'
+            }
+
         }
         let workSchedule = await workData.save()
         return handleResponse({
@@ -90,21 +121,84 @@ const getWorkSchedule = async(data,res)=>{
     }
 }
 
-const generateTimeSlots = async(startTime, endTime)=> {
+const getSingleWorkSchedule = async (req,res)=>{
+    try{ 
+        let {date,phone} = req.body;
+        date = new Date(date);
+        const year = date.getFullYear();
+        const month = String(date.getMonth() + 1).padStart(2, '0'); 
+        const slotDate = String(date.getDate()).padStart(2, '0');
+        const formattedDate = `${year}-${month}-${slotDate}`;
+        let doctorData = await doctorModel.findOne({where:{phone},attributes:['doctor_id']})
+        let workSlots = await weeklyTimeSlots.findAll({where:{date:formattedDate,doctor_id:doctorData.doctor_id}});
+        return handleResponse({
+            res,
+            statusCode:200,
+            message:"Sucessfully fetched work slots",
+            data:{
+                workSlots
+            }
+        })
+    }catch(error){
+        console.log({error})
+    }
+}
+
+const generateTimeSlots = async(startTime, endTime,consultationTime)=> {
     try{
-      const start = new Date(`2000-01-01T${startTime}`);
-      const end = new Date(`2000-01-01T${endTime}`);
-      const timeSlots = [];
-      let current = new Date(start);
-      while (current < end) {
-        const formattedTime = current.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-        timeSlots.push(formattedTime);
-        current.setMinutes(current.getMinutes() + 15);
-      }
+        console.log(startTime,endTime,consultationTime)
+        const currentDate = new Date();
+        const currentYear = currentDate.getFullYear();
+        const currentMonth = currentDate.getMonth() + 1; // Months are zero-based (0 for January)
+        const currentDay = currentDate.getDate();
+        const startDateTime = `${currentYear}-${currentMonth.toString().padStart(2, '0')}-${currentDay.toString().padStart(2, '0')}T${startTime}`;
+        const endDateTime = `${currentYear}-${currentMonth.toString().padStart(2, '0')}-${currentDay.toString().padStart(2, '0')}T${endTime}`;
+        const start = new Date(startDateTime);
+        const end = new Date(endDateTime); 
+        const timeSlots = [];
+        let current = new Date(start);
+        while (current < end) {
+            const formattedTime = current.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+            timeSlots.push(formattedTime);
+            current.setMinutes(current.getMinutes() + consultationTime);
+        }
       return timeSlots;
     }catch(error){
       console.log({error})
     }
 }
 
-export default { addWorkSchedule,updateWorkScheduleStatus,getWorkSchedule,generateTimeSlots };
+const dateFromDay = async(day)=>{
+    try{
+        const currentDate = new Date();
+        const currentDayOfWeek = currentDate.getDay();
+        const daysUntilNextDay = day + (7 - currentDayOfWeek) % 7;
+        const nextDate = new Date(currentDate);
+        nextDate.setDate(currentDate.getDate() + daysUntilNextDay);
+        return nextDate;
+    }catch(error){
+        console.log({error})
+    }
+}
+
+const getDayOfWeekIndex = async(dayName)=> {
+    try{
+        console.log({dayName})
+        const lowercaseDayName = dayName.toLowerCase();
+        const dayOfWeekMap = {
+            sunday: 0,
+            monday: 1,
+            tuesday: 2,
+            wednesday: 3,
+            thursday: 4,
+            friday: 5,
+            saturday: 6
+        };
+    
+        return dayOfWeekMap[lowercaseDayName] !== undefined ? dayOfWeekMap[lowercaseDayName] : null;
+    }catch(err){
+        console.log({err})
+    }
+}
+
+export default { addWorkSchedule,updateWorkScheduleStatus,getWorkSchedule,generateTimeSlots,getSingleWorkSchedule };
