@@ -22,10 +22,9 @@ const getWorkSchedule = async(req,res)=>{
     try{
         const workData = await workScheduleSevices.getWorkSchedule(req.body,res);
         return workData;
-
     }catch(error){
         console.log({error})
     }
 }
 
-export default {updateWorkScheduleStatus,addWorkSchedule,getWorkSchedule};
+export default { updateWorkScheduleStatus , addWorkSchedule , getWorkSchedule };

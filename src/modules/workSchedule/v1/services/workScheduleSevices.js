@@ -32,7 +32,6 @@ const addWorkSchedule = async(data,userData,res)=>{
                 doctor_id:workSchedule.doctor_id
             }
         })
-
     }catch(error){
         console.log({error})
     }
@@ -66,19 +65,45 @@ const updateWorkScheduleStatus = async(workData,res)=>{
 
 const getWorkSchedule = async(data,res)=>{
     try{
-       
         let {doctor_id} = data;
         let workScheduleData = await workScheduleModel.findAll({where:{doctor_id:doctor_id}});
-
+        workScheduleData.sort((a, b) => {
+            if (a.day !== b.day) {
+                const daysOfWeek = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
+                return daysOfWeek.indexOf(a.day) - daysOfWeek.indexOf(b.day);
+            }
+            else {
+                const sessions = ["Morning", "Afternoon", "Evening"];
+                return sessions.indexOf(a.session) - sessions.indexOf(b.session);
+            }
+        });
         return handleResponse({
             res,
             message:"Successfully fetched file data.",
-            data:{workScheduleData}
+            data:{
+                workScheduleData
+            }
         })
-
     }catch(error){
-
+        console.log({error})
     }
 }
 
-export default { addWorkSchedule,updateWorkScheduleStatus,getWorkSchedule};
+const generateTimeSlots = async(startTime, endTime)=> {
+    try{
+      const start = new Date(`2000-01-01T${startTime}`);
+      const end = new Date(`2000-01-01T${endTime}`);
+      const timeSlots = [];
+      let current = new Date(start);
+      while (current < end) {
+        const formattedTime = current.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+        timeSlots.push(formattedTime);
+        current.setMinutes(current.getMinutes() + 15);
+      }
+      return timeSlots;
+    }catch(error){
+      console.log({error})
+    }
+}
+
+export default { addWorkSchedule,updateWorkScheduleStatus,getWorkSchedule,generateTimeSlots };
