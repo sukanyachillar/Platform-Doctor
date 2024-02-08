@@ -9,7 +9,7 @@ const router = express.Router();
 router.post('/create-work-schedule',verifyToken,workScheduleController.addWorkSchedule);
 router.post('/update-work-status',verifyToken,workScheduleController.updateWorkScheduleStatus);
 router.post('/get-work-schedule',verifyToken,workScheduleController.getWorkSchedule);
-router.get('/get-work-slots',workScheduleController.getWorkSlot);
+router.post('/get-work-slots',workScheduleController.getWorkSlot);
 
 
 
