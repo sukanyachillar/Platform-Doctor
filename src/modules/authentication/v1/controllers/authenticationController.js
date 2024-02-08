@@ -30,7 +30,7 @@ const getProfile =async(req,res)=>{
 
 const getGeneralSettings =async(req,res)=>{
   try{
-    const getSettings = await authenticationService.getSettings(req.body, res);
+    const getSettings = await authenticationService.getGeneralSettings(req, res);
     return getSettings;
   }catch(error){
     console.log({error})

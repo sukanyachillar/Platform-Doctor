@@ -18,7 +18,7 @@ router.get("/getProfile", verifyToken, authenticationController.getProfile);
 router.post("/addprofile", verifyToken,  upload.single('file'), authenticationController.addProfile);
 router.post('/adddept', verifyToken, authenticationController.addDept);
 router.post('/refreshToken', verifyRefreshToken)
-router.get('/generalSettings', verifyRefreshToken, authenticationController.getGeneralSettings)
+router.get('/generalSettings', verifyToken, authenticationController.getGeneralSettings)
 
 
 export default router;

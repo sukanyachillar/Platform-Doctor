@@ -152,6 +152,7 @@ const getProfile = async({ phone }, res)=>{
 
 const getGeneralSettings = async(req, res)=>{
   try{
+    console.log('inside getGeneralSettings', req)
     const phone = req.user.phone
     console.log("phone===>", phone)
     let getEntity = await authenticationModel.findOne({ where:{ phone } }); // entitymodel
