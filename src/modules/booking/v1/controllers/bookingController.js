@@ -1,5 +1,5 @@
 
-import customerService from "../services/customerService.js";
+import customerService from "../services/bookingService.js";
 
 const bookAppointment = async(req, res) => {
   try {
@@ -10,7 +10,7 @@ const bookAppointment = async(req, res) => {
   }
 };
 
-export default { register };
+export default { bookAppointment };
 
 
 

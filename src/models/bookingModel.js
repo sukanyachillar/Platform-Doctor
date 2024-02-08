@@ -3,33 +3,33 @@ import { DataTypes } from 'sequelize' ;
 import sequelize from '../dbConnect.js';
 
 const bookingModel = sequelize.define('booking', {
-  booking_id: {
+  bookingId: {
     type: DataTypes.INTEGER,
     primaryKey: true,
-    autoIncrement: true,
+    autoIncrement: true, 
     allowNull: false,
   },
-  customer_name: {
+  customerName: {
     type: DataTypes.STRING,
     allowNull: true,
     unique: false,
   },
-  customer_phone: {
+  customerPhone: {
     type: DataTypes.STRING,
     allowNull: true,
     unique: false,
   },
-  entity_id: {
+  entityId: {
     type: DataTypes.STRING,
     allowNull: true,
     unique: false,
   },
-  department_id: {
+  departmentId: {
     type: DataTypes.STRING,
     allowNull: true,
     unique: false,
   },
-  booking_type: {
+  bookingId: {
     type: DataTypes.INTEGER,
     allowNull: true,
     unique: false,
@@ -39,7 +39,7 @@ const bookingModel = sequelize.define('booking', {
     allowNull: true,
     unique: false,
   },
-  booking_date: {
+  bookingDate: {
     type: DataTypes.DATE,
     defaultValue: DataTypes.NOW,
     allowNull: false,
@@ -49,22 +49,22 @@ const bookingModel = sequelize.define('booking', {
     defaultValue: DataTypes.NOW,
     allowNull: false,
   },
-  booking_status: {
+  bookingStatus: {
     type: DataTypes.INTEGER, // 1: bookingInitiated, booked, completed, cancelled
     allowNull: true,
     unique: false,
   },
-  work_schedule_id: {
+  workScheduleId: {
     type: DataTypes.STRING, 
     allowNull: true,
     unique: false,
   },
-  created_date_time: {
+  createdAt: {
     type: DataTypes.DATE,
     defaultValue: DataTypes.NOW,
     allowNull: false,
   },
-  update_date_time: {
+  updatedAt: {
     type: DataTypes.DATE,
     defaultValue: DataTypes.NOW,
     allowNull: false,
