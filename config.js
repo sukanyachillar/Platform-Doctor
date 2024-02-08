@@ -16,6 +16,10 @@ const config = {
     JWT_REFRESH_EXPIRATION: "1h",
     REFRESH_JWT_SECRET:"njuyhbvgtrfcxdeplm",
     REFRESH_EXPIRY:"10h",
+    AWS_ACCESS_KEY_ID: "AKIA3E3VJNAUEF6BD3UR",
+    AWS_SECRET_ACCESS_KEY: "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",
+    AWS_REGION:"ap-south-1",
+
     // SMS_SERVER: "https://sapteleservices.in/SMS_API/sendsms.php",
     // SMS_USER: "chillar",
     // SMS_PASSWORD: "chillar123",
@@ -52,6 +56,9 @@ const config = {
     JWT_REFRESH_EXPIRATION: "1h",
     REFRESH_JWT_SECRET:"njuyhbvgtrfcxdeplm",
     REFRESH_EXPIRY:"10h",
+    AWS_ACCESS_KEY_ID: "AKIA3E3VJNAUEF6BD3UR",
+    AWS_SECRET_ACCESS_KEY: "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",
+    AWS_REGION:"ap-south-1"
 
   },
 };
