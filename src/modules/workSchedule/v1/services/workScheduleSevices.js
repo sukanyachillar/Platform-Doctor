@@ -1,3 +1,5 @@
+import doctorModel from "../../../../models/doctorModel.js";
+import weeklyTimeSlots from "../../../../models/weeklyTimeSlots.js";
 import workScheduleModel from "../../../../models/workScheduleModel.js";
 import { handleResponse } from "../../../../utils/handlers.js";
 
@@ -9,16 +11,29 @@ const addWorkSchedule = async(data,userData,res)=>{
         let status = 1 ;
         let message ;
         let  workData ;
-        workData = await workScheduleModel.findOne({where:{entity_id,day,doctor_id,startTime,endTime}})
-        if(!workData){
-            workData = new workScheduleModel({entity_id,day,session,endTime,startTime,day,status,doctor_id})
-            message = 'Succesfully added work schedule.'
+        let time_slots ;
+        workData = await workScheduleModel.findOne({where:{entity_id,day,doctor_id,startTime,endTime}});
+        let doctorData = await doctorModel.findOne({where:{status:1,doctor_id},attributes:['consultation_time']});
+        console.log({doctorData})
+        if(!doctorData){
+            return handleResponse({
+                res,
+                message:'Please enable your status to active.',
+                statusCode:204
+            })
         }else{
-            workData.startTime = startTime;
-            workData.endTime = endTime;
-            workData.status = status ;
-            workData.doctor_id = doctor_id;
-            message = 'Successfully updated work schedule.'
+            if(!workData){
+                workData = new workScheduleModel({entity_id,day,session,endTime,startTime,day,status,doctor_id})
+                message = 'Succesfully added work schedule.';
+                time_slots = await generateTimeSlots(startTime,endTime)
+            }else{
+                workData.startTime = startTime;
+                workData.endTime = endTime;
+                workData.status = status ;
+                workData.doctor_id = doctor_id;
+                message = 'Successfully updated work schedule.'
+            }
+
         }
         let workSchedule = await workData.save()
         return handleResponse({
@@ -85,6 +100,15 @@ const getWorkSchedule = async(data,res)=>{
                 workScheduleData
             }
         })
+    }catch(error){
+        console.log({error})
+    }
+}
+
+const getSingleWorkSchedule = async (userData,date,res)=>{
+    try{ 
+
+
     }catch(error){
         console.log({error})
     }
