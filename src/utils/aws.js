@@ -5,8 +5,6 @@ import path from 'path';
 // awsUtils.js
 
 
-
-
 aws.config.update({
   accessKeyId: process.env.AWS_ACCESS_KEY_ID,
   secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
@@ -15,15 +13,15 @@ aws.config.update({
 
 const s3 = new aws.S3();
 
-const uploadToS3 = async (file, invoiceID) => {
-  const filename = file.originalname;
+const uploadToS3 = async (file) => {
+  
+  const filename = file?.originalname;
   const fileExtension = filename.split(".").pop();
-  const objectKey = `${invoiceID}.${fileExtension}`;
 
   try {
     const uploadParams = {
       Bucket: 'chillar-platform-assets',
-      Key: objectKey,
+      Key: filename,
       Body: file.buffer,
       ContentType: file.mimetype
     };
