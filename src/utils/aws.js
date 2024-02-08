@@ -1,9 +1,6 @@
-// awsUtils.js
 
 import aws from 'aws-sdk';
 import path from 'path';
-// awsUtils.js
-
 
 aws.config.update({
   accessKeyId: process.env.AWS_ACCESS_KEY_ID,
@@ -26,8 +23,8 @@ const uploadToS3 = async (file) => {
       ContentType: file.mimetype
     };
 
-    // const uploadResponse = await s3.upload(uploadParams).promise();
-    const uploadResponse = await s3.getSignedUrl('putObject', uploadParams).promise;
+    const uploadResponse = await s3.upload(uploadParams).promise();
+    
     console.log("uploadResponse", uploadResponse);
     
     return uploadResponse;
@@ -37,9 +34,4 @@ const uploadToS3 = async (file) => {
   }
 };
 
-
-// module.exports = { uploadToS3 };
-
-
-// module.exports = { uploadToS3 };
 export default { uploadToS3 };
