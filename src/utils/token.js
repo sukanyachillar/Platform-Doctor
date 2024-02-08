@@ -31,7 +31,7 @@ export const verifyToken =async(req,res,next)=>{
         let authHeader = req.headers.authorization;
         let accessToken = authHeader.split(' ')[1];
         console.log(accessToken)
-        let verify = jwt.verify(accessToken,accessTokenSecret)
+        let verify = jwt.verify(accessToken, accessTokenSecret)
         if(verify){
             let entity = await entityModel.findOne({where:{phone:verify.phone},attributes:['entity_id']})
             let dataValues = entity.get();
@@ -42,7 +42,7 @@ export const verifyToken =async(req,res,next)=>{
     }catch(err){
         console.log({err});
 
-        return res.status(403).json({ statusCode:403, message:'Unauthorized' });
+        return res.status(403).json({ statusCode:403, message:'Token expired' });
     }
 }
 
@@ -51,8 +51,7 @@ export const verifyRefreshToken =async(req,res)=>{
         let authHeader = req.headers.authorization;
         let refreshToken = authHeader.split(' ')[1];
         let verify = jwt.verify(refreshToken,refreshTokenSecret)
-        
-
+ 
         let accessToken = jwt.sign({phone:verify.phone},accessTokenSecret, {
             expiresIn: accessExpiry
         });
@@ -66,7 +65,7 @@ export const verifyRefreshToken =async(req,res)=>{
 
     }catch(err){
         console.log({err});
-        return res.status(403).json({ statusCode:403, message:'Unauthorized' });
+        return res.status(403).json({ statusCode:403, message:'Token expired' });
 
     }
 }

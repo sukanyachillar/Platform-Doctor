@@ -14,9 +14,10 @@ import express from 'express';
 const router = express.Router();
 
 router.post("/register", authenticationController.register);
-router.get("/getProfile", verifyToken, authenticationController.getProfile);
+router.post("/getProfile", verifyToken, authenticationController.getProfile);
 router.post("/addprofile", verifyToken,  upload.single('file'), authenticationController.addProfile);
 router.post('/adddept', verifyToken, authenticationController.addDept);
-router.post('/refreshToken',verifyRefreshToken)
+router.post('/refreshToken', verifyRefreshToken)
+router.get('/generalSettings', verifyToken, authenticationController.getGeneralSettings)
 
 export default router;
