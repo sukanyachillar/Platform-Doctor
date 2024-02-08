@@ -112,6 +112,7 @@ const getWorkSchedule = async(data,res)=>{
         return handleResponse({
             res,
             message:"Successfully fetched file data.",
+            statusCode:200,
             data:{
                 workScheduleData
             }
