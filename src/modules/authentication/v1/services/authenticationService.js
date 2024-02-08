@@ -78,13 +78,20 @@ const addProfile = async(userData, image, res)=>{
     let entityData = await getUser.save();
 
     let entity_id = entityData.entity_id;
-    let userProfile = await profileModel.findOne({where:{phone}});
-    if(!userProfile){
+    let userProfile = await profileModel.findOne({ where: { phone }});
+    if(!userProfile) {
       userProfile = new profileModel({
-      doctor_name,qualification,
-      consultation_charge,consultation_time,
-      entity_id,profile_completed,phone,department_id,description});
-    }else{
+        doctor_name,
+        qualification,
+        consultation_charge,
+        consultation_time,
+        entity_id, 
+        profile_completed, 
+        phone,department_id, 
+        description,
+        profileImageUrl: imageUrl.Location ? imageUrl.Location: ""
+    });
+    } else {
       userProfile.doctor_name =doctor_name;
       userProfile.phone = phone;
       userProfile.qualification = qualification;
@@ -95,7 +102,6 @@ const addProfile = async(userData, image, res)=>{
       userProfile.department_id = department_id;
       userProfile.description = description;
       userProfile.profileImageUrl = imageUrl.Location ? imageUrl.Location: "" ;
-
     }
     let profile = await userProfile.save();
     return handleResponse({
