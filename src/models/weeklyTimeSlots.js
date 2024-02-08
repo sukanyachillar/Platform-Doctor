@@ -9,7 +9,7 @@ const weeklyTimeSlots = sequelize.define('weeklyTimeSlots', {
         allowNull: false,
     },
     date:{
-        type:DataTypes.DATE,
+        type:DataTypes.STRING,
         allowNull:false,
     },
     day:{
