@@ -48,15 +48,26 @@ const doctorModel = sequelize.define('doctor', {
     type: DataTypes.INTEGER, // 1: active, 0: inactive
     allowNull: true,
     unique: false,
+    defaultValue: 1,
   },
   description:{
     type:DataTypes.CHAR,
     allowNull:true
   },
-  profileImageUrl:{
+  profileImageUrl: {
     type:DataTypes.STRING,
     type:DataTypes.TEXT,
     allowNull:true
+  },
+  add_staff: {
+    type:DataTypes.INTEGER,
+    allowNull:true,
+    defaultValue: 0  //1 can add
+  },
+  add_service: {
+    type:DataTypes.INTEGER,
+    allowNull:true,
+    defaultValue: 0  //1 can add
   },
   created_date_time: {
     type: DataTypes.DATE,

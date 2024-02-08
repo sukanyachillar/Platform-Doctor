@@ -150,6 +150,34 @@ const getProfile = async({ phone }, res)=>{
   }
 }
 
+const getGeneralSettings = async(req, res)=>{
+  try{
+    console.log('inside getGeneralSettings', req)
+    const phone = req.user.phone
+    console.log("phone===>", phone)
+    let getEntity = await authenticationModel.findOne({ where:{ phone } }); // entitymodel
+    let doctorProfile = await profileModel.findOne({ where: { entity_id: getEntity.entity_id } });
+    console.log('doctorProfile', doctorProfile)
+    return handleResponse({
+      res,
+      statusCode:200,
+      message:"General settings succesfully fetched",
+      data: {
+          doctor_id : doctorProfile.doctor_id,
+          phone: doctorProfile.phone,
+          bookingLinkStatus: doctorProfile.status,
+          consultationDuration: doctorProfile.consultation_time,
+          addStaff: getEntity.add_staff,
+          addService: getEntity.add_service,
+       
+      }
+    })
+
+  } catch(error) {
+    console.log({error})
+  }
+}
+
 const addDept = async(deptData,userData,res)=>{
   try{
     let {department_name} = deptData ;
@@ -179,4 +207,4 @@ const addDept = async(deptData,userData,res)=>{
   }
 };
 
-export default { register, addProfile, addDept, getProfile};
+export default { register, addProfile, addDept, getProfile, getGeneralSettings};
