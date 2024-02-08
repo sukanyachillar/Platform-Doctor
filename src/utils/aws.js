@@ -26,7 +26,8 @@ const uploadToS3 = async (file) => {
       ContentType: file.mimetype
     };
 
-    const uploadResponse = await s3.upload(uploadParams).promise();
+    // const uploadResponse = await s3.upload(uploadParams).promise();
+    const uploadResponse = await s3.getSignedUrl('putObject', uploadParams).promise;
     console.log("uploadResponse", uploadResponse);
     
     return uploadResponse;
