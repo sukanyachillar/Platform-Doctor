@@ -6,6 +6,7 @@ import { handleResponse } from '../../../../utils/handlers.js';
 import {generateTokens} from '../../../../utils/token.js';
 // import upload from '../../../../middlewares/multerConfig.js';
 import awsUtils from '../../../../utils/aws.js';
+import entityModel from '../../../../models/entityModel.js';
 
 
 const register = async (userData, res) => {
@@ -207,4 +208,30 @@ const addDept = async(deptData,userData,res)=>{
   }
 };
 
-export default { register, addProfile, addDept, getProfile, getGeneralSettings};
+const getBankDetails = async(userData ,res)=>{
+  try{
+    let {entity_id} = userData;
+    let bankdata = await entityModel.findOne({where:{entity_id},attributes:['account_no','ifsc_code','bank_name','account_holder_name']})
+    if(!handleResponse){
+      return handleResponse({
+        res,
+        statusCode:404,
+        message:"Sorry unable to fetch."
+
+      })
+    }else{
+      return handleResponse({
+        res,
+        statusCode:200,
+        message:"Successfully fetched data",
+        data:{
+          bankdata
+        }
+      })
+    }
+  }catch(error){
+    console.log({error})
+  }
+}
+
+export default { register, addProfile, addDept, getProfile, getGeneralSettings, getBankDetails};
