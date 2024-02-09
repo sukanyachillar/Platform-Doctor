@@ -64,7 +64,7 @@ const bookAppointment = async (req, res) => {
         customerPhone,
         entityId: doctorProfile.entity_id,
         departmentId: doctorProfile.department_id,
-        bookingType: "appointment",
+        bookingType: 1,
         amount,
         bookingDate: new Date(),
         appointmentDate,
