@@ -56,10 +56,14 @@ const bookingModel = sequelize.define('booking', {
     defaultValue: 1
   },
   paymentStatus: {  // 0 payment initiated, 1.completed 2.cancelled
-    type: DataTypes.DATE,
-    defaultValue: DataTypes.NOW,
+    type: DataTypes.INTEGER,
     allowNull: false,
     defaultValue: 0
+  },
+  paymentMethod: {
+    type: DataTypes.STRING,
+    allowNull: false,
+    defaultValue: "Razorpay"
   },
   workSlotId: {
     type: DataTypes.STRING, 

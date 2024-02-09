@@ -1,5 +1,4 @@
 
-import authenticationModel from '../../../../models/entityModel.js';
 import doctorModel from '../../../../models/doctorModel.js';
 import { handleResponse } from '../../../../utils/handlers.js';
 import workScheduleModel from '../../../../models/workScheduleModel.js'
