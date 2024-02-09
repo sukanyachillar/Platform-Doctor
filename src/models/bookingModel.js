@@ -70,6 +70,11 @@ const bookingModel = sequelize.define('booking', {
     allowNull: true,
     unique: false,
   },
+  orderId: {
+    type: DataTypes.STRING, 
+    allowNull: true,
+    unique: false,
+  },
   createdAt: {
     type: DataTypes.DATE,
     defaultValue: DataTypes.NOW,
