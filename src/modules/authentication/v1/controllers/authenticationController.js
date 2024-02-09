@@ -47,7 +47,16 @@ const addDept = async(req,res) =>{
   }
 }
 
-export default { register, addProfile, getProfile, addDept, getGeneralSettings };
+const fetchBankDetails = async(req,res)=>{
+  try{
+    let bankData = await authenticationService.getBankDetails(req.user,res)
+    return bankData;
+  }catch(err){
+    console.log({err})
+  }
+}
+
+export default { register, addProfile, getProfile, addDept, getGeneralSettings, fetchBankDetails };
 
 
 

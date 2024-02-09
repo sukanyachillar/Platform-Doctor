@@ -30,7 +30,7 @@ export const verifyToken =async(req,res,next)=>{
     try{
         let authHeader = req.headers.authorization;
         let accessToken = authHeader.split(' ')[1];
-        console.log(accessToken)
+        
         let verify = jwt.verify(accessToken, accessTokenSecret)
         if(verify){
             let entity = await entityModel.findOne({where:{phone:verify.phone},attributes:['entity_id']})
