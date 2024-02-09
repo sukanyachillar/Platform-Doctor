@@ -51,7 +51,7 @@ const doctorModel = sequelize.define('doctor', {
     defaultValue: 1,
   },
   description:{
-    type:DataTypes.CHAR,
+    type:DataTypes.TEXT,
     allowNull:true
   },
   profileImageUrl: {
