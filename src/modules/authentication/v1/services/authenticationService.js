@@ -3,11 +3,11 @@ import authenticationModel from '../../../../models/entityModel.js';
 import profileModel from '../../../../models/doctorModel.js';
 import deptModel from '../../../../models/departmentModel.js';
 import { handleResponse } from '../../../../utils/handlers.js';
-import {generateTokens} from '../../../../utils/token.js';
+import { generateTokens } from '../../../../utils/token.js';
 // import upload from '../../../../middlewares/multerConfig.js';
 import awsUtils from '../../../../utils/aws.js';
 import entityModel from '../../../../models/entityModel.js';
-
+import departmentModel from '../../../../models/departmentModel.js';
 
 const register = async (userData, res) => {
   try {
@@ -54,13 +54,20 @@ const register = async (userData, res) => {
 const addProfile = async(userData, image, res)=>{
   try{
     let {
-      phone, entity_name,
-      email, business_type,
-      account_no, ifsc_code,
-      bank_name, account_holder_name,
-      doctor_name, qualification,
-      consultation_time, consultation_charge,
-      department_id, description,
+      phone,
+      entity_name,
+      email, 
+      business_type,
+      account_no,
+      ifsc_code,
+      bank_name,
+      account_holder_name,
+      doctor_name, 
+      qualification,
+      consultation_time, 
+      consultation_charge,
+      department_id, 
+      description,
     } = userData;
    
     let getUser = await authenticationModel.findOne({ where:{ phone } });
@@ -80,6 +87,8 @@ const addProfile = async(userData, image, res)=>{
 
     let entity_id = entityData.entity_id;
     let userProfile = await profileModel.findOne({ where: { phone }});
+    const getDepartment = await departmentModel.findOne({ where:{ department_id } });
+
     if(!userProfile) {
       userProfile = new profileModel({
         doctor_name,
@@ -88,33 +97,36 @@ const addProfile = async(userData, image, res)=>{
         consultation_time,
         entity_id, 
         profile_completed, 
-        phone,department_id, 
+        phone,
+        department_id, 
         description,
         profileImageUrl: imageUrl.Location ? imageUrl.Location: ""
     });
     } else {
       userProfile.doctor_name =doctor_name;
       userProfile.phone = phone;
-      userProfile.qualification = qualification;
+      userProfile.qualification = qualification? qualification.trim(): '';
       userProfile.consultation_charge = consultation_charge ;
       userProfile.consultation_time = consultation_time;
       userProfile.entity_id = entity_id ;
       userProfile.profile_completed = profile_completed ;
       userProfile.department_id = department_id;
-      userProfile.description = description;
+      userProfile.description = description ? description.trim() : '';
       userProfile.profileImageUrl = imageUrl.Location ? imageUrl.Location: "" ;
     }
     let profile = await userProfile.save();
+
     return handleResponse({
       res,
       statusCode:200,
       message:"Profile created succesfully",
-      data:{
+      data: {
           entity_id: entityData.entity_id,
           phone: entityData.phone,
           profile_completed: entityData.profile_completed,
           status: entityData.status,
 		      entity_type: entityData.entity_type,
+          designation: getDepartment.department_name,
           profile
       }
     })
