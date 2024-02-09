@@ -69,7 +69,7 @@ const bookAppointment = async (req, res) => {
         bookingDate: new Date(),
         appointmentDate,
         workSlotId: existingTimeslot.time_slot_id,
-        orderId:data.id
+       // orderId:data.id
       }
       const newBooking = new bookingModel(customerData);
       const addedBooking = await newBooking.save();
@@ -78,8 +78,8 @@ const bookAppointment = async (req, res) => {
         statusCode: "200", 
         message: "Appointment booked Sucusfully",
         data: {
-          orderId:data.id,
-          amount:1000
+          orderId:data.short_url,
+          
         }
 		})
     
