@@ -157,6 +157,8 @@ const getProfile = async({ phone }, res)=>{
 
 
     
+
+    const getDepartment = await departmentModel.findOne({ where:{ department_id: userProfile.department_id } });
     return handleResponse({
       res,
       statusCode:200,
@@ -171,8 +173,9 @@ const getProfile = async({ phone }, res)=>{
           doctor_id :userProfile.doctor_id,
           profileImageUrl: userProfile.profileImageUrl,
           description: userProfile.description,
-          uniqueDays
+          uniqueDays,
          
+          designation: getDepartment.department_name,
       }
     })
 

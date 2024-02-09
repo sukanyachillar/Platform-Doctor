@@ -16,6 +16,7 @@ const bookAppointment = async (req, res) => {
          amount,
          paymentMethod,
       } = req.body;
+
       const doctorProfile = await doctorProfileModel.findOne({ where: {doctor_id:  doctorId}  });
       const existingTimeslot = await weeklyTimeSlotsModel.findOne({
         where: {
@@ -32,7 +33,7 @@ const bookAppointment = async (req, res) => {
           statusCode: 400
       })
       }
-      existingTimeslot.booking_status= 1;
+      // existingTimeslot.booking_status= 1;
       if (existingTimeslot) {
         await weeklyTimeSlotsModel.update(
           {
