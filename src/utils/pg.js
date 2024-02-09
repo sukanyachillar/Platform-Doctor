@@ -6,26 +6,15 @@ const createPaymentLink = async(body)=>{
     let {name,phone,amount} = body
     try{
         let body = {
-            amount,
-            currency: "INR",
-            accept_partial: false,
-            reference_id,
-            customer: {
-              name,
-              contact: phone,
-            },
-            notify: {
-              sms: true,
-            },
-            reminder_enable: true,
-            callback_url: "https://example-callback-url.com/",
-            callback_method: "get"
+            amount: amount,
+            currency: 'INR',
+            payment_capture: 1
         }
         let razorpay = new Razorpay({
             key_id: process.env.RAZORPAY_KEY,
             key_secret: process.env.RAZORPAY_SECRET,
         });
-        let response = await razorpay.paymentLink.create(
+        let response = await razorpay.orders.create(
             body
         )
     
