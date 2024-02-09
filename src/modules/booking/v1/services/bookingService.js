@@ -7,7 +7,22 @@ import { generateTokens } from '../../../../utils/token.js';
 
 const bookAppointment = async (customerData, res) => {
   try {
-    const { timeSlot } = userData;
+
+     const {
+         appointmentDate,
+         timeSlot,
+         patientName,
+         contactNumber,
+         amount,
+         paymentMethod,
+  } = customerData;
+
+    const existingTimeslot = await Timeslot.findOne({ timeSlot });
+  if (!existingTimeslot) {
+    return res.status(400).json({ error: 'Invalid timeslot' });
+  }
+
+    const newUser = new authenticationModel(userData);
     if (getUser) {
          return handleResponse({ 
             res, 
@@ -24,7 +39,7 @@ const bookAppointment = async (customerData, res) => {
 			   }
 		})
     }
-    const newUser = new authenticationModel(userData);
+    
     const addedUser = await newUser.save();
     return handleResponse({ 
        res, 

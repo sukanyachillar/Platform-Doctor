@@ -29,7 +29,7 @@ const bookingModel = sequelize.define('booking', {
     allowNull: true,
     unique: false,
   },
-  bookingId: {
+  bookingType: {
     type: DataTypes.INTEGER,
     allowNull: true,
     unique: false,
