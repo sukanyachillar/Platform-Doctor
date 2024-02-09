@@ -79,4 +79,28 @@ const bookAppointment = async (req, res) => {
   }
 };
 
-export default { bookAppointment };
+const updateBookingStatus = async(req,res)=>{
+  try{
+    let bookingId = req.body.bookingId;
+    let data = await bookingModel.update(
+      {
+        booking_status: 2,
+      },
+      {
+        where: {
+          bookingId
+        },
+      }
+    );
+    return handleResponse({
+      res,
+      message:"Successfully updated appointment status.",
+      data:{data}
+    })
+
+  }catch(error){
+    console.log({error})
+  }
+}
+
+export default { bookAppointment ,updateBookingStatus };

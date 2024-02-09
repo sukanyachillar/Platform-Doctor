@@ -50,7 +50,7 @@ const bookingModel = sequelize.define('booking', {
     allowNull: false,
   },
   bookingStatus: {
-    type: DataTypes.INTEGER, // 1: booked, completed, cancelled
+    type: DataTypes.INTEGER, // 1: booked, 2-completed, cancelled
     allowNull: true,
     unique: false,
     defaultValue: 1
