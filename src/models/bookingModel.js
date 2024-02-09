@@ -44,17 +44,24 @@ const bookingModel = sequelize.define('booking', {
     defaultValue: DataTypes.NOW,
     allowNull: false,
   },
-  appointment_date: {
+  appointmentDate: {
     type: DataTypes.DATE,
     defaultValue: DataTypes.NOW,
     allowNull: false,
   },
   bookingStatus: {
-    type: DataTypes.INTEGER, // 1: bookingInitiated, booked, completed, cancelled
+    type: DataTypes.INTEGER, // 1: booked, completed, cancelled
     allowNull: true,
     unique: false,
+    defaultValue: 1
   },
-  workScheduleId: {
+  paymentStatus: {  // 0 payment initiated, 1.completed 2.cancelled
+    type: DataTypes.DATE,
+    defaultValue: DataTypes.NOW,
+    allowNull: false,
+    defaultValue: 0
+  },
+  workSlotId: {
     type: DataTypes.STRING, 
     allowNull: true,
     unique: false,
