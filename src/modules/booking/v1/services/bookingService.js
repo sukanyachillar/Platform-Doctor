@@ -16,6 +16,7 @@ const bookAppointment = async (req, res) => {
          amount,
          paymentMethod,
       } = req.body;
+
       const doctorProfile = await doctorProfileModel.findOne({ where: {doctor_id:  doctorId}  });
       const existingTimeslot = await weeklyTimeSlotsModel.findOne({
         where: {
