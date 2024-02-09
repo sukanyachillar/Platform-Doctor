@@ -7,7 +7,6 @@ import payment from '../../../../utils/pg.js'
 
 const bookAppointment = async (req, res) => {
   try {
-     
      const {
          doctorId,
          appointmentDate,
@@ -17,15 +16,7 @@ const bookAppointment = async (req, res) => {
          amount,
          paymentMethod,
       } = req.body;
-     
-      console.log("appointmentDate.", appointmentDate);
-      console.log("doctorId", doctorId)
       const doctorProfile = await doctorProfileModel.findOne({ where: {doctor_id:  doctorId}  });
-      console.log( {
-        time_slot: timeSlot,
-        doctor_id: doctorId,
-        date: appointmentDate,
-      });
       const existingTimeslot = await weeklyTimeSlotsModel.findOne({
         where: {
           time_slot: timeSlot,
@@ -45,7 +36,7 @@ const bookAppointment = async (req, res) => {
       if (existingTimeslot) {
         await weeklyTimeSlotsModel.update(
           {
-            status: 1,
+            booking_status: 1,
           },
           {
             where: {
@@ -69,7 +60,6 @@ const bookAppointment = async (req, res) => {
         bookingDate: new Date(),
         appointmentDate,
         workSlotId: existingTimeslot.time_slot_id,
-       // orderId:data.id
       }
       const newBooking = new bookingModel(customerData);
       const addedBooking = await newBooking.save();
