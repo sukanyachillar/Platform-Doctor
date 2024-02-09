@@ -84,7 +84,7 @@ const updateBookingStatus = async(req,res)=>{
     let bookingId = req.body.bookingId;
     let data = await bookingModel.update(
       {
-        booking_status: 2,
+        bookingStatus: 2,
       },
       {
         where: {
