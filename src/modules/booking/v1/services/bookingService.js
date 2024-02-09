@@ -43,29 +43,22 @@ const bookAppointment = async (req, res) => {
       }
       existingTimeslot.booking_status= 1;
       if (existingTimeslot) {
-        // Update the existing record
         await weeklyTimeSlotsModel.update(
           {
-            // Specify the fields you want to update
-            // For example, you might update the 'status' field
             status: 1,
           },
           {
             where: {
-              time_slot: '10:30 am',
-              doctor_id: 1,
-              date: '2024-02-12',
+              time_slot: timeSlot,
+              doctor_id: doctorId,
+              date: appointmentDate,
             },
           }
         );
       }
-   //   let newSlotData = new existingTimeslot.save();
-      // const getTimeSlot = await workScheduleModel.findOne({ where: {
-      //                        time_slot: timeSlot,
-      //                        doctor_id: doctorId,
-      //                        date: appointmentDate.toLocaleDateString()
-      // } });
-
+    
+      let data = await payment.createPaymentLink({ name:customerName, phone:customerPhone, amount:1000})
+      
       const customerData = {
         customerName,
         customerPhone,
@@ -76,23 +69,18 @@ const bookAppointment = async (req, res) => {
         bookingDate: new Date(),
         appointmentDate,
         workSlotId: existingTimeslot.time_slot_id,
-
+        orderId:data.id
       }
-
       const newBooking = new bookingModel(customerData);
       const addedBooking = await newBooking.save();
-      if(addedBooking){
-        let data = await payment.createPaymentLink({ name:customerName, phone:customerPhone, amount})
-        console.log({paymentDt:data})
-      }
-
       return handleResponse({ 
-            res, 
-            statusCode: "200", 
-            message: "Appointment booked Sucusfully",
-			      data: {
-				        
-			      }
+        res, 
+        statusCode: "200", 
+        message: "Appointment booked Sucusfully",
+        data: {
+          orderId:data.id,
+          amount:1000
+        }
 		})
     
   } catch (error) {
