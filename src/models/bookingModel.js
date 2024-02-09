@@ -3,33 +3,33 @@ import { DataTypes } from 'sequelize' ;
 import sequelize from '../dbConnect.js';
 
 const bookingModel = sequelize.define('booking', {
-  booking_id: {
+  bookingId: {
     type: DataTypes.INTEGER,
     primaryKey: true,
-    autoIncrement: true,
+    autoIncrement: true, 
     allowNull: false,
   },
-  customer_name: {
+  customerName: {
     type: DataTypes.STRING,
     allowNull: true,
     unique: false,
   },
-  customer_phone: {
+  customerPhone: {
     type: DataTypes.STRING,
     allowNull: true,
     unique: false,
   },
-  entity_id: {
+  entityId: {
     type: DataTypes.STRING,
     allowNull: true,
     unique: false,
   },
-  department_id: {
+  departmentId: {
     type: DataTypes.STRING,
     allowNull: true,
     unique: false,
   },
-  booking_type: {
+  bookingType: {
     type: DataTypes.INTEGER,
     allowNull: true,
     unique: false,
@@ -39,32 +39,43 @@ const bookingModel = sequelize.define('booking', {
     allowNull: true,
     unique: false,
   },
-  booking_date: {
+  bookingDate: {
     type: DataTypes.DATE,
     defaultValue: DataTypes.NOW,
     allowNull: false,
   },
-  appointment_date: {
+  appointmentDate: {
     type: DataTypes.DATE,
     defaultValue: DataTypes.NOW,
     allowNull: false,
   },
-  booking_status: {
-    type: DataTypes.INTEGER, // 1: bookingInitiated, booked, completed, cancelled
+  bookingStatus: {
+    type: DataTypes.INTEGER, // 1: booked, completed, cancelled
     allowNull: true,
     unique: false,
+    defaultValue: 1
   },
-  work_schedule_id: {
+  paymentStatus: {  // 0 payment initiated, 1.completed 2.cancelled
+    type: DataTypes.INTEGER,
+    allowNull: false,
+    defaultValue: 0
+  },
+  paymentMethod: {
+    type: DataTypes.STRING,
+    allowNull: false,
+    defaultValue: "Razorpay"
+  },
+  workSlotId: {
     type: DataTypes.STRING, 
     allowNull: true,
     unique: false,
   },
-  created_date_time: {
+  createdAt: {
     type: DataTypes.DATE,
     defaultValue: DataTypes.NOW,
     allowNull: false,
   },
-  update_date_time: {
+  updatedAt: {
     type: DataTypes.DATE,
     defaultValue: DataTypes.NOW,
     allowNull: false,

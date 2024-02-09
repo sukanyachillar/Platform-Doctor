@@ -10,4 +10,4 @@ const paymentStatusCapture = async(req,res)=>{
     }
 }
 
-export default{paymentStatusCapture}
+export default { paymentStatusCapture }
