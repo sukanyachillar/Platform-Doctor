@@ -8,6 +8,7 @@ import { generateTokens } from '../../../../utils/token.js';
 import awsUtils from '../../../../utils/aws.js';
 import entityModel from '../../../../models/entityModel.js';
 import departmentModel from '../../../../models/departmentModel.js';
+import workScheduleModel from '../../../../models/workScheduleModel.js';
 
 const register = async (userData, res) => {
   try {
@@ -141,6 +142,21 @@ const getProfile = async({ phone }, res)=>{
     let getUser = await authenticationModel.findOne({ where:{ phone } });
     let userProfile = await profileModel.findOne({ where:{ entity_id: getUser.entity_id } });
     console.log('userProfile', userProfile)
+    let availableSlots = await workScheduleModel.findAll({where:{entity_id:getUser.entity_id,status:1},attributes:['Day']})
+   console.log(availableSlots)
+ 
+    let uniqueDays = [];
+    let seenDays = new Set();
+
+    availableSlots.forEach(slot => {
+        if (slot && slot.dataValues && slot.dataValues.Day && !seenDays.has(slot.dataValues.Day)) {
+            uniqueDays.push(slot.dataValues.Day);
+            seenDays.add(slot.dataValues.Day);
+        }
+    });
+
+
+    
     return handleResponse({
       res,
       statusCode:200,
@@ -155,6 +171,8 @@ const getProfile = async({ phone }, res)=>{
           doctor_id :userProfile.doctor_id,
           profileImageUrl: userProfile.profileImageUrl,
           description: userProfile.description,
+          uniqueDays
+         
       }
     })
 
