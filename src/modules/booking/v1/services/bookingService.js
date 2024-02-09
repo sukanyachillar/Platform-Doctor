@@ -32,7 +32,7 @@ const bookAppointment = async (req, res) => {
           statusCode: 400
       })
       }
-      existingTimeslot.booking_status= 1;
+      // existingTimeslot.booking_status= 1;
       if (existingTimeslot) {
         await weeklyTimeSlotsModel.update(
           {

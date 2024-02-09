@@ -27,7 +27,7 @@ const weeklyTimeSlots = sequelize.define('weeklyTimeSlots', {
     booking_status :{
         type:DataTypes.INTEGER, //1- booked 0-available,
         allowNull:false,
-        defaultValue:0
+        defaultValue: 0
     }
 });
 
