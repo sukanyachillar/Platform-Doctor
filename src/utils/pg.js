@@ -1,7 +1,7 @@
 import Razorpay from "razorpay";
 import { nanoid } from "nanoid";
 
-const createPaymentLink = async()=>{
+const createPaymentLink = async(body)=>{
     let reference_id = nanoid();
     let {name,phone,amount} = body
     try{
@@ -28,6 +28,8 @@ const createPaymentLink = async()=>{
         let response = await razorpay.paymentLink.create(
             body
         )
+    
+        console.log({response})
         return response;
 
     }catch(err){
@@ -35,4 +37,4 @@ const createPaymentLink = async()=>{
     }
 }
 
-export default {createPaymentLink};
+export default { createPaymentLink };

@@ -1,8 +1,9 @@
 
-import doctorModel from '../../../../models/doctorModel.js';
+import doctorProfileModel from '../../../../models/doctorModel.js';
 import { handleResponse } from '../../../../utils/handlers.js';
-import workScheduleModel from '../../../../models/workScheduleModel.js'
-import bookingModel from '../../../../models/bookingModel.js'
+import weeklyTimeSlotsModel from '../../../../models/weeklyTimeSlots.js'
+import bookingModel from '../../../../models/bookingModel.js';
+import payment from '../../../../utils/pg.js'
 
 const bookAppointment = async (req, res) => {
   try {
@@ -16,71 +17,74 @@ const bookAppointment = async (req, res) => {
          amount,
          paymentMethod,
       } = req.body;
-
-      const { entityId } = req.user
-      console.log('req.user.entityId', req.user.entityId)
-      console.log('req.user.entity_Id', req.user.entity_id)
-      const doctorProfile = await doctorModel.findOne({ where: { doctor_id: doctorId } });
-      
-      const timeSlotData = {
-         date: appointmentDate,
-         day: appointmentDate.toLocaleDateString('en-US', { weekday: 'long' }),
-         timeSlot,
-         doctorId,
-         bookingStatus: 1
-      }
-    
-      // const appointmentDay = appointmentDate.getDate();
-      const existingTimeslot = await workScheduleModel.findOne({
+     
+      console.log("appointmentDate.", appointmentDate);
+      console.log("doctorId", doctorId)
+      const doctorProfile = await doctorProfileModel.findOne({ where: {doctor_id:  doctorId}  });
+      console.log( {
+        time_slot: timeSlot,
+        doctor_id: doctorId,
+        date: appointmentDate,
+      });
+      const existingTimeslot = await weeklyTimeSlotsModel.findOne({
         where: {
           time_slot: timeSlot,
           doctor_id: doctorId,
-          // day: appointmentDate.toLocaleDateString('en-US', { weekday: 'long' })
-          date: appointmentDate.toLocaleDateString()
+          date: appointmentDate,
         },
       });
   
-      if (!existingTimeslot) {
+      if (existingTimeslot?.booking_status) {
         return handleResponse({
           res,
           message:'Slot already booked',
           statusCode: 400
       })
       }
-
-      const updatedTimeSlot = await workScheduleModel.update(
-        {
-          booking_status: 1,
-        },
-        {
-          where: {
-            time_slot: timeSlot,
-            doctor_id: doctorId,
-            date: appointmentDate.toLocaleDateString()
+      existingTimeslot.booking_status= 1;
+      if (existingTimeslot) {
+        // Update the existing record
+        await weeklyTimeSlotsModel.update(
+          {
+            // Specify the fields you want to update
+            // For example, you might update the 'status' field
+            status: 1,
           },
-        }
-      );
-      const getTimeSlot = await workScheduleModel.findOne({ where: {
-                             time_slot: timeSlot,
-                             doctor_id: doctorId,
-                             date: appointmentDate.toLocaleDateString()
-      } });
+          {
+            where: {
+              time_slot: '10:30 am',
+              doctor_id: 1,
+              date: '2024-02-12',
+            },
+          }
+        );
+      }
+   //   let newSlotData = new existingTimeslot.save();
+      // const getTimeSlot = await workScheduleModel.findOne({ where: {
+      //                        time_slot: timeSlot,
+      //                        doctor_id: doctorId,
+      //                        date: appointmentDate.toLocaleDateString()
+      // } });
 
       const customerData = {
         customerName,
         customerPhone,
-        entityId,
-        departmentId: doctorModel.department_id,
+        entityId: doctorProfile.entity_id,
+        departmentId: doctorProfile.department_id,
         bookingType: "appointment",
         amount,
         bookingDate: new Date(),
         appointmentDate,
-        workSlotId: getTimeSlot.time_slot_id
+        workSlotId: existingTimeslot.time_slot_id,
 
       }
 
       const newBooking = new bookingModel(customerData);
       const addedBooking = await newBooking.save();
+      if(addedBooking){
+        let data = await payment.createPaymentLink({ name:customerName, phone:customerPhone, amount})
+        console.log({paymentDt:data})
+      }
 
       return handleResponse({ 
             res, 

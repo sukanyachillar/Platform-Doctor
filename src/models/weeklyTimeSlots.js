@@ -21,7 +21,7 @@ const weeklyTimeSlots = sequelize.define('weeklyTimeSlots', {
         allowNull:false
     },
     doctor_id:{
-        type:DataTypes.STRING,
+        type:DataTypes.INTEGER,
         allowNull:false
     },
     booking_status :{
