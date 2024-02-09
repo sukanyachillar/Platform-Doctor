@@ -68,6 +68,37 @@ const addWorkSchedule = async(data,userData,res)=>{
         console.log({error})
     }
 }
+const addWork = async(data,userData,res)=>{
+    try{
+        console.log(data,userData)
+        let {doctor_id,day,session} = userData ;
+        let {entity_id} = data;
+        let status = 0 ;
+        let message
+        let workData,newData
+        console.log(doctor_id,day,session)
+        workData = await workScheduleModel.findOne({where:{entity_id,day,doctor_id,session}});
+        if(!workData){
+           newData = new workScheduleModel({session,status,doctor_id,day,entity_id} )
+            message = 'Successfully updated work schedule.'
+        }else{
+            return handleResponse(
+                {res,
+                message:"Data already available.",
+                statusCode:404
+            })
+        }
+        let workSchedule = await newData.save()
+        return handleResponse({
+            res,
+            message,
+            statusCode:200,
+           
+        })
+    }catch(error){
+        console.log({error})
+    }
+}
 
 const updateWorkScheduleStatus = async(workData,res)=>{
     try{
@@ -202,4 +233,4 @@ const getDayOfWeekIndex = async(dayName)=> {
     }
 }
 
-export default { addWorkSchedule,updateWorkScheduleStatus,getWorkSchedule,generateTimeSlots,getSingleWorkSchedule };
+export default { addWorkSchedule,updateWorkScheduleStatus,getWorkSchedule,generateTimeSlots,addWork,getSingleWorkSchedule };

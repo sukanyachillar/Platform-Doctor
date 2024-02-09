@@ -101,6 +101,7 @@ const updateBookingStatus = async(req,res)=>{
   }catch(error){
     console.log({error})
   }
-}
+};
+
 
 export default { bookAppointment ,updateBookingStatus };
