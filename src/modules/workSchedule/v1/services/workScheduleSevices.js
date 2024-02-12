@@ -183,15 +183,11 @@ const getWorkSchedule = async(data,user,res)=>{
                     work_schedule_id: null,
                     entity_id: user?.entity_id,
                     session: null,
-                    doctor_id,
+                    doctor_id:Number(doctor_id),
                     created_date_time: null,
                     update_date_time: null,
                     createdAt: null,
-                    updatedAt: null
-
-                 
-                      
-                   
+                    updatedAt: null  
                  }]
             });
         });
