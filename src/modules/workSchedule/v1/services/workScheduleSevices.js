@@ -179,15 +179,12 @@ const getWorkSchedule = async(data,res)=>{
             });
         });
 
-        console.log(result);
-
-
         return handleResponse({
             res,
             message:"Successfully fetched data.",
             statusCode:200,
             data:{
-                workScheduleData,
+              //  workScheduleData,
                 result
                 
                 
