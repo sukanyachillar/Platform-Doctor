@@ -34,6 +34,7 @@ const createPaymentLink = async(body)=>{
 
     }catch(err){
         console.log({Error:err})
+        return err;
     }
 }
 

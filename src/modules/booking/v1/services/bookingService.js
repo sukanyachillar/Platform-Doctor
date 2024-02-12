@@ -2,7 +2,8 @@ import doctorProfileModel from '../../../../models/doctorModel.js';
 import { handleResponse } from '../../../../utils/handlers.js';
 import weeklyTimeSlotsModel from '../../../../models/weeklyTimeSlotsModel.js'
 import bookingModel from '../../../../models/bookingModel.js';
-import payment from '../../../../utils/pg.js'
+import payment from '../../../../utils/pg.js';
+import { Op } from 'sequelize';
 
 const bookAppointment = async (req, res) => {
   try {
@@ -56,7 +57,14 @@ const bookAppointment = async (req, res) => {
         );
       }
     
-      let data = await payment.createPaymentLink({ name:customerName, phone:customerPhone, amount:1000})
+      let data = await payment.createPaymentLink({ name:customerName, phone:customerPhone, amount:1000});
+      if (data?.Error?.statusCode == 400) return handleResponse({
+        res,
+        statusCode: "400", 
+        message: "Something went wrong",
+        data: {
+          message: data?.Error?.error?.description
+      }})
       
       const customerData = {
         customerName,
@@ -76,7 +84,7 @@ const bookAppointment = async (req, res) => {
         statusCode: "200", 
         message: "Appointment booked Sucusfully",
         data: {
-          orderId: data.short_url,
+          paymentUrl: data?.short_url
           
         }
 		})
@@ -116,7 +124,7 @@ const listBooking = async( { doctorId, date } , res)=> {
         const appointmentList = [];
         for (const weeklyTimeSlot of weeklyTimeSlots) {
           const bookingInfo = await bookingModel.findOne({
-            attributes: ['customerName', 'bookingStatus', 'bookingId'],
+            attributes: ['customerName', 'customerPhone', 'bookingStatus', 'bookingId'],
             where: {
               workSlotId: weeklyTimeSlot.time_slot_id,
             },
@@ -127,6 +135,7 @@ const listBooking = async( { doctorId, date } , res)=> {
               bookingId: bookingInfo.bookingId,
               timeSlot: weeklyTimeSlot.time_slot,
               customerName: bookingInfo.customerName,
+              customerPhone: bookingInfo.customerPhone,
               bookingStatus: bookingInfo.bookingStatus,
             });
           }
