@@ -167,11 +167,18 @@ const getBookingReport = async (req, res) => {
     });
     return handleResponse({
       res,
+      statusCode: 200,
       message: "Successfully fetched booking report.",
       data: { bookingReport },
     });
   } catch (error) {
     console.log({ error });
+    return handleResponse({
+      res,
+      statusCode: 500,
+      message: "Something went wrong",
+      data: { },
+    });
   }
 };
 
