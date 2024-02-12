@@ -75,7 +75,12 @@ const bookAppointment = async (req, res) => {
 		})
     
   } catch (error) {
-    console.log(error)
+    console.log(error);
+    return handleResponse({
+      res,
+      message:"Error while booking appointment.",
+      statusCode:422
+  })
   }
 };
 
@@ -100,6 +105,11 @@ const updateBookingStatus = async(req,res)=>{
 
   }catch(error){
     console.log({error})
+    return handleResponse(
+      {res,
+      message:"Error while updating appointment.",
+      statusCode:422
+  })
   }
 };
 
