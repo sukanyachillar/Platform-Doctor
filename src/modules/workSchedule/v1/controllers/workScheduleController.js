@@ -30,7 +30,7 @@ const updateWorkScheduleStatus = async(req,res)=>{
 
 const getWorkSchedule = async(req,res)=>{
     try{
-        const workData = await workScheduleSevices.getWorkSchedule(req.body,res);
+        const workData = await workScheduleSevices.getWorkSchedule(req.body,req.user,res);
         return workData;
     }catch(error){
         console.log({error})
