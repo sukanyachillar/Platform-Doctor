@@ -207,6 +207,13 @@ const bookingConfirmationData = async(bookingData,res)=>{
   try{
     let {bookingId} = bookingData;
     let response = await bookingModel.findOne({where:{bookingId}});
+    const weeklyTimeSlot = await weeklyTimeSlotsModel.findOne({
+      attributes: ['time_slot'],
+      where: {
+        time_slot_id: response.workSlotId,
+      },
+    });
+    console.log("weeklyTimeSlot++++++++++++", weeklyTimeSlot)
     let data, message,statusCode; 
     if(response){
       data = response,
@@ -216,6 +223,7 @@ const bookingConfirmationData = async(bookingData,res)=>{
       message = 'Sorry no data found for this bookingId.',
       statusCode = 404
     }
+    if(weeklyTimeSlot) data.timeSlot = weeklyTimeSlot.time_slot;
     return handleResponse({
       res,
       message,
