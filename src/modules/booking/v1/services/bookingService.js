@@ -114,7 +114,7 @@ const listBooking = async( { doctorId, date } , res)=> {
       },
     });
 
-    console.log("weeklyTimeSlot==========", weeklyTimeSlots)
+    // console.log("weeklyTimeSlot==========", weeklyTimeSlots)
   
     if (!weeklyTimeSlots) {
       return handleResponse({
@@ -150,7 +150,7 @@ const listBooking = async( { doctorId, date } , res)=> {
             }
           }
         }
-    console.log("appointmentList", appointmentList)
+    // console.log("appointmentList", appointmentList)
   
     return handleResponse({
       res,
