@@ -273,9 +273,12 @@ const dateFromDay = async(day)=>{
     try{
         const currentDate = new Date();
         const currentDayOfWeek = currentDate.getDay();
-        const daysUntilNextDay = day + (7 - currentDayOfWeek) % 7;
+        let daysToAdd = day - currentDayOfWeek;
+        if (daysToAdd <= 0) {
+            daysToAdd += 7; 
+        }
         const nextDate = new Date(currentDate);
-        nextDate.setDate(currentDate.getDate() + daysUntilNextDay);
+        nextDate.setDate(currentDate.getDate() + daysToAdd);
         return nextDate;
     }catch(error){
         console.log({error})

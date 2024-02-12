@@ -36,7 +36,7 @@ const getWorkSchedule = async(req,res)=>{
         console.log({error})
     }
 }
-
+  
 const getWorkSlot = async(req,res)=>{
     try{
         let workScheduleSlot = await workScheduleSevices.getSingleWorkSchedule(req,res);
