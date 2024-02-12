@@ -20,7 +20,7 @@ const listBooking = async(req, res) => {
 };
 const updateBookingStatus = async(req,res)=>{
   try{
-    const updateData = await customerService.updateBookingStatus(req,res);
+    const updateData = await bookingService.updateBookingStatus(req,res);
     return updateData;
 
   }catch(err){
@@ -30,7 +30,7 @@ const updateBookingStatus = async(req,res)=>{
 
 const getBookingReport = async(req,res)=>{
   try{
-    const bookingReport = await customerService.getBookingReport(req,res);
+    const bookingReport = await bookingService.getBookingReport(req,res);
     return bookingReport;
 
   }catch(err){

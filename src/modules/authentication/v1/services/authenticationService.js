@@ -188,6 +188,63 @@ const getProfile = async({ phone }, res)=>{
           doctor_id :userProfile?.doctor_id,
           profileImageUrl: userProfile?.profileImageUrl,
           description: userProfile?.description,
+          // uniqueDays,  
+          designation: getDepartment?.department_name,
+      }
+    })
+
+  } catch(error) {
+    console.log({error})
+    return handleResponse({
+      res,
+      message:'Error while fetching profile',
+      statusCode:422
+    })
+  }
+}
+
+const getProfileForCustomer = async({ phone }, res)=>{
+  try{
+    let getUser = await authenticationModel.findOne({ where:{ phone } });
+    let userProfile = await profileModel.findOne({ where:{ entity_id: getUser.entity_id } });
+    let statusCode, message, getDepartment;
+    if(!userProfile){
+      message ='Sorry! Unable to fetch user profile associated with this phone.',
+      statusCode=404
+    }
+    let availableSlots = await workScheduleModel.findAll({where:{entity_id:getUser.entity_id,status:1},attributes:['Day']})
+    if(!availableSlots){
+      message ='Sorry! Unable to fetch available slots associated with this phone.',
+      statusCode=404
+    }
+    let uniqueDays = [];
+    let seenDays = new Set();
+    if(availableSlots){
+      availableSlots.forEach(slot => {
+          if (slot && slot.dataValues && slot.dataValues.Day && !seenDays.has(slot.dataValues.Day)) {
+              uniqueDays.push(slot.dataValues.Day);
+              seenDays.add(slot.dataValues.Day);
+          }
+      });
+      message="Profile fetched succesfully"
+      statusCode = 200
+      getDepartment = await departmentModel.findOne({ where:{ department_id: userProfile.department_id } });
+    }
+
+    return handleResponse({
+      res,
+      statusCode,
+      message,
+      data:{
+          entity_id: getUser?.entity_id,
+          phone: getUser?.phone,
+          doctor_name: userProfile?.doctor_name,
+          qualification: userProfile?.qualification,
+          consultation_time: userProfile?.consultation_time,
+          consultation_charge: userProfile?.consultation_charge,
+          doctor_id :userProfile?.doctor_id,
+          profileImageUrl: userProfile?.profileImageUrl,
+          description: userProfile?.description,
           uniqueDays,  
           designation: getDepartment?.department_name,
       }
@@ -202,6 +259,7 @@ const getProfile = async({ phone }, res)=>{
     })
   }
 }
+
 
 const getGeneralSettings = async(req, res)=>{
   try{
@@ -298,4 +356,13 @@ const getBankDetails = async(userData ,res)=>{
   }
 }
 
-export default { register, addProfile, addDept, getProfile, getGeneralSettings, getBankDetails};
+export default { 
+  register, 
+  addProfile, 
+  addDept, 
+  getProfile, 
+  getGeneralSettings, 
+  getBankDetails,
+  getProfileForCustomer,
+
+};

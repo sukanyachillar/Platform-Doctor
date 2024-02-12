@@ -28,6 +28,15 @@ const getProfile =async(req,res)=>{
   }
 };
 
+const getProfileForCustomer =async(req,res)=>{
+  try{
+    console.log({req:req.body,headers:req.user})
+    const getProfile = await authenticationService.getProfileForCustomer(req.body, res);
+    return getProfile;
+  }catch(error){
+    console.log({error})
+  }
+};
 
 const getGeneralSettings =async(req,res)=>{
   try{
@@ -56,7 +65,15 @@ const fetchBankDetails = async(req,res)=>{
   }
 }
 
-export default { register, addProfile, getProfile, addDept, getGeneralSettings, fetchBankDetails };
+export default { 
+  register, 
+  addProfile, 
+  getProfile, 
+  addDept, 
+  getGeneralSettings, 
+  fetchBankDetails, 
+  getProfileForCustomer 
+};
 
 
 
