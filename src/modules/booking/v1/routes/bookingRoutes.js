@@ -5,7 +5,7 @@ import express from 'express';
 const router = express.Router();
 
 router.post("/bookAppointment", bookingController.bookAppointment);
-router.post("/updateBooking",verifyToken,bookingController.updateBookingStatus );
-
+router.post("/listBooking", bookingController.listBooking); // based on date
+router.post("/updateBooking", verifyToken, bookingController.updateBookingStatus );
 
 export default router;

@@ -1,7 +1,8 @@
 import { DataTypes } from 'sequelize' ;
 import sequelize from '../dbConnect.js';
+import bookingModel from './bookingModel.js';
 
-const weeklyTimeSlots = sequelize.define('weeklyTimeSlots', {
+const weeklyTimeSlotsModel = sequelize.define('weeklyTimeSlots', {
     time_slot_id: {
         type: DataTypes.INTEGER,
         primaryKey: true,
@@ -30,5 +31,10 @@ const weeklyTimeSlots = sequelize.define('weeklyTimeSlots', {
         defaultValue: 0
     }
 });
+    // await weeklyTimeSlotsModel.belongsTo(bookingModel, {
+    //     foreignKey: 'workSlotId', // Adjust the field name if needed
+    //     as: 'booking', // Adjust the alias as needed
+    // });
 
-export default weeklyTimeSlots;
+
+export default weeklyTimeSlotsModel;
