@@ -31,10 +31,11 @@ const weeklyTimeSlotsModel = sequelize.define('weeklyTimeSlots', {
         defaultValue: 0
     }
 });
-    // await weeklyTimeSlotsModel.belongsTo(bookingModel, {
-    //     foreignKey: 'workSlotId', // Adjust the field name if needed
-    //     as: 'booking', // Adjust the alias as needed
-    // });
+
+weeklyTimeSlotsModel.hasOne(bookingModel, {
+    foreignKey: 'time_slot_id', // Set the foreign key to link the two tables
+    as: 'bookings', // Adjust the alias as needed
+  });
 
 
 export default weeklyTimeSlotsModel;

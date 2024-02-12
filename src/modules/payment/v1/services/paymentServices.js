@@ -1,7 +1,8 @@
 const paymentStatusCapture = async(req,res)=>{
     try{
-        console.log("Webhook worked",req);
+       
         console.log("body",req.body);
+        console.log("order",req.body.order)
         return true;
 
 

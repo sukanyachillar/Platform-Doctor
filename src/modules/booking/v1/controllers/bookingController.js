@@ -48,7 +48,13 @@ const bookingConfirmationData = async(req,res)=>{
   }
 }
 
-export default { bookAppointment ,updateBookingStatus, listBooking, getBookingReport,bookingConfirmationData};
+export default { 
+  bookAppointment,
+  updateBookingStatus, 
+  listBooking, 
+  getBookingReport,
+  bookingConfirmationData
+};
 
 
 

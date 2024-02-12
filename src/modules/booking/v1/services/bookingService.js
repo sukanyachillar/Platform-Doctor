@@ -102,70 +102,96 @@ const bookAppointment = async (req, res) => {
 };
 
 const listBooking = async( { doctorId, date } , res)=> {
-  try {
-    let totalAppointments = 0;
-    let completedAppointments = 0;
-    let pendingAppointments = 0;
+  // try {
+  //   let totalAppointments = 0;
+  //   let completedAppointments = 0;
+  //   let pendingAppointments = 0;
 
-    const weeklyTimeSlots = await weeklyTimeSlotsModel.findAll({
+  //   const weeklyTimeSlots = await weeklyTimeSlotsModel.findAll({
+  //     attributes: ['time_slot', 'time_slot_id'],
+  //     where: {
+  //       doctor_id: doctorId,
+  //       date
+  //     },
+  //   });
+
+  //   // console.log("weeklyTimeSlot==========", weeklyTimeSlots)
+  
+  //   if (!weeklyTimeSlots) {
+  //     return handleResponse({
+  //       res,
+  //       statusCode: 404,
+  //       message: "Weekly time slot not found",
+  //     });
+  //   }
+  
+  //       // Loop through each weekly time slot and fetch booking information
+  //       const appointmentList = [];
+  //       for (const weeklyTimeSlot of weeklyTimeSlots) {
+  //         const bookingInfo = await bookingModel.findOne({
+  //           attributes: ['customerName', 'customerPhone', 'bookingStatus', 'bookingId'],
+  //           where: {
+  //             workSlotId: weeklyTimeSlot.time_slot_id,
+  //           },
+  //         });
+    
+  //         if (bookingInfo) {
+  //           appointmentList.push({
+  //             bookingId: bookingInfo.bookingId,
+  //             timeSlot: weeklyTimeSlot.time_slot,
+  //             customerName: bookingInfo.customerName,
+  //             customerPhone: bookingInfo.customerPhone,
+  //             bookingStatus: bookingInfo.bookingStatus,
+  //           });
+  //           totalAppointments++;
+  //           if (bookingInfo.bookingStatus === 1) {
+  //             completedAppointments++;
+  //           } else {
+  //             pendingAppointments++;
+  //           }
+  //         }
+  //       }
+  //   // console.log("appointmentList", appointmentList)
+  
+  //   return handleResponse({
+  //     res,
+  //     statusCode: 200,
+  //     message: "Appointment listing fetched successfully",
+  //     data: {
+  //       appointmentList,
+  //       totalAppointments,
+  //       completedAppointments,
+  //       pendingAppointments,
+  //       appointmentDate: date,
+  //     }
+  //   });
+  // } catch (error) {
+  //   console.log({ error });
+  // }
+  try {
+    const appointments = await weeklyTimeSlotsModel.findAll({
       attributes: ['time_slot', 'time_slot_id'],
       where: {
         doctor_id: doctorId,
         date
       },
+      include: [{
+        model: bookingModel,
+        attributes: ['customerName', 'customerPhone', 'bookingStatus', 'bookingId'],
+        where: {
+          // Additional conditions if needed
+        },
+      }],
     });
-
-    // console.log("weeklyTimeSlot==========", weeklyTimeSlots)
-  
-    if (!weeklyTimeSlots) {
+    console.log("appointments>>>>>>>>>>>>>>", appointments)
+    if (!appointments || appointments.length === 0) {
       return handleResponse({
         res,
         statusCode: 404,
-        message: "Weekly time slot not found",
+        message: "No appointments found",
       });
     }
-  
-        // Loop through each weekly time slot and fetch booking information
-        const appointmentList = [];
-        for (const weeklyTimeSlot of weeklyTimeSlots) {
-          const bookingInfo = await bookingModel.findOne({
-            attributes: ['customerName', 'customerPhone', 'bookingStatus', 'bookingId'],
-            where: {
-              workSlotId: weeklyTimeSlot.time_slot_id,
-            },
-          });
-    
-          if (bookingInfo) {
-            appointmentList.push({
-              bookingId: bookingInfo.bookingId,
-              timeSlot: weeklyTimeSlot.time_slot,
-              customerName: bookingInfo.customerName,
-              customerPhone: bookingInfo.customerPhone,
-              bookingStatus: bookingInfo.bookingStatus,
-            });
-            totalAppointments++;
-            if (bookingInfo.bookingStatus === 1) {
-              completedAppointments++;
-            } else {
-              pendingAppointments++;
-            }
-          }
-        }
-    // console.log("appointmentList", appointmentList)
-  
-    return handleResponse({
-      res,
-      statusCode: 200,
-      message: "Appointment listing fetched successfully",
-      data: {
-        appointmentList,
-        totalAppointments,
-        completedAppointments,
-        pendingAppointments,
-        appointmentDate: date,
-      }
-    });
-  } catch (error) {
+      } catch (error) {
     console.log({ error });
   }
 }
