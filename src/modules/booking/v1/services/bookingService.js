@@ -1,4 +1,3 @@
-
 import doctorProfileModel from '../../../../models/doctorModel.js';
 import { handleResponse } from '../../../../utils/handlers.js';
 import weeklyTimeSlotsModel from '../../../../models/weeklyTimeSlotsModel.js'
@@ -103,7 +102,7 @@ const listBooking = async( { doctorId, date } , res)=> {
       },
     });
 
-    console.log("weeklyTimeSlot>>>>>>>>>>>>", weeklyTimeSlots)
+    console.log("weeklyTimeSlot", weeklyTimeSlots)
   
     if (!weeklyTimeSlots) {
       return handleResponse({
@@ -146,4 +145,25 @@ const listBooking = async( { doctorId, date } , res)=> {
     console.log({ error });
   }
 }
-export default { bookAppointment, listBooking };
+const getBookingReport = async (req, res) => {
+  try {
+    const { doctorId, date } = req.body;
+    const queryPart = {
+      departmentId: doctorId,
+      appointmentDate: { [Op.eq]: new Date(date) }, // Filter appointments on or after the specified date
+    };
+    const bookingReport = await bookingModel.findAll({
+      where: queryPart,
+      attributes: ['customerName', 'orderId', 'amount', 'bookingStatus'], // Select specific attributes
+    });
+    return handleResponse({
+      res,
+      message: "Successfully fetched booking report.",
+      data: { bookingReport },
+    });
+  } catch (error) {
+    console.log({ error });
+  }
+};
+
+export default { bookAppointment, listBooking, getBookingReport };
