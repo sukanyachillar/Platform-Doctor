@@ -181,7 +181,7 @@ const getWorkSchedule = async(data,user,res)=>{
                     startTime: null,
                     endTime: null,
                     work_schedule_id: null,
-                    entity_id: user?.entity_id,
+                    entity_id: (user?.entity_id).toString(),
                     session: null,
                     doctor_id:Number(doctor_id),
                     created_date_time: null,
