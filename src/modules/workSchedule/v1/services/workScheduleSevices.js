@@ -155,12 +155,22 @@ const getWorkSchedule = async(data,res)=>{
                 return sessions.indexOf(a.session) - sessions.indexOf(b.session);
             }
         });
+
+        const daysOfWeek = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
+        const daysWithStatus1 = workScheduleData.map(row => row.day);
+        const availableDays = daysOfWeek.map(day => {
+        return {
+            day,
+            status: daysWithStatus1.includes(day) ? 1 : 0 // Set status to 1 if it's in daysWithStatus1, otherwise set to 0
+            };
+        });
         return handleResponse({
             res,
             message:"Successfully fetched data.",
             statusCode:200,
             data:{
-                workScheduleData
+                workScheduleData,
+                availableDays
             }
         })
     }catch(error){
