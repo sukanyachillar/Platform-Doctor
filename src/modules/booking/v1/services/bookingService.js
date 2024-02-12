@@ -224,6 +224,7 @@ const bookingConfirmationData = async(bookingData,res)=>{
       statusCode = 404
     }
     if(weeklyTimeSlot) data.timeSlot = weeklyTimeSlot.time_slot;
+    console.log("data>>>>>>>>>>>>", data)
     return handleResponse({
       res,
       message,
