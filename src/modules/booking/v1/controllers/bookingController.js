@@ -21,7 +21,7 @@ const listBooking = async(req, res) => {
 
 const updateBookingStatus = async(req,res)=>{
   try{
-    const updateData = await bookingService.updateBookingStatus(req,res);
+    const updateData = await bookingService.updateBookingStatus(req.body,res);
     return updateData;
   }catch(err){
     console.log({err})

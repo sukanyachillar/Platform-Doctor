@@ -237,9 +237,11 @@ const updateBookingStatus = async(bookingData,res)=>{
       },
       {
         where: {
-          id: bookingId
+          bookingId
         }
       })
+     
+  
       return handleResponse({
         res,
         message:"Sucessfully updated booking status to completed",
