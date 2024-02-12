@@ -5,30 +5,35 @@ const createPaymentLink = async(body)=>{
     let reference_id = nanoid();
     let {name,phone,amount} = body
     try{
-        let body = {
-            amount,
+        // let body = {
+        //     amount,
+        //     currency: "INR",
+        //     accept_partial: false,
+        //     reference_id,
+        //     customer: {
+        //       name,
+        //       contact: phone,
+        //     },
+        //     notify: {
+        //       sms: true,
+        //     },
+        //     reminder_enable: true,
+        //     callback_url: "https://example-callback-url.com/",
+        //     callback_method: "get"
+        // }   //Uncomment for payment link
+        let body ={
+            amount: 1000,
             currency: "INR",
-            accept_partial: false,
-            reference_id,
-            customer: {
-              name,
-              contact: phone,
-            },
-            notify: {
-              sms: true,
-            },
-            reminder_enable: true,
-            callback_url: "https://example-callback-url.com/",
-            callback_method: "get"
+            receipt: reference_id,
         }
         let razorpay = new Razorpay({
             key_id: process.env.RAZORPAY_KEY,
             key_secret: process.env.RAZORPAY_SECRET,
         });
-        let response = await razorpay.paymentLink.create(
-            body
-        )
-    
+        // let response = await razorpay.paymentLink.create(
+        //     body
+        // )
+        let response = await razorpay.orders.create(body);
         console.log({response})
         return response;
 
@@ -37,5 +42,7 @@ const createPaymentLink = async(body)=>{
         return err;
     }
 }
+
+
 
 export default { createPaymentLink };
