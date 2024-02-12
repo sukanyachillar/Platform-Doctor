@@ -228,4 +228,35 @@ const bookingConfirmationData = async(bookingData,res)=>{
 
 }
 
-export default { bookAppointment, listBooking, getBookingReport,bookingConfirmationData };
+const updateBookingStatus = async(bookingData,res)=>{
+  try{
+    let {bookingId} =bookingData;
+    let updateData =  await bookingModel.update(
+      {
+        bookingStatus: 1,
+      },
+      {
+        where: {
+          id: bookingId
+        }
+      })
+      return handleResponse({
+        res,
+        message:"Sucessfully updated booking status to completed",
+        statusCode:200
+      })
+
+  }catch(err){
+    console.log({'Error while updating booking':err})
+    return handleResponse({
+      res,
+      message:"Error while updating booking status",
+      statusCode:422
+    })
+  }
+}
+
+
+
+
+export default { bookAppointment, listBooking, getBookingReport,bookingConfirmationData,updateBookingStatus};
