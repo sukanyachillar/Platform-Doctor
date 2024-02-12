@@ -230,7 +230,7 @@ const bookingConfirmationData = async(bookingData,res)=>{
       message,
       statusCode,
       data:{
-          ...response,
+          data,
           timeSlot : weeklyTimeSlot.time_slot
       }
     })
