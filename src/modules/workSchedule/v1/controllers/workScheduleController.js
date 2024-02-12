@@ -9,6 +9,15 @@ const addWorkSchedule = async (req,res) =>{
         console.log({error})
     }
 }
+const addWork = async (req,res) =>{
+    try{
+        
+        const workSchedule = await workScheduleSevices.addWork(req.user,req.body,res);
+        return workSchedule;
+    }catch(error){
+        console.log({error})
+    }
+}
 
 const updateWorkScheduleStatus = async(req,res)=>{
     try{
@@ -39,4 +48,4 @@ const getWorkSlot = async(req,res)=>{
     }
 }
 
-export default { updateWorkScheduleStatus , addWorkSchedule , getWorkSchedule, getWorkSlot };
+export default { updateWorkScheduleStatus , addWorkSchedule , getWorkSchedule, getWorkSlot,addWork };

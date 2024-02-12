@@ -18,7 +18,17 @@ const listBooking = async(req, res) => {
     console.log("error", error)
   }
 };
-export default { bookAppointment, listBooking };
+const updateBookingStatus = async(req,res)=>{
+  try{
+    const updateData = await customerService.updateBookingStatus(req,res);
+    return updateData;
+
+  }catch(err){
+    console.log({err})
+  }
+}
+
+export default { bookAppointment ,updateBookingStatus, listBooking};
 
 
 

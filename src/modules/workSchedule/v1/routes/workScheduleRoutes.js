@@ -10,6 +10,7 @@ router.post('/create-work-schedule',verifyToken,workScheduleController.addWorkSc
 router.post('/update-work-status',verifyToken,workScheduleController.updateWorkScheduleStatus);
 router.post('/get-work-schedule',verifyToken,workScheduleController.getWorkSchedule);
 router.post('/get-work-slots',workScheduleController.getWorkSlot);
+router.post('/addWork',verifyToken,workScheduleController.addWork);
 
 
 

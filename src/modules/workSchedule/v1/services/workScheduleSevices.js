@@ -66,6 +66,47 @@ const addWorkSchedule = async(data,userData,res)=>{
         })
     }catch(error){
         console.log({error})
+        return handleResponse({
+            res,
+            message:"Error while adding work Schedule",
+            statusCode:500
+        })
+    }
+}
+
+const addWork = async(data,userData,res)=>{
+    try{
+        let {doctor_id,day,session} = userData ;
+        let {entity_id} = data;
+        let status = 0 ;
+        let message
+        let workData,newData
+        console.log(doctor_id,day,session)
+        workData = await workScheduleModel.findOne({where:{entity_id,day,doctor_id,session}});
+        if(!workData){
+           newData = new workScheduleModel({session,status,doctor_id,day,entity_id} )
+            message = 'Successfully updated work schedule.'
+        }else{
+            return handleResponse(
+                {res,
+                message:"Data already available.",
+                statusCode:404
+            })
+        }
+        let workSchedule = await newData.save()
+        return handleResponse({
+            res,
+            message,
+            statusCode:200,
+           
+        })
+    }catch(error){
+        console.log({error})
+        return handleResponse({
+            res,
+            message:"Error while adding work.",
+            statusCode:422
+        })
     }
 }
 
@@ -92,6 +133,11 @@ const updateWorkScheduleStatus = async(workData,res)=>{
 
     }catch(error){
         console.log(error)
+        return handleResponse({
+            res,
+            message:"Error while updating work schedule.",
+            statusCode:422
+        })
     }
 }
 
@@ -109,16 +155,31 @@ const getWorkSchedule = async(data,res)=>{
                 return sessions.indexOf(a.session) - sessions.indexOf(b.session);
             }
         });
+
+        const daysOfWeek = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
+        const daysWithStatus1 = workScheduleData.map(row => row.day);
+        const availableDays = daysOfWeek.map(day => {
+        return {
+            day,
+            status: daysWithStatus1.includes(day) ? 1 : 0 // Set status to 1 if it's in daysWithStatus1, otherwise set to 0
+            };
+        });
         return handleResponse({
             res,
-            message:"Successfully fetched file data.",
+            message:"Successfully fetched data.",
             statusCode:200,
             data:{
-                workScheduleData
+                workScheduleData,
+                availableDays
             }
         })
     }catch(error){
         console.log({error})
+        return handleResponse({
+            res,
+            message:"Error while fetching data.",
+            statusCode:422
+        })
     }
 }
 
@@ -141,7 +202,12 @@ const getSingleWorkSchedule = async (req,res)=>{
             }
         })
     }catch(error){
-        console.log({error})
+        console.log({error});
+        return handleResponse({
+            res,
+            message:"Error while fetching single work schedule.",
+            statusCode:422
+        })
     }
 }
 
@@ -202,4 +268,4 @@ const getDayOfWeekIndex = async(dayName)=> {
     }
 }
 
-export default { addWorkSchedule,updateWorkScheduleStatus,getWorkSchedule,generateTimeSlots,getSingleWorkSchedule };
+export default { addWorkSchedule,updateWorkScheduleStatus,getWorkSchedule,generateTimeSlots,addWork,getSingleWorkSchedule };
