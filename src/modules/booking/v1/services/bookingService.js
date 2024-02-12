@@ -216,7 +216,7 @@ const bookingConfirmationData = async(bookingData,res)=>{
     console.log("weeklyTimeSlot++++++++++++", weeklyTimeSlot)
     let data, message,statusCode; 
     if(response){
-      // data = response,
+      data = response,
       message = 'Successfully fetched booking details.',
       statusCode = 200
     }else{
@@ -230,7 +230,7 @@ const bookingConfirmationData = async(bookingData,res)=>{
       message,
       statusCode,
       data:{
-          data,
+          customerName: data.customerName,
           timeSlot : weeklyTimeSlot.time_slot
       }
     })
