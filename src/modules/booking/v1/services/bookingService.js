@@ -201,11 +201,11 @@ const getBookingReport = async (req, res) => {
 const bookingConfirmationData = async(bookingData,res)=>{
   try{
     let {bookingId} = bookingData;
-    let response = await bookingModel.findOne({where:{id:bookingId}});
+    let response = await bookingModel.findOne({where:{bookingId}});
     let data, message,statusCode; 
     if(response){
       data = response,
-      message = 'Sucessfully fetched booking details.',
+      message = 'Successfully fetched booking details.',
       statusCode = 200
     }else{
       message = 'Sorry no data found for this bookingId.',
@@ -241,7 +241,6 @@ const updateBookingStatus = async(bookingData,res)=>{
         }
       })
      
-  
       return handleResponse({
         res,
         message:"Sucessfully updated booking status to completed",
