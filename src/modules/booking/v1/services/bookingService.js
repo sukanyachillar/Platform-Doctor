@@ -216,20 +216,23 @@ const bookingConfirmationData = async(bookingData,res)=>{
     console.log("weeklyTimeSlot++++++++++++", weeklyTimeSlot)
     let data, message,statusCode; 
     if(response){
-      data = response,
+      // data = response,
       message = 'Successfully fetched booking details.',
       statusCode = 200
     }else{
       message = 'Sorry no data found for this bookingId.',
       statusCode = 404
     }
-    if(weeklyTimeSlot) data.timeSlot = weeklyTimeSlot.time_slot;
+    // if(weeklyTimeSlot) timeSlot = weeklyTimeSlot.time_slot;
     console.log("data>>>>>>>>>>>>", data)
     return handleResponse({
       res,
       message,
       statusCode,
-      data
+      data:{
+          ...response,
+          timeSlot : weeklyTimeSlot.time_slot
+      }
     })
   }catch(error){
     console.log({"Error while fetching booking details":error})
