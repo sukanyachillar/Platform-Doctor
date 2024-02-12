@@ -15,7 +15,7 @@ const router = express.Router();
 
 router.post("/register", authenticationController.register);
 router.post("/getProfile", verifyToken, authenticationController.getProfile);
-router.post("/profile", authenticationController.getProfile);
+router.post("/profile", authenticationController.getProfileForCustomer);
 router.post("/addprofile", verifyToken,  upload.single('file'), authenticationController.addProfile);
 router.post('/adddept', verifyToken, authenticationController.addDept);
 router.post('/refreshToken', verifyRefreshToken);
