@@ -141,7 +141,7 @@ const updateWorkScheduleStatus = async(workData,res)=>{
     }
 }
 
-const getWorkSchedule = async(data,res)=>{
+const getWorkSchedule = async(data,user,res)=>{
     try{
         let {doctor_id} = data;
         let workScheduleData = await workScheduleModel.findAll({where:{doctor_id:doctor_id}});
@@ -175,7 +175,24 @@ const getWorkSchedule = async(data,res)=>{
             result.push({
                 dayStatus,
                 day,
-                workSchedule: daySchedule.length > 0 ? daySchedule : [{ day, status: dayStatus,startTime: null,endTime: null }]
+                workSchedule: daySchedule.length > 0 ? daySchedule : [{ 
+                    day, 
+                    status: dayStatus,
+                    startTime: null,
+                    endTime: null,
+                    work_schedule_id: null,
+                    entity_id: user?.entity_id,
+                    session: null,
+                    doctor_id,
+                    created_date_time: null,
+                    update_date_time: null,
+                    createdAt: null,
+                    updatedAt: null
+
+                 
+                      
+                   
+                 }]
             });
         });
 
