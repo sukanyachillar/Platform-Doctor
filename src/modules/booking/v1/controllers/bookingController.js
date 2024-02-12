@@ -18,11 +18,11 @@ const listBooking = async(req, res) => {
     console.log("error", error)
   }
 };
+
 const updateBookingStatus = async(req,res)=>{
   try{
     const updateData = await bookingService.updateBookingStatus(req,res);
     return updateData;
-
   }catch(err){
     console.log({err})
   }
@@ -38,7 +38,17 @@ const getBookingReport = async(req,res)=>{
   }
 }
 
-export default { bookAppointment ,updateBookingStatus, listBooking, getBookingReport};
+const bookingConfirmationData = async(req,res)=>{
+  try{
+    let response = await bookingService.bookingConfirmationData(req.body,res);
+    return response;
+
+  }catch(err){
+    console.log(err)
+  }
+}
+
+export default { bookAppointment ,updateBookingStatus, listBooking, getBookingReport,bookingConfirmationData};
 
 
 

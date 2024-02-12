@@ -86,7 +86,8 @@ const bookAppointment = async (req, res) => {
         message: "Appointment booked successfully",
         data: {
           orderId: data?.id,
-          amount:1000 
+          amount:1000,
+          bookingId:addedBooking.id
         }
 		})
     
@@ -168,6 +169,7 @@ const listBooking = async( { doctorId, date } , res)=> {
     console.log({ error });
   }
 }
+
 const getBookingReport = async (req, res) => {
   try {
     const { doctorId, date } = req.body;
@@ -196,4 +198,34 @@ const getBookingReport = async (req, res) => {
   }
 };
 
-export default { bookAppointment, listBooking, getBookingReport };
+const bookingConfirmationData = async(bookingData,res)=>{
+  try{
+    let {bookingId} = bookingData;
+    let response = await bookingModel.findOne({where:{id:bookingId}});
+    let data, message,statusCode; 
+    if(response){
+      data = response,
+      message = 'Sucessfully fetched booking details.',
+      statusCode = 200
+    }else{
+      message = 'Sorry no data found for this bookingId.',
+      statusCode = 404
+    }
+    return handleResponse({
+      res,
+      message,
+      statusCode,
+      data
+    })
+  }catch(error){
+    console.log({"Error while fetching booking details":error})
+    return handleResponse({
+      res,
+      message:"Error while fetching booking details",
+      statusCode:422
+    })
+  }
+
+}
+
+export default { bookAppointment, listBooking, getBookingReport,bookingConfirmationData };
