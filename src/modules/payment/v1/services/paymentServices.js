@@ -1,7 +1,7 @@
 const paymentStatusCapture = async(req,res)=>{
     try{
         console.log("body",req.body);
-        console.log({orders:req.body?.order})
+        console.log({orders:req.body?.payload})
         return true;
 
 

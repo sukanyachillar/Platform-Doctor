@@ -152,7 +152,11 @@ const listBooking = async( { doctorId, date } , res)=> {
           }
         }
     // console.log("appointmentList", appointmentList)
-  
+
+    const doctorProfile = await doctorProfileModel.findOne({
+       attributes: ['doctor_name'],
+       where: {doctor_id:  doctorId} 
+     });
     return handleResponse({
       res,
       statusCode: 200,
@@ -163,6 +167,7 @@ const listBooking = async( { doctorId, date } , res)=> {
         completedAppointments,
         pendingAppointments,
         appointmentDate: date,
+        doctorName: doctorProfile.doctor_name? doctorProfile.doctor_name: "" , 
       }
     });
   } catch (error) {
