@@ -66,8 +66,14 @@ const addWorkSchedule = async(data,userData,res)=>{
         })
     }catch(error){
         console.log({error})
+        return handleResponse({
+            res,
+            message:"Error while adding work Schedule",
+            statusCode:500
+        })
     }
 }
+
 const addWork = async(data,userData,res)=>{
     try{
         console.log(data,userData)

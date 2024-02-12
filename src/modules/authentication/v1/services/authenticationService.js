@@ -48,7 +48,12 @@ const register = async (userData, res) => {
 	   }
 	})
   } catch (error) {
-    console.log(error)
+    console.log({"Error while registeration":err})
+    return handleResponse({
+      res,
+      message:"Sorry error while registering.",
+      statusCode:422
+    })
   }
 };
 
@@ -74,7 +79,6 @@ const addProfile = async(userData, image, res)=>{
     let getUser = await authenticationModel.findOne({ where:{ phone } });
     
     let imageUrl = await awsUtils.uploadToS3(image);
-    console.log('imageUrl', imageUrl.Location)    
     getUser.entity_name = entity_name;
     getUser.business_type_id = business_type =='individual'? 1 : 0 ;
     getUser.email = email;
@@ -133,7 +137,12 @@ const addProfile = async(userData, image, res)=>{
     })
 
   }catch(error){
-    console.log({error})
+    console.log({"Error while registeration":error})
+    return handleResponse({
+      res,
+      message:"Sorry error while adding profile.",
+      statusCode:422
+    })
   }
 }
 
@@ -141,61 +150,68 @@ const getProfile = async({ phone }, res)=>{
   try{
     let getUser = await authenticationModel.findOne({ where:{ phone } });
     let userProfile = await profileModel.findOne({ where:{ entity_id: getUser.entity_id } });
-    console.log('userProfile', userProfile)
+    let statusCode, message, getDepartment;
+    if(!userProfile){
+      message ='Sorry! Unable to fetch user profile associated with this phone.',
+      statusCode=404
+    }
     let availableSlots = await workScheduleModel.findAll({where:{entity_id:getUser.entity_id,status:1},attributes:['Day']})
-   console.log(availableSlots)
- 
+    if(!availableSlots){
+      message ='Sorry! Unable to fetch available slots associated with this phone.',
+      statusCode=404
+    }
     let uniqueDays = [];
     let seenDays = new Set();
+    if(availableSlots){
+      availableSlots.forEach(slot => {
+          if (slot && slot.dataValues && slot.dataValues.Day && !seenDays.has(slot.dataValues.Day)) {
+              uniqueDays.push(slot.dataValues.Day);
+              seenDays.add(slot.dataValues.Day);
+          }
+      });
+      message="Profile fetched succesfully"
+      statusCode = 200
+      getDepartment = await departmentModel.findOne({ where:{ department_id: userProfile.department_id } });
+    }
 
-    availableSlots.forEach(slot => {
-        if (slot && slot.dataValues && slot.dataValues.Day && !seenDays.has(slot.dataValues.Day)) {
-            uniqueDays.push(slot.dataValues.Day);
-            seenDays.add(slot.dataValues.Day);
-        }
-    });
-
-
-    
-
-    const getDepartment = await departmentModel.findOne({ where:{ department_id: userProfile.department_id } });
     return handleResponse({
       res,
-      statusCode:200,
-      message:"Profile fetched succesfully",
+      statusCode,
+      message,
       data:{
-          entity_id: getUser.entity_id,
-          phone: getUser.phone,
-          doctor_name: userProfile.doctor_name,
-          qualification: userProfile.qualification,
-          consultation_time: userProfile.consultation_time,
-          consultation_charge: userProfile.consultation_charge,
-          doctor_id :userProfile.doctor_id,
-          profileImageUrl: userProfile.profileImageUrl,
-          description: userProfile.description,
-          uniqueDays,
-         
-          designation: getDepartment.department_name,
+          entity_id: getUser?.entity_id,
+          phone: getUser?.phone,
+          doctor_name: userProfile?.doctor_name,
+          qualification: userProfile?.qualification,
+          consultation_time: userProfile?.consultation_time,
+          consultation_charge: userProfile?.consultation_charge,
+          doctor_id :userProfile?.doctor_id,
+          profileImageUrl: userProfile?.profileImageUrl,
+          description: userProfile?.description,
+          uniqueDays,  
+          designation: getDepartment?.department_name,
       }
     })
 
   } catch(error) {
     console.log({error})
+    return handleResponse({
+      res,
+      message:'Error while fetching profile',
+      statusCode:422
+    })
   }
 }
 
 const getGeneralSettings = async(req, res)=>{
   try{
-    console.log('inside getGeneralSettings', req)
-    const phone = req.user.phone
-    console.log("phone===>", phone)
+    const phone = req.user.phone;
     let getEntity = await authenticationModel.findOne({ where:{ phone } }); // entitymodel
     let doctorProfile = await profileModel.findOne({ where: { entity_id: getEntity.entity_id } });
-    console.log('doctorProfile', doctorProfile)
     return handleResponse({
       res,
       statusCode:200,
-      message:"General settings succesfully fetched",
+      message:"Fetched general settings ",
       data: {
           doctor_id : doctorProfile.doctor_id,
           phone: doctorProfile.phone,
@@ -203,12 +219,16 @@ const getGeneralSettings = async(req, res)=>{
           consultationDuration: doctorProfile.consultation_time,
           addStaff: getEntity.add_staff,
           addService: getEntity.add_service,
-       
       }
     })
 
   } catch(error) {
     console.log({error})
+    return handleResponse({
+      res,
+      message:'Error while fetching.',
+      statusCode:422
+    })
   }
 }
 
@@ -220,14 +240,16 @@ const addDept = async(deptData,userData,res)=>{
     let dept ,message;
     dept  = await deptModel.findOne({where:{entity_id,department_name}})
     message = 'Department already exist.'
+    statusCode=422
     if(!dept){  
       let newDept = new deptModel({entity_id,department_name,status}) ;
       dept = await newDept.save();
       message = 'Department added'
+      statusCode=200
     }
     return handleResponse({ 
       res, 
-      statusCode: "200", 
+      statusCode, 
       message, 
       data: {
         department_id:dept.department_id,
@@ -237,33 +259,42 @@ const addDept = async(deptData,userData,res)=>{
       }
     })
   }catch(error){
-    console.log({error})
+    console.log({error});
+    return handleResponse({
+      res,
+      statusCode:500,
+      message:"Error while adding department."
+    })
   }
 };
 
 const getBankDetails = async(userData ,res)=>{
   try{
     let {entity_id} = userData;
+    let message,statusCode ;
     let bankdata = await entityModel.findOne({where:{entity_id},attributes:['account_no','ifsc_code','bank_name','account_holder_name']})
     if(!handleResponse){
-      return handleResponse({
-        res,
-        statusCode:404,
-        message:"Sorry unable to fetch."
-
-      })
+      statusCode = 422
+      message = "Sorry unable to fetch."
     }else{
-      return handleResponse({
-        res,
-        statusCode:200,
-        message:"Successfully fetched data",
-        data:{
-          bankdata
-        }
-      })
+        statusCode = 200,
+        message ="Successfully fetched data"
     }
+    return handleResponse({
+      res,
+      statusCode,
+      message,
+      data:{
+        bankdata
+      }
+    })
   }catch(error){
-    console.log({error})
+    console.log({error});
+    return handleResponse({
+      res,
+      statusCode:500,
+      message:"Error while fetching bank details.",
+    })
   }
 }
 
