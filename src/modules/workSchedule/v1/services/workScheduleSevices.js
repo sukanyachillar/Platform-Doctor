@@ -145,6 +145,7 @@ const getWorkSchedule = async(data,res)=>{
     try{
         let {doctor_id} = data;
         let workScheduleData = await workScheduleModel.findAll({where:{doctor_id:doctor_id}});
+
         workScheduleData.sort((a, b) => {
             if (a.day !== b.day) {
                 const daysOfWeek = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
@@ -156,21 +157,37 @@ const getWorkSchedule = async(data,res)=>{
             }
         });
 
+        const workSchedule = {};
+
         const daysOfWeek = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
-        const daysWithStatus1 = workScheduleData.map(row => row.day);
-        const availableDays = daysOfWeek.map(day => {
-        return {
-            day,
-            status: daysWithStatus1.includes(day) ? 1 : 0 // Set status to 1 if it's in daysWithStatus1, otherwise set to 0
-            };
+
+        const isSessionAvailable = (day) => {
+            return workScheduleData.some(entry => entry.day === day && (entry.session === 'Morning' || entry.session === 'Evening'));
+        };
+        const result = [];
+
+        daysOfWeek.forEach(day => {
+            
+            const dayStatus = isSessionAvailable(day) ? 1 : 0;
+            
+            const daySchedule = workScheduleData.filter(entry => entry.day === day);
+           
+            result.push({
+                dayStatus,
+                day,
+                workSchedule: daySchedule.length > 0 ? daySchedule : [{ day, status: dayStatus,startTime: null,endTime: null }]
+            });
         });
+
         return handleResponse({
             res,
             message:"Successfully fetched data.",
             statusCode:200,
             data:{
-                workScheduleData,
-                availableDays
+              //  workScheduleData,
+                result
+                
+                
             }
         })
     }catch(error){
