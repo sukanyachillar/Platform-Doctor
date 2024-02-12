@@ -1,10 +1,12 @@
 import jwt from 'jsonwebtoken';
 import config from '../../config.js'
+import CryptoJS from 'crypto-js';
 import { handleResponse } from './handlers.js';
 import entityModel from '../models/entityModel.js'
 
 let accessTokenSecret = config.JWT_SECRET;
 let accessExpiry = config.JWT_REFRESH_EXPIRATION;
+
 
 let refreshTokenSecret = config.REFRESH_JWT_SECRET;
 let refreshExpiry = config.REFRESH_EXPIRY;
@@ -12,10 +14,11 @@ let refreshExpiry = config.REFRESH_EXPIRY;
 
 export const generateTokens = async(phone)=>{
     try{
-        let accessToken = jwt.sign({phone},accessTokenSecret, {
+        let encryptData = await encrypt(phone,process.env.CRYPTO_SECRET)
+        let accessToken = jwt.sign({phone:encryptData},accessTokenSecret, {
             expiresIn: accessExpiry,
         });
-        let refreshToken = jwt.sign({phone},refreshTokenSecret, {
+        let refreshToken = jwt.sign({phone:encryptData},refreshTokenSecret, {
             expiresIn: refreshExpiry
         });
         return {accessToken,refreshToken}
@@ -30,10 +33,11 @@ export const verifyToken =async(req,res,next)=>{
     try{
         let authHeader = req.headers.authorization;
         let accessToken = authHeader.split(' ')[1];
-        
         let verify = jwt.verify(accessToken, accessTokenSecret)
         if(verify){
-            let entity = await entityModel.findOne({where:{phone:verify.phone},attributes:['entity_id']})
+            let phone = await decrypt(verify.phone,process.env.CRYPTO_SECRET);
+            verify.phone = phone
+            let entity = await entityModel.findOne({where:{phone},attributes:['entity_id']})
             let dataValues = entity.get();
             verify.entity_id = dataValues.entity_id
             req.user = verify
@@ -69,4 +73,23 @@ export const verifyRefreshToken =async(req,res)=>{
 
     }
 }
+
+
+
+
+
+const  encrypt = async(data, key)=> {
+    const encryptedData = CryptoJS.AES.encrypt(data, key).toString();
+    return encryptedData;
+}
+
+// Function to decrypt data
+const decrypt= async(encryptedData, key) =>{
+    const decryptedData = CryptoJS.AES.decrypt(encryptedData, key).toString(CryptoJS.enc.Utf8);
+    return decryptedData;
+}
+
+
+
+
 

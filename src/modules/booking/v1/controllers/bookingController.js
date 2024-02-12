@@ -41,6 +41,7 @@ const getBookingReport = async(req,res)=>{
 const bookingConfirmationData = async(req,res)=>{
   try{
     let response = await bookingService.bookingConfirmationData(req.body,res);
+    
     return response;
 
   }catch(err){
