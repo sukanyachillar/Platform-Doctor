@@ -76,7 +76,6 @@ const addWorkSchedule = async(data,userData,res)=>{
 
 const addWork = async(data,userData,res)=>{
     try{
-        console.log(data,userData)
         let {doctor_id,day,session} = userData ;
         let {entity_id} = data;
         let status = 0 ;
@@ -103,6 +102,11 @@ const addWork = async(data,userData,res)=>{
         })
     }catch(error){
         console.log({error})
+        return handleResponse({
+            res,
+            message:"Error while adding work.",
+            statusCode:422
+        })
     }
 }
 
@@ -129,6 +133,11 @@ const updateWorkScheduleStatus = async(workData,res)=>{
 
     }catch(error){
         console.log(error)
+        return handleResponse({
+            res,
+            message:"Error while updating work schedule.",
+            statusCode:422
+        })
     }
 }
 
@@ -148,7 +157,7 @@ const getWorkSchedule = async(data,res)=>{
         });
         return handleResponse({
             res,
-            message:"Successfully fetched file data.",
+            message:"Successfully fetched data.",
             statusCode:200,
             data:{
                 workScheduleData
@@ -156,6 +165,11 @@ const getWorkSchedule = async(data,res)=>{
         })
     }catch(error){
         console.log({error})
+        return handleResponse({
+            res,
+            message:"Error while fetching data.",
+            statusCode:422
+        })
     }
 }
 
@@ -178,7 +192,12 @@ const getSingleWorkSchedule = async (req,res)=>{
             }
         })
     }catch(error){
-        console.log({error})
+        console.log({error});
+        return handleResponse({
+            res,
+            message:"Error while fetching single work schedule.",
+            statusCode:422
+        })
     }
 }
 
