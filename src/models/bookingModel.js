@@ -1,6 +1,7 @@
 
 import { DataTypes } from 'sequelize' ;
 import sequelize from '../dbConnect.js';
+import weeklyTimeSlotsModel from './weeklyTimeSlotsModel.js'
 
 const bookingModel = sequelize.define('booking', {
   bookingId: {
@@ -66,11 +67,16 @@ const bookingModel = sequelize.define('booking', {
     defaultValue: "Razorpay"
   },
   workSlotId: {
-    type: DataTypes.STRING, 
+    type: DataTypes.INTEGER, 
     allowNull: true,
     unique: false,
   },
   orderId: {
+    type: DataTypes.STRING, 
+    allowNull: true,
+    unique: false,
+  },
+  transactionId: {
     type: DataTypes.STRING, 
     allowNull: true,
     unique: false,
@@ -88,5 +94,10 @@ const bookingModel = sequelize.define('booking', {
   
 });
 
+// bookingModel.hasOne(weeklyTimeSlotsModel, {
+//   foreignKey: 'time_slot_id',
+//   as: 'timeSlot',
+// });
 export default bookingModel;
+
 

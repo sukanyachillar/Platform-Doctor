@@ -1,7 +1,7 @@
 
 import doctorProfileModel from '../../../../models/doctorModel.js';
 import { handleResponse } from '../../../../utils/handlers.js';
-import weeklyTimeSlotsModel from '../../../../models/weeklyTimeSlots.js'
+import weeklyTimeSlotsModel from '../../../../models/weeklyTimeSlotsModel.js'
 import bookingModel from '../../../../models/bookingModel.js';
 import payment from '../../../../utils/pg.js'
 
@@ -25,6 +25,14 @@ const bookAppointment = async (req, res) => {
           date: appointmentDate,
         },
       });
+
+      if (!existingTimeslot){
+        return handleResponse({
+          res,
+          message:'Slot not found on this date',
+          statusCode: 404
+      })
+      }
   
       if (existingTimeslot?.booking_status) {
         return handleResponse({
@@ -69,7 +77,7 @@ const bookAppointment = async (req, res) => {
         statusCode: "200", 
         message: "Appointment booked Sucusfully",
         data: {
-          orderId:data.short_url,
+          orderId: data.short_url,
           
         }
 		})
@@ -79,4 +87,58 @@ const bookAppointment = async (req, res) => {
   }
 };
 
-export default { bookAppointment };
+const listBooking = async( { doctorId, date } , res)=> {
+  try {
+    console.log("doctorId", doctorId)
+    const weeklyTimeSlots = await weeklyTimeSlotsModel.findAll({
+      attributes: ['time_slot', 'time_slot_id'],
+      where: {
+        doctor_id: doctorId,
+        date
+      },
+    });
+
+    console.log("weeklyTimeSlot>>>>>>>>>>>>", weeklyTimeSlots)
+  
+    if (!weeklyTimeSlots) {
+      return handleResponse({
+        res,
+        statusCode: 404,
+        message: "Weekly time slot not found",
+      });
+    }
+  
+        // Loop through each weekly time slot and fetch booking information
+        const appointmentList = [];
+        for (const weeklyTimeSlot of weeklyTimeSlots) {
+          const bookingInfo = await bookingModel.findOne({
+            attributes: ['customerName', 'bookingStatus', 'bookingId'],
+            where: {
+              workSlotId: weeklyTimeSlot.time_slot_id,
+            },
+          });
+    
+          if (bookingInfo) {
+            appointmentList.push({
+              bookingId: bookingInfo.bookingId,
+              timeSlot: weeklyTimeSlot.time_slot,
+              customerName: bookingInfo.customerName,
+              bookingStatus: bookingInfo.bookingStatus,
+            });
+          }
+        }
+    console.log("appointmentList", appointmentList)
+  
+    return handleResponse({
+      res,
+      statusCode: 200,
+      message: "Appointment listing fetched successfully",
+      data: {
+        appointmentList
+      }
+    });
+  } catch (error) {
+    console.log({ error });
+  }
+}
+export default { bookAppointment, listBooking };

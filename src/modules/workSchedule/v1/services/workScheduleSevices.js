@@ -1,5 +1,5 @@
 import doctorModel from "../../../../models/doctorModel.js";
-import weeklyTimeSlots from "../../../../models/weeklyTimeSlots.js";
+import weeklyTimeSlots from "../../../../models/weeklyTimeSlotsModel.js";
 import workScheduleModel from "../../../../models/workScheduleModel.js";
 import { handleResponse } from "../../../../utils/handlers.js";
 

@@ -1,16 +1,24 @@
 
-import customerService from "../services/bookingService.js";
+import bookingService from "../services/bookingService.js";
 
 const bookAppointment = async(req, res) => {
   try {
-    const bookinResponse = await customerService.bookAppointment(req, res);
+    const bookinResponse = await bookingService.bookAppointment(req, res);
     return bookinResponse
   } catch (error) {
     console.log("error", error)
   }
 };
 
-export default { bookAppointment };
+const listBooking = async(req, res) => {
+  try {
+    const listBookingResponse = await bookingService.listBooking(req.body, res);
+    return listBookingResponse
+  } catch (error) {
+    console.log("error", error)
+  }
+};
+export default { bookAppointment, listBooking };
 
 
 
