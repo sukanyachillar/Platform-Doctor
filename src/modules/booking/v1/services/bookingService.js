@@ -101,7 +101,10 @@ const bookAppointment = async (req, res) => {
 
 const listBooking = async( { doctorId, date } , res)=> {
   try {
-    console.log("doctorId", doctorId)
+    let totalAppointments = 0;
+    let completedAppointments = 0;
+    let pendingAppointments = 0;
+
     const weeklyTimeSlots = await weeklyTimeSlotsModel.findAll({
       attributes: ['time_slot', 'time_slot_id'],
       where: {
@@ -110,7 +113,7 @@ const listBooking = async( { doctorId, date } , res)=> {
       },
     });
 
-    console.log("weeklyTimeSlot", weeklyTimeSlots)
+    console.log("weeklyTimeSlot==========", weeklyTimeSlots)
   
     if (!weeklyTimeSlots) {
       return handleResponse({
@@ -138,6 +141,12 @@ const listBooking = async( { doctorId, date } , res)=> {
               customerPhone: bookingInfo.customerPhone,
               bookingStatus: bookingInfo.bookingStatus,
             });
+            totalAppointments++;
+            if (bookingInfo.bookingStatus === 1) {
+              completedAppointments++;
+            } else {
+              pendingAppointments++;
+            }
           }
         }
     console.log("appointmentList", appointmentList)
@@ -147,7 +156,11 @@ const listBooking = async( { doctorId, date } , res)=> {
       statusCode: 200,
       message: "Appointment listing fetched successfully",
       data: {
-        appointmentList
+        appointmentList,
+        totalAppointments,
+        completedAppointments,
+        pendingAppointments,
+        appointmentDate: date,
       }
     });
   } catch (error) {
