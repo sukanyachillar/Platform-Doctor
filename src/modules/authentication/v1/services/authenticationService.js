@@ -359,9 +359,11 @@ const getBankDetails = async(userData ,res)=>{
 const updateEntityStatus = async(userData,res)=>{
   try{
     let {entity_id} = userData ;
+    let authData = await authenticationModel.findOne({where:{entity_id},attributes:['status']})
+    
     let data =await authenticationModel.update(
       {
-        status:0,
+        status:!(authData.status),
       },
       {
         where: {
@@ -371,7 +373,7 @@ const updateEntityStatus = async(userData,res)=>{
     ); 
     return handleResponse({
       res,
-      message:'Successfully updated status to inactive',
+      message:'Successfully updated status.',
       statusCode:200
     })
 
