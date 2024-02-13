@@ -1,4 +1,5 @@
 import doctorModel from "../../../../models/doctorModel.js";
+import entityModel from "../../../../models/entityModel.js";
 import weeklyTimeSlots from "../../../../models/weeklyTimeSlotsModel.js";
 import workScheduleModel from "../../../../models/workScheduleModel.js";
 import { handleResponse } from "../../../../utils/handlers.js";
@@ -215,19 +216,33 @@ const getWorkSchedule = async(data,user,res)=>{
 
 const getSingleWorkSchedule = async (req,res)=>{
     try{ 
-        let {date,phone} = req.body;
+        let {date, phone} = req.body;
         date = new Date(date);
         const year = date.getFullYear();
         const month = String(date.getMonth() + 1).padStart(2, '0'); 
         const slotDate = String(date.getDate()).padStart(2, '0');
         const formattedDate = `${year}-${month}-${slotDate}`;
-        let doctorData = await doctorModel.findOne({where:{phone},attributes:['doctor_id']})
+        let doctorData = await doctorModel.findOne({where:{phone},attributes:['doctor_id', 'entity_id']})
+        let getEntity = await entityModel.findOne({ where: { entity_id: doctorData.entity_id, status: 0 } })
+        if(getEntity){
+            return handleResponse({
+                res,
+                message:"Clinic is closed please check other dates.",
+                statusCode:404
+            })
+        }
         let workSlots = await weeklyTimeSlots.findAll({where:{date:formattedDate,doctor_id:doctorData.doctor_id}});
+        let availableWorkSlots = await weeklyTimeSlots.findAll({ where: {
+            date: formattedDate, doctor_id: doctorData.doctor_id, booking_status: 0
+        }});
+
+        console.log("availableWorkSlots>>>>>>>>>>>>>", availableWorkSlots)
+        
         return handleResponse({
             res,
             statusCode:200,
-            message:"Sucessfully fetched work slots",
-            data:{
+            message: "Sucessfully fetched work slots",
+            data: {
                 workSlots
             }
         })
@@ -301,4 +316,11 @@ const getDayOfWeekIndex = async(dayName)=> {
     }
 }
 
-export default { addWorkSchedule,updateWorkScheduleStatus,getWorkSchedule,generateTimeSlots,addWork,getSingleWorkSchedule };
+export default { 
+    addWorkSchedule,
+    updateWorkScheduleStatus,
+    getWorkSchedule,
+    generateTimeSlots,
+    addWork,
+    getSingleWorkSchedule 
+};
