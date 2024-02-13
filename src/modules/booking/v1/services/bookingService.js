@@ -87,7 +87,7 @@ const bookAppointment = async (req, res) => {
         data: {
           orderId: data?.id,
           amount:1000,
-          bookingId:addedBooking.id
+          bookingId:addedBooking.bookingId
         }
 		})
     
