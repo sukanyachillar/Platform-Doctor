@@ -230,7 +230,8 @@ const bookingConfirmationData = async(bookingData,res)=>{
       statusCode,
       data:{
           customerName: data.customerName,
-          timeSlot : weeklyTimeSlot.time_slot
+          timeSlot : weeklyTimeSlot.time_slot,
+          customerPhone:data.customerPhone
       }
     })
   }catch(error){
