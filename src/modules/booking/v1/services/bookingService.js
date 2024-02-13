@@ -1,6 +1,7 @@
 import doctorProfileModel from '../../../../models/doctorModel.js';
 import { handleResponse } from '../../../../utils/handlers.js';
-import weeklyTimeSlotsModel from '../../../../models/weeklyTimeSlotsModel.js'
+import weeklyTimeSlotsModel from '../../../../models/weeklyTimeSlotsModel.js';
+import entityModel  from '../../../../models/entityModel.js';
 import bookingModel from '../../../../models/bookingModel.js';
 import payment from '../../../../utils/pg.js';
 import { Op } from 'sequelize';
@@ -17,7 +18,9 @@ const bookAppointment = async (req, res) => {
          paymentMethod,
       } = req.body;
 
-      const doctorProfile = await doctorProfileModel.findOne({ where: {doctor_id:  doctorId}  });
+      const doctorProfile = await doctorProfileModel.findOne({ where: { doctor_id:  doctorId }  });
+      const getEntity = await entityModel.findOne({ where: { entity_id:  doctorProfile.entity_id }  });
+
       const existingTimeslot = await weeklyTimeSlotsModel.findOne({
         where: {
           time_slot: timeSlot,
@@ -25,6 +28,30 @@ const bookAppointment = async (req, res) => {
           date: appointmentDate,
         },
       });
+
+      if (!existingTimeslot){
+        return handleResponse({
+          res,
+          message:'Slot not found on this date',
+          statusCode: 404
+      })
+      }
+
+      if (doctorProfile.status === 0){
+        return handleResponse({
+          res,
+          message:'Doctor not available',
+          statusCode: 404
+      })
+      }
+      
+      if (getEntity.status === 0){
+        return handleResponse({
+          res,
+          message:'Clinic is closed.',
+          statusCode: 404
+      })
+      }
 
       if (!existingTimeslot){
         return handleResponse({
@@ -80,7 +107,7 @@ const bookAppointment = async (req, res) => {
       }
       const newBooking = new bookingModel(customerData);
       const addedBooking = await newBooking.save();
-      console.log({addedBooking})
+      // console.log({addedBooking})
       return handleResponse({ 
         res, 
         statusCode: "200", 
