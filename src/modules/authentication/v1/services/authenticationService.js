@@ -67,6 +67,7 @@ const addProfile = async(userData, image, res)=>{
       account_no,
       ifsc_code,
       bank_name,
+      UPI_ID,
       account_holder_name,
       doctor_name, 
       qualification,
@@ -85,6 +86,7 @@ const addProfile = async(userData, image, res)=>{
     getUser.account_no = account_no;
     getUser.ifsc_code = ifsc_code;
     getUser.bank_name = bank_name;
+    getUser.UPI_ID = UPI_ID;
     getUser.account_holder_name = account_holder_name ;
 
     let profile_completed = account_no ? 1:0 ;
@@ -330,7 +332,7 @@ const getBankDetails = async(userData ,res)=>{
   try{
     let {entity_id} = userData;
     let message,statusCode ;
-    let bankdata = await entityModel.findOne({where:{entity_id},attributes:['account_no','ifsc_code','bank_name','account_holder_name']})
+    let bankdata = await entityModel.findOne({where:{entity_id},attributes:['account_no','ifsc_code','bank_name','account_holder_name','UPI_ID']})
     if(!handleResponse){
       statusCode = 422
       message = "Sorry unable to fetch."

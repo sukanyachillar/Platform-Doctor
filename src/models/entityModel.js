@@ -57,12 +57,15 @@ const entityModel = sequelize.define('entity', {
     type: DataTypes.STRING,
     allowNull: true
   },
-
+ 
   account_holder_name: {
     type: DataTypes.STRING,
     allowNull: true
   },
-
+  UPI_ID:{
+    type: DataTypes.STRING,
+    allowNull: true
+  },
   status: {
     type: DataTypes.INTEGER,
     allowNull: true,
