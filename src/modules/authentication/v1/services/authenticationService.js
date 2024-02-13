@@ -372,7 +372,7 @@ const updateEntityStatus = async(userData,res)=>{
     return handleResponse({
       res,
       message:'Successfully updated status to inactive',
-      data
+      statusCode:200
     })
 
   }catch(error){
