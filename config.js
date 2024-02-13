@@ -55,7 +55,7 @@ const config = {
     JWT_SECRET: "1234",
     JWT_REFRESH_EXPIRATION: "1h",
     REFRESH_JWT_SECRET:"njuyhbvgtrfcxdeplm",
-    REFRESH_EXPIRY:"10h",
+    REFRESH_EXPIRY:"24h",
     AWS_ACCESS_KEY_ID: "AKIA3E3VJNAUEF6BD3UR",
     AWS_SECRET_ACCESS_KEY: "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",
     AWS_REGION:"ap-south-1"
