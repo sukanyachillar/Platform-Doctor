@@ -359,9 +359,11 @@ const getBankDetails = async(userData ,res)=>{
 const updateEntityStatus = async(userData,res)=>{
   try{
     let {entity_id} = userData ;
+    let authData = await authenticationModel.findOne({where:{entity_id},attributes:['status']})
+    
     let data =await authenticationModel.update(
       {
-        status:0,
+        status:!(authData.status),
       },
       {
         where: {
