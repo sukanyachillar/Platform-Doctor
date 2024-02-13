@@ -53,6 +53,14 @@ const bookAppointment = async (req, res) => {
       })
       }
 
+      if (customerPhone.length !== 10){
+        return handleResponse({
+          res,
+          message:'Invalid Phone No.',
+          statusCode: 403
+      })
+      }
+
       if (!existingTimeslot){
         return handleResponse({
           res,
