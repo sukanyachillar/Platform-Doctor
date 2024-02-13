@@ -1,10 +1,21 @@
+import bookingModel from '../../../../models/bookingModel.js'
 const paymentStatusCapture = async(req,res)=>{
     try{
-        console.log("body",req.body);
-        console.log({orders:req.body?.payload});
+        console.log("webhook",req.body);
         console.log({payment:req.body?.payload?.order})
-        console.log({inside:req.body?.payload?.order?.order})
-        console.log({outside:req.body?.payload?.order?.payment})
+        if(req.body?.payload?.order){
+            if(req.body?.payload?.order?.entity?.status == 'paid'){
+               
+                let data = await bookingModel.update(
+                    {
+                        paymentStatus:1
+                    }, {
+                    where: {
+                        orderId:req.body?.payload?.order?.entity?.id
+                    },
+                  })
+            }
+        }
 
         return true;
 
