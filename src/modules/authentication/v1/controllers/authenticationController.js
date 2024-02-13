@@ -65,6 +65,15 @@ const fetchBankDetails = async(req,res)=>{
   }
 }
 
+const updateEntityStatus = async(req,res)=>{
+  try{
+    let data = await authenticationService.updateEntityStatus(req.user,res);
+    return data;
+  }catch(err){
+    console.log({err})
+  }
+}
+
 export default { 
   register, 
   addProfile, 
@@ -72,7 +81,8 @@ export default {
   addDept, 
   getGeneralSettings, 
   fetchBankDetails, 
-  getProfileForCustomer 
+  getProfileForCustomer,
+  updateEntityStatus 
 };
 
 

@@ -21,5 +21,5 @@ router.post('/adddept', verifyToken, authenticationController.addDept);
 router.post('/refreshToken', verifyRefreshToken);
 router.get('/generalSettings', verifyToken, authenticationController.getGeneralSettings);
 router.post('/bankdata',verifyToken,authenticationController.fetchBankDetails);
-
+router.post('/update-status',verifyToken,authenticationController.updateEntityStatus)
 export default router;

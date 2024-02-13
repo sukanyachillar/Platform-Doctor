@@ -356,6 +356,35 @@ const getBankDetails = async(userData ,res)=>{
   }
 }
 
+const updateEntityStatus = async(userData,res)=>{
+  try{
+    let {entity_id} = userData ;
+    let data =await authenticationModel.update(
+      {
+        status:0,
+      },
+      {
+        where: {
+          entity_id
+        },
+      }
+    ); 
+    return handleResponse({
+      res,
+      message:'Successfully updated status to inactive',
+      data
+    })
+
+  }catch(error){
+    console.log({error})
+    return handleResponse({
+      res,
+      message:"Error while updating the status.",
+      statusCode:422
+    })
+  }
+}
+
 export default { 
   register, 
   addProfile, 
@@ -364,5 +393,6 @@ export default {
   getGeneralSettings, 
   getBankDetails,
   getProfileForCustomer,
+  updateEntityStatus
 
 };
