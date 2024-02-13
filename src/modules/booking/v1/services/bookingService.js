@@ -80,6 +80,7 @@ const bookAppointment = async (req, res) => {
       }
       const newBooking = new bookingModel(customerData);
       const addedBooking = await newBooking.save();
+      console.log({addedBooking})
       return handleResponse({ 
         res, 
         statusCode: "200", 
