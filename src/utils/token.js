@@ -7,10 +7,8 @@ import entityModel from '../models/entityModel.js'
 let accessTokenSecret = config.JWT_SECRET;
 let accessExpiry = config.JWT_REFRESH_EXPIRATION;
 
-
 let refreshTokenSecret = config.REFRESH_JWT_SECRET;
 let refreshExpiry = config.REFRESH_EXPIRY;
-
 
 export const generateTokens = async(phone)=>{
     try{
