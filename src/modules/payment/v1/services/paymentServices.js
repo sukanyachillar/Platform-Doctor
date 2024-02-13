@@ -7,8 +7,13 @@ const paymentStatusCapture = async(req,res)=>{
         console.log({inside:req.body?.payload?.orders?.order})
         console.log({outside:req.body?.payload?.orders?.payment})
         if(req.body?.payload?.order){
+            console.log({status:req.body?.payload?.order?.status == 'paid'})
             if(req.body?.payload?.order?.status == 'paid'){
-                let data = await bookingModel.update({paymentStatus:1}, {
+                console.log({statusCheck:req.body?.payload})
+                let data = await bookingModel.update(
+                    {
+                        paymentStatus:1
+                    }, {
                     where: {
                         orderId:req.body?.payload?.order?.id
                     },
