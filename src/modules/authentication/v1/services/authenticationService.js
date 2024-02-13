@@ -48,7 +48,7 @@ const register = async (userData, res) => {
 	   }
 	})
   } catch (error) {
-    console.log({"Error while registeration":err})
+    console.log({"Error while registeration": error})
     return handleResponse({
       res,
       message:"Sorry error while registering.",

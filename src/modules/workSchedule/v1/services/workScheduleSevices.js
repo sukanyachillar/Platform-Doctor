@@ -243,7 +243,8 @@ const getSingleWorkSchedule = async (req,res)=>{
             statusCode:200,
             message: "Sucessfully fetched work slots",
             data: {
-                workSlots
+                workSlots,
+                availableWorkSlots: availableWorkSlots.length
             }
         })
     }catch(error){
