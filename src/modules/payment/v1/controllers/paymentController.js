@@ -11,7 +11,7 @@ const paymentCapture = async (req, res) => {
 
 const paymentUpdate = async(req,res)=>{
     try{
-        let payment = await paymentService.paymentUpdate(req,res);
+        let payment = await paymentService.paymentUpdate(req.body,res);
         return payment;
 
     }catch(err){
