@@ -279,6 +279,7 @@ const getGeneralSettings = async(req, res)=>{
           consultationDuration: doctorProfile.consultation_time,
           addStaff: getEntity.add_staff,
           addService: getEntity.add_service,
+          entityStatus: getEntity.status,
       }
     })
 
