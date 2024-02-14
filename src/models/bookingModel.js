@@ -94,10 +94,6 @@ const bookingModel = sequelize.define('booking', {
   
 });
 
-// bookingModel.hasOne(weeklyTimeSlotsModel, {
-//   foreignKey: 'time_slot_id',
-//   as: 'timeSlot',
-// });
 export default bookingModel;
 
 
