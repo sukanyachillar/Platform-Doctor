@@ -5,6 +5,7 @@ import entityModel  from '../../../../models/entityModel.js';
 import bookingModel from '../../../../models/bookingModel.js';
 import payment from '../../../../utils/pg.js';
 import { Op } from 'sequelize';
+import doctorModel from '../../../../models/doctorModel.js';
 
 const bookAppointment = async (req, res) => {
   try {
@@ -245,11 +246,12 @@ const bookingConfirmationData = async(bookingData,res)=>{
     let response = await bookingModel.findOne({where:{bookingId}});
     console.log({response})
     const weeklyTimeSlot = await weeklyTimeSlotsModel.findOne({
-      attributes: ['time_slot','date'],
+      attributes: ['time_slot','date','doctor_id'],
       where: {
         time_slot_id: response.workSlotId,
       },
     });
+    const doctorData = await doctorModel.findOne({where:{doctor_id:weeklyTimeSlot.doctor_id},attributes:['doctor_name']})
     let data, message,statusCode; 
     if(response){
       data = response,
@@ -264,12 +266,13 @@ const bookingConfirmationData = async(bookingData,res)=>{
       message,
       statusCode,
       data:{
-          customerName: data.customerName,
-          customerPhone:data.customerPhone,
-          appointmentTimeSlot : weeklyTimeSlot.time_slot,
-          appointmentDate :weeklyTimeSlot.date,
-          paymentDate :data.updatedAt,
-          paymentID:data.transactionId
+        doctorName:doctorData.doctor_name,
+        customerName: data.customerName,
+        customerPhone:data.customerPhone,
+        appointmentTimeSlot : weeklyTimeSlot.time_slot,
+        appointmentDate :weeklyTimeSlot.date,
+        paymentDate :data.updatedAt,
+        paymentID:data.transactionId
       }
     })
   }catch(error){
