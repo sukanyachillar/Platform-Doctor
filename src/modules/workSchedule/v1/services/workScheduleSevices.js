@@ -235,9 +235,7 @@ const getSingleWorkSchedule = async (req,res)=>{
         let availableWorkSlots = await weeklyTimeSlots.findAll({ where: {
             date: formattedDate, doctor_id: doctorData.doctor_id, booking_status: 0
         }});
-
-        console.log("availableWorkSlots>>>>>>>>>>>>>", availableWorkSlots)
-        
+       
         return handleResponse({
             res,
             statusCode:200,

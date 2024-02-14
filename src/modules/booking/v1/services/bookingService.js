@@ -80,7 +80,7 @@ const bookAppointment = async (req, res) => {
       if (existingTimeslot) {
         await weeklyTimeSlotsModel.update(
           {
-            booking_status: 1,
+            booking_status: 0,
           },
           {
             where: {
