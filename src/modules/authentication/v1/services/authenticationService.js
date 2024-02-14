@@ -41,7 +41,7 @@ const register = async (userData, res) => {
                 phone: addedUser.phone,
                 profile_completed: addedUser.profile_completed,
                 status: addedUser.status,
-                entity_type: addedUser.entity_type,
+                entity_type: addedUser.entity_type? addedUser.entity_type: "",
                 access_token: tokens.accessToken,
                 refresh_token: tokens.refreshToken,
             },
