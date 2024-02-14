@@ -1,9 +1,8 @@
-import express from 'express';
-import paymentController from '../controllers/paymentController.js';
+import express from 'express'
+import paymentController from '../controllers/paymentController.js'
 
-const router = express.Router();
+const router = express.Router()
 
-router.post('/capture-payment-status',paymentController.paymentCapture);
+router.post('/capture-payment-status', paymentController.paymentCapture)
 
-
-export default router;
+export default router

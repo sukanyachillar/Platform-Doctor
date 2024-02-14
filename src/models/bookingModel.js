@@ -1,6 +1,5 @@
-
-import { DataTypes } from 'sequelize' ;
-import sequelize from '../dbConnect.js';
+import { DataTypes } from 'sequelize'
+import sequelize from '../dbConnect.js'
 import weeklyTimeSlotsModel from './weeklyTimeSlotsModel.js'
 
 const bookingModel = sequelize.define('booking', {
