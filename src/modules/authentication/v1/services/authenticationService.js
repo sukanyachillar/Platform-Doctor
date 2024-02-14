@@ -26,12 +26,12 @@ const register = async (userData, res) => {
                     refresh_token: tokens.refreshToken,
                     profile_completed: getUser.profile_completed,
                     status: getUser.status,
-                    entity_type: getUser.entity_type,
+                    entity_type: getUser.entity_type?  getUser.entity_type: "",
                 },
             })
         }
         const newUser = new authenticationModel(userData)
-        const addedUser = await newUser.save()
+        const addedUser = await newUser.save();
         return handleResponse({
             res,
             statusCode: '200',
