@@ -41,6 +41,7 @@ const paymentStatusCapture = async (req, res) => {
 
 const paymentUpdate = async (bookingData, res) => {
     try {
+        console.log({bookingData})
         let { paymentId, orderId } = bookingData
         await bookingModel.update(
             {
