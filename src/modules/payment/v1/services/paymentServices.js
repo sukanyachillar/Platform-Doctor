@@ -45,7 +45,7 @@ const paymentUpdate = async (bookingData, res) => {
         await bookingModel.update(
             {
                 paymentStatus: 1,
-                bookingStatus: 1,
+                bookingStatus: 0,
                 updatedAt: new Date(),
                 transactionId: paymentId,
             },
