@@ -20,7 +20,6 @@ const addProfile =async(req,res)=>{
 
 const getProfile =async(req,res)=>{
   try{
-    console.log({req:req.body,headers:req.user})
     const getProfile = await authenticationService.getProfile(req.body, res);
     return getProfile;
   }catch(error){
@@ -30,7 +29,6 @@ const getProfile =async(req,res)=>{
 
 const getProfileForCustomer =async(req,res)=>{
   try{
-    console.log({req:req.body,headers:req.user})
     const getProfile = await authenticationService.getProfileForCustomer(req.body, res);
     return getProfile;
   }catch(error){
