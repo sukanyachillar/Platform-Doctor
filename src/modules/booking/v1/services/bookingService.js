@@ -182,7 +182,10 @@ const listBooking = async ({ doctorId, date }, res) => {
                     'bookingId',
                 ],
                 where: {
-                    workSlotId: weeklyTimeSlot.time_slot_id,
+                    workSlotId: weeklyTimeSlot.time_slot_id, 
+                    bookingStatus: {
+                        [Op.not]: 3,
+                      },
                 },
             })
 
