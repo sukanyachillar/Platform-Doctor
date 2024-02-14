@@ -1,5 +1,6 @@
 import bookingModel from '../../../../models/bookingModel.js'
 import weeklyTimeSlotsModel from '../../../../models/weeklyTimeSlotsModel.js'
+import { handleResponse } from '../../../../utils/handlers.js'
 
 const paymentStatusCapture = async (req, res) => {
     try {
@@ -38,4 +39,43 @@ const paymentStatusCapture = async (req, res) => {
     }
 }
 
-export default { paymentStatusCapture }
+const paymentUpdate = async (bookingData, res) => {
+    try {
+        let { paymentId, orderId } = bookingData
+        await bookingModel.update(
+            {
+                paymentStatus: 1,
+                bookingStatus: 1,
+                updatedAt: new Date(),
+                transactionId: paymentId,
+            },
+            {
+                where: {
+                    orderId,
+                },
+            }
+        )
+        const timeSlot = await bookingModel.findOne({
+            attributes: ['workSlotId'],
+            where: { orderId },
+        })
+        await weeklyTimeSlotsModel.update(
+            { booking_status: 1 },
+            { where: { time_slot_id: timeSlot.workSlotId } }
+        )
+        return handleResponse({
+            res,
+            message: 'Successfully updated with status',
+            statusCode: 200,
+        })
+    } catch (error) {
+        console.log({ error })
+        return handleResponse({
+            res,
+            message: 'Unable to update status.',
+            statusCode: 404,
+        })
+    }
+}
+
+export default { paymentStatusCapture,paymentUpdate }

@@ -5,8 +5,18 @@ const paymentCapture = async (req, res) => {
         let payment = await paymentService.paymentStatusCapture(req, res)
         return payment
     } catch (err) {
-        console.log({ error })
+        console.log({ err })
     }
 }
 
-export default { paymentCapture }
+const paymentUpdate = async(req,res)=>{
+    try{
+        let payment = await paymentService.paymentUpdate(req,res);
+        return payment;
+
+    }catch(err){
+        console.log({err})
+    }
+}
+
+export default { paymentCapture,paymentUpdate }

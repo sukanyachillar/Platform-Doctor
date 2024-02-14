@@ -25,7 +25,7 @@ const entityModel = sequelize.define('entity', {
     },
     location: {
         type: DataTypes.JSON,
-        allowNull: true,
+        allowNull: true, 
         defaultValue: {},
         unique: false,
     },
