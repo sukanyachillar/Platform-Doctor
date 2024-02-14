@@ -1,10 +1,10 @@
-import Razorpay from "razorpay";
-import { nanoid } from "nanoid";
+import Razorpay from 'razorpay'
+import { nanoid } from 'nanoid'
 
-const createPaymentLink = async(body)=>{
-    let reference_id = nanoid();
-    let {name,phone,amount} = body
-    try{
+const createPaymentLink = async (body) => {
+    let reference_id = nanoid()
+    let { name, phone, amount } = body
+    try {
         // let body = {
         //     amount,
         //     currency: "INR",
@@ -21,28 +21,25 @@ const createPaymentLink = async(body)=>{
         //     callback_url: "https://example-callback-url.com/",
         //     callback_method: "get"
         // }   //Uncomment for payment link
-        let body ={
+        let body = {
             amount: 1000,
-            currency: "INR",
+            currency: 'INR',
             receipt: reference_id,
         }
         let razorpay = new Razorpay({
             key_id: process.env.RAZORPAY_KEY,
             key_secret: process.env.RAZORPAY_SECRET,
-        });
+        })
         // let response = await razorpay.paymentLink.create(
         //     body
         // )
-        let response = await razorpay.orders.create(body);
-        console.log({response})
-        return response;
-
-    }catch(err){
-        console.log({Error:err})
-        return err;
+        let response = await razorpay.orders.create(body)
+        console.log({ response })
+        return response
+    } catch (err) {
+        console.log({ Error: err })
+        return err
     }
 }
 
-
-
-export default { createPaymentLink };
+export default { createPaymentLink }
