@@ -12,7 +12,7 @@ const paymentStatusCapture = async (req, res) => {
                 await bookingModel.update(
                     {
                         paymentStatus: 1,
-                        bookingStatus: 1,
+                        bookingStatus: 0,
                         updatedAt: new Date(),
                         transactionId: req.body?.payload?.payment?.entity?.id,
                     },
