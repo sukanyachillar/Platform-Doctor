@@ -7,14 +7,22 @@ import { handleResponse } from '../../../../utils/handlers.js'
 const addWorkSchedule = async (data, userData, res) => {
     try {
         let { entity_id } = userData
-        let { day, startTime, endTime, doctor_id, session } = data ;
-        let daysArray = ['monday','tuesday','wednesday','thursday','friday','saturday','sunday'] ;
+        let { day, startTime, endTime, doctor_id, session } = data
+        let daysArray = [
+            'monday',
+            'tuesday',
+            'wednesday',
+            'thursday',
+            'friday',
+            'saturday',
+            'sunday',
+        ]
         let dayIn = daysArray.includes(day.toLowerCase())
-        if(!dayIn){
+        if (!dayIn) {
             return handleResponse({
                 res,
-                message:'Please check the day.',
-                statusCode:404
+                message: 'Please check the day.',
+                statusCode: 404,
             })
         }
         let dayOfWeek = await getDayOfWeekIndex(day)
@@ -30,6 +38,7 @@ const addWorkSchedule = async (data, userData, res) => {
             where: { status: 1, doctor_id },
             attributes: ['consultation_time'],
         })
+        let entity = await entityModel.findOne({ where: { entity_id } })
         if (!doctorData) {
             return handleResponse({
                 res,
@@ -68,6 +77,12 @@ const addWorkSchedule = async (data, userData, res) => {
                     doctor_id,
                 })
                 message = 'Succesfully added work schedule.'
+                if (entity.account_no) {
+                    await entityModel.update(
+                        { profile_completed: 1 },
+                        { where: { entity_id } }
+                    )
+                }
             } else {
                 workData.startTime = startTime
                 workData.endTime = endTime
@@ -394,8 +409,6 @@ const getDayOfWeekIndex = async (dayName) => {
         console.log({ err })
     }
 }
-
-
 
 export default {
     addWorkSchedule,
