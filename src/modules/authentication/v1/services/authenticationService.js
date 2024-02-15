@@ -88,7 +88,7 @@ const addProfile = async (userData, image, res) => {
         getUser.UPI_ID = UPI_ID
         getUser.account_holder_name = account_holder_name
 
-        let profile_completed = account_no ? 1 : 0
+        let profile_completed = 0
         let entityData = await getUser.save()
 
         let entity_id = entityData.entity_id
