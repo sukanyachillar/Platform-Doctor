@@ -312,6 +312,7 @@ const getGeneralSettings = async (req, res) => {
                 addStaff: getEntity.add_staff,
                 addService: getEntity.add_service,
                 entityStatus: getEntity.status,
+                profile_completed: getEntity.profile_completed,
             },
         })
     } catch (error) {
