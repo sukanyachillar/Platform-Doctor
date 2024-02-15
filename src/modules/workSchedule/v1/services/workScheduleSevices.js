@@ -7,7 +7,16 @@ import { handleResponse } from '../../../../utils/handlers.js'
 const addWorkSchedule = async (data, userData, res) => {
     try {
         let { entity_id } = userData
-        let { day, startTime, endTime, doctor_id, session } = data
+        let { day, startTime, endTime, doctor_id, session } = data ;
+        let daysArray = ['monday','tuesday','wednesday','thursday','friday','saturday','sunday'] ;
+        let dayIn = daysArray.includes(day.toLowerCase())
+        if(!dayIn){
+            return handleResponse({
+                res,
+                message:'Please check the day.',
+                statusCode:404
+            })
+        }
         let dayOfWeek = await getDayOfWeekIndex(day)
         let datefromDay = await dateFromDay(dayOfWeek)
         let status = 1
@@ -385,6 +394,8 @@ const getDayOfWeekIndex = async (dayName) => {
         console.log({ err })
     }
 }
+
+
 
 export default {
     addWorkSchedule,
