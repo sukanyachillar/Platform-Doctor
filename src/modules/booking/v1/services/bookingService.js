@@ -96,7 +96,7 @@ const bookAppointment = async (req, res) => {
                 }
             )
         }
-
+        let webhookEnable = await payment.checkAndActivateWebhook();
         let data = await payment.createPaymentLink({
             name: customerName,
             phone: customerPhone,
