@@ -27,7 +27,7 @@ const addProfile = async (req, res) => {
 
 const getProfile = async (req, res) => {
     try {
-        const getProfile = await authenticationService.getProfile(req.body, res)
+        const getProfile = await authenticationService.getProfile(req, res)
         return getProfile
     } catch (error) {
         console.log({ error })

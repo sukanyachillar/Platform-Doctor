@@ -152,9 +152,10 @@ const addProfile = async (userData, image, res) => {
     }
 }
 
-const getProfile = async ({ phone }, res) => {
+const getProfile = async (req, res) => {
     try {
-        let getUser = await authenticationModel.findOne({ where: { phone } })
+        const phone = req.user.phone;
+        let getUser = await authenticationModel.findOne({ where: { phone } });
         let userProfile = await profileModel.findOne({
             where: { entity_id: getUser.entity_id },
         })
