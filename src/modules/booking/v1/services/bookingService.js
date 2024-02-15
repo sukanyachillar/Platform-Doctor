@@ -101,100 +101,74 @@ const bookAppointment = async (req, res) => {
   }
 };
 
-const listBooking = async( { doctorId, date } , res)=> {
-  // try {
-  //   let totalAppointments = 0;
-  //   let completedAppointments = 0;
-  //   let pendingAppointments = 0;
+const listBooking = async ({ doctorId, date }, res) => {
+    try {
+        const appointments = await weeklyTimeSlotsModel.findAll({
+            attributes: [
+                ['time_slot', 'timeSlot'],
+                [literal('COUNT(bookingModels.bookingId)'), 'totalAppointments'],
+                [literal('SUM(CASE WHEN bookingModels.bookingStatus = 1 THEN 1 ELSE 0 END)'), 'completedAppointments'],
+                [literal('SUM(CASE WHEN bookingModels.bookingStatus = 0 THEN 1 ELSE 0 END)'), 'pendingAppointments'],
+                [literal('MAX(bookingModels.bookingId)'), 'bookingId'],
+                [literal('MAX(bookingModels.customerName)'), 'customerName'],
+                [literal('MAX(bookingModels.customerPhone)'), 'customerPhone'],
+                [literal('MAX(bookingModels.bookingStatus)'), 'bookingStatus'],
+            ],
+            where: {
+                doctor_id: doctorId,
+                date,
+            },
+            include: [{
+                model: bookingModel,
+                attributes: [],
+                where: {
+                    bookingStatus: {
+                        [Op.not]: 3,
+                    },
+                },
+            }],
+            group: ['weeklyTimeSlotsModel.time_slot'],
+        });
 
-  //   const weeklyTimeSlots = await weeklyTimeSlotsModel.findAll({
-  //     attributes: ['time_slot', 'time_slot_id'],
-  //     where: {
-  //       doctor_id: doctorId,
-  //       date
-  //     },
-  //   });
+        if (!appointments || appointments.length === 0) {
+            return handleResponse({
+                res,
+                statusCode: 404,
+                message: 'No appointments found',
+            });
+        }
 
-  //   // console.log("weeklyTimeSlot==========", weeklyTimeSlots)
-  
-  //   if (!weeklyTimeSlots) {
-  //     return handleResponse({
-  //       res,
-  //       statusCode: 404,
-  //       message: "Weekly time slot not found",
-  //     });
-  //   }
-  
-  //       // Loop through each weekly time slot and fetch booking information
-  //       const appointmentList = [];
-  //       for (const weeklyTimeSlot of weeklyTimeSlots) {
-  //         const bookingInfo = await bookingModel.findOne({
-  //           attributes: ['customerName', 'customerPhone', 'bookingStatus', 'bookingId'],
-  //           where: {
-  //             workSlotId: weeklyTimeSlot.time_slot_id,
-  //           },
-  //         });
-    
-  //         if (bookingInfo) {
-  //           appointmentList.push({
-  //             bookingId: bookingInfo.bookingId,
-  //             timeSlot: weeklyTimeSlot.time_slot,
-  //             customerName: bookingInfo.customerName,
-  //             customerPhone: bookingInfo.customerPhone,
-  //             bookingStatus: bookingInfo.bookingStatus,
-  //           });
-  //           totalAppointments++;
-  //           if (bookingInfo.bookingStatus === 1) {
-  //             completedAppointments++;
-  //           } else {
-  //             pendingAppointments++;
-  //           }
-  //         }
-  //       }
-  //   // console.log("appointmentList", appointmentList)
-  
-  //   return handleResponse({
-  //     res,
-  //     statusCode: 200,
-  //     message: "Appointment listing fetched successfully",
-  //     data: {
-  //       appointmentList,
-  //       totalAppointments,
-  //       completedAppointments,
-  //       pendingAppointments,
-  //       appointmentDate: date,
-  //     }
-  //   });
-  // } catch (error) {
-  //   console.log({ error });
-  // }
-  try {
-    const appointments = await weeklyTimeSlotsModel.findAll({
-      attributes: ['time_slot', 'time_slot_id'],
-      where: {
-        doctor_id: doctorId,
-        date
-      },
-      include: [{
-        model: bookingModel,
-        attributes: ['customerName', 'customerPhone', 'bookingStatus', 'bookingId'],
-        where: {
-          // Additional conditions if needed
-        },
-      }],
-    });
-    console.log("appointments>>>>>>>>>>>>>>", appointments)
-    if (!appointments || appointments.length === 0) {
-      return handleResponse({
-        res,
-        statusCode: 404,
-        message: "No appointments found",
-      });
+        const { timeSlot, bookingId, customerName, customerPhone, bookingStatus } = appointments[0];
+
+        const doctorProfile = await doctorProfileModel.findOne({
+            attributes: ['doctor_name'],
+            where: { doctor_id: doctorId },
+        });
+
+        return handleResponse({
+            res,
+            statusCode: 200,
+            message: 'Appointment listing fetched successfully',
+            data: {
+                appointmentList: [{
+                    bookingId,
+                    timeSlot,
+                    customerName,
+                    customerPhone,
+                    bookingStatus,
+                }],
+                totalAppointments,
+                completedAppointments,
+                pendingAppointments,
+                appointmentDate: date,
+                doctorName: doctorProfile?.doctor_name || '',
+            },
+        });
+    } catch (error) {
+        console.error({ error });
+        // Handle the error appropriately
     }
-      } catch (error) {
-    console.log({ error });
-  }
-}
+};
 
 const getBookingReport = async (req, res) => {
   try {
