@@ -13,6 +13,7 @@ const addWorkSchedule = async (req, res) => {
         console.log({ error })
     }
 }
+
 const addWork = async (req, res) => {
     try {
         const workSchedule = await workScheduleSevices.addWork(
