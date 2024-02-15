@@ -295,7 +295,7 @@ const addDept = async(deptData,userData,res)=>{
     let {department_name} = deptData ;
     let {entity_id} = userData;
     let status = 1 ;
-    let dept ,message;
+    let dept ,message, statusCode
     dept  = await deptModel.findOne({where:{entity_id,department_name}})
     message = 'Department already exist.'
     statusCode=422

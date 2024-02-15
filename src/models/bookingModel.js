@@ -1,7 +1,7 @@
 
 import { DataTypes } from 'sequelize' ;
 import sequelize from '../dbConnect.js';
-import weeklyTimeSlotsModel from './weeklyTimeSlotsModel.js'
+import weeklyTimeSlotsModel from './weeklyTimeSlotsModel.js';
 
 const bookingModel = sequelize.define('booking', {
   bookingId: {
@@ -70,6 +70,10 @@ const bookingModel = sequelize.define('booking', {
     type: DataTypes.INTEGER, 
     allowNull: true,
     unique: false,
+    references: {         // WorkingDays hasMany Users n:n
+      model: 'weeklyTimeSlots',
+      key: 'time_slot_id'
+    }
   },
   orderId: {
     type: DataTypes.STRING, 
@@ -94,10 +98,13 @@ const bookingModel = sequelize.define('booking', {
   
 });
 
-// bookingModel.belongsTo(weeklyTimeSlotsModel, {
-//   foreignKey: 'workSlotId',
-//   as: 'timeSlot',
-// });
+bookingModel.associate =function(models){
+  bookingModel.belongsTo(weeklyTimeSlotsModel, {
+    foreignKey: 'workSlotId', // This should be the foreign key in the BookingModel table
+    as: 'timeSlot',
+  }
+);
+}
 export default bookingModel;
 
 
