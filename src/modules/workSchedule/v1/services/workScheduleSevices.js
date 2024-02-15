@@ -77,12 +77,7 @@ const addWorkSchedule = async (data, userData, res) => {
                     doctor_id,
                 })
                 message = 'Succesfully added work schedule.'
-                if (entity.account_no) {
-                    await entityModel.update(
-                        { profile_completed: 1 },
-                        { where: { entity_id } }
-                    )
-                }
+               
             } else {
                 workData.startTime = startTime
                 workData.endTime = endTime
@@ -92,6 +87,12 @@ const addWorkSchedule = async (data, userData, res) => {
             }
         }
         let workSchedule = await workData.save()
+        if (entity.account_no) {
+            await entityModel.update(
+                { profile_completed: 1 },
+                { where: { entity_id } }
+            )
+        } 
         return handleResponse({
             res,
             message,
