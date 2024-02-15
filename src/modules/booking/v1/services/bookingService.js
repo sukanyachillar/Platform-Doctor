@@ -26,6 +26,12 @@ const bookAppointment = async (req, res) => {
             where: { entity_id: doctorProfile.entity_id },
         })
 
+        console.log({
+            time_slot: timeSlot,
+            doctor_id: doctorId,
+            date: appointmentDate,
+        })
+
         const existingTimeslot = await weeklyTimeSlotsModel.findOne({
             where: {
                 time_slot: timeSlot,
