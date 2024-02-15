@@ -73,7 +73,7 @@ const bookAppointment = async (req, res) => {
                 statusCode: 404,
             })
         }
-
+        console.log("existingTimeslot>>>>>>", existingTimeslot.booking_status)
         if (existingTimeslot.booking_status === 1 ) {
             return handleResponse({
                 res,
