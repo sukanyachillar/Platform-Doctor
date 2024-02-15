@@ -74,7 +74,7 @@ const bookAppointment = async (req, res) => {
             })
         }
 
-        if (existingTimeslot?.booking_status) {
+        if (existingTimeslot.booking_status === 1 ) {
             return handleResponse({
                 res,
                 message: 'Slot already booked',
