@@ -32,9 +32,9 @@ const weeklyTimeSlotsModel = sequelize.define('weeklyTimeSlots', {
     }
 });
 
-weeklyTimeSlotsModel.hasOne(bookingModel, {
-    foreignKey: 'time_slot_id', // Set the foreign key to link the two tables
-    as: 'bookings', // Adjust the alias as needed
+weeklyTimeSlotsModel.belongsTo(bookingModel, {
+    foreignKey: 'time_slot_id',
+    as: 'bookings', 
   });
 
 

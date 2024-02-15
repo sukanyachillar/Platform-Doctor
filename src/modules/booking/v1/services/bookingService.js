@@ -103,34 +103,29 @@ const bookAppointment = async (req, res) => {
 
 const listBooking = async ({ doctorId, date }, res) => {
     try {
-        const appointments = await weeklyTimeSlotsModel.findAll({
-            attributes: [
-                ['time_slot', 'timeSlot'],
-                [literal('COUNT(bookingModels.bookingId)'), 'totalAppointments'],
-                [literal('SUM(CASE WHEN bookingModels.bookingStatus = 1 THEN 1 ELSE 0 END)'), 'completedAppointments'],
-                [literal('SUM(CASE WHEN bookingModels.bookingStatus = 0 THEN 1 ELSE 0 END)'), 'pendingAppointments'],
-                [literal('MAX(bookingModels.bookingId)'), 'bookingId'],
-                [literal('MAX(bookingModels.customerName)'), 'customerName'],
-                [literal('MAX(bookingModels.customerPhone)'), 'customerPhone'],
-                [literal('MAX(bookingModels.bookingStatus)'), 'bookingStatus'],
-            ],
+        const appointmentList = await weeklyTimeSlotsModel.findAll({
+            attributes: ['time_slot', 'time_slot_id'],
             where: {
                 doctor_id: doctorId,
                 date,
             },
             include: [{
                 model: bookingModel,
-                attributes: [],
+                attributes: [
+                    'customerName',
+                    'customerPhone',
+                    'bookingStatus',
+                    'bookingId',
+                ],
                 where: {
                     bookingStatus: {
                         [Op.not]: 3,
                     },
                 },
             }],
-            group: ['weeklyTimeSlotsModel.time_slot'],
         });
 
-        if (!appointments || appointments.length === 0) {
+        if (!appointmentList || appointmentList.length === 0) {
             return handleResponse({
                 res,
                 statusCode: 404,
@@ -138,7 +133,30 @@ const listBooking = async ({ doctorId, date }, res) => {
             });
         }
 
-        const { timeSlot, bookingId, customerName, customerPhone, bookingStatus } = appointments[0];
+        let totalAppointments = 0;
+        let completedAppointments = 0;
+        let pendingAppointments = 0;
+
+        const formattedAppointments = appointmentList.map(({ time_slot, bookings }) => {
+            const formattedBookings = bookings.map(({ bookingId, customerName, customerPhone, bookingStatus }) => {
+                totalAppointments++;
+                if (bookingStatus === 1) {
+                    completedAppointments++;
+                } else {
+                    pendingAppointments++;
+                }
+
+                return {
+                    bookingId,
+                    timeSlot: time_slot,
+                    customerName,
+                    customerPhone,
+                    bookingStatus,
+                };
+            });
+
+            return formattedBookings;
+        }).flat();
 
         const doctorProfile = await doctorProfileModel.findOne({
             attributes: ['doctor_name'],
@@ -150,13 +168,7 @@ const listBooking = async ({ doctorId, date }, res) => {
             statusCode: 200,
             message: 'Appointment listing fetched successfully',
             data: {
-                appointmentList: [{
-                    bookingId,
-                    timeSlot,
-                    customerName,
-                    customerPhone,
-                    bookingStatus,
-                }],
+                appointmentList: formattedAppointments,
                 totalAppointments,
                 completedAppointments,
                 pendingAppointments,
@@ -169,6 +181,7 @@ const listBooking = async ({ doctorId, date }, res) => {
         // Handle the error appropriately
     }
 };
+
 
 const getBookingReport = async (req, res) => {
   try {
