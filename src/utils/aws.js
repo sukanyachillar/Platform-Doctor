@@ -23,18 +23,42 @@ const uploadToS3 = async (file) => {
             Body: file.buffer,
             ContentType: file.mimetype,
         }
+        const params = {
+            Bucket:'chillar-platform-assets',
+            Key: file.originalname,
+           
+          };
 
         const uploadResponse = await s3.upload(uploadParams).promise()
-        console.log('uploadResponse', uploadResponse)
+        const url = await getPresignUrlPromiseFunction(s3, params);
 
-        return uploadResponse
+        console.log({url})
+       //let data = await data(file)
+       // console.log('uploadResponse', uploadResponse)
+
+        return url;
     } catch (error) {
         console.error('Error uploading to S3:', error)
         throw error
     }
 }
 
-// module.exports = { uploadToS3 };
+const getPresignUrlPromiseFunction=(s3, s3Params)=>{
+    return new Promise(async (resolve, reject) => {
+    try {
+        await s3.getSignedUrl('getObject', s3Params, function (err,         data) {
+    if (err) {
+    return reject(err);
+    }
+    resolve(data);
+  });
+} catch (error) {
+    return reject(error);
+    }
+  });
+}
 
-// module.exports = { uploadToS3 };
+
+ 
+
 export default { uploadToS3 }
