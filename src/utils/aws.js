@@ -14,8 +14,6 @@ const s3 = new aws.S3()
 
 const uploadToS3 = async (file) => {
     const filename = file?.originalname
-    const fileExtension = filename.split('.').pop()
-
     try {
         const uploadParams = {
             Bucket: 'chillar-platform-assets',
@@ -23,42 +21,32 @@ const uploadToS3 = async (file) => {
             Body: file.buffer,
             ContentType: file.mimetype,
         }
-        const params = {
-            Bucket:'chillar-platform-assets',
-            Key: file.originalname,
-           
-          };
-
         const uploadResponse = await s3.upload(uploadParams).promise()
-        const url = await getPresignUrlPromiseFunction(s3, params);
-
-        console.log({url})
-       //let data = await data(file)
-       // console.log('uploadResponse', uploadResponse)
-
-        return url;
+        return uploadResponse
     } catch (error) {
         console.error('Error uploading to S3:', error)
         throw error
     }
 }
 
-const getPresignUrlPromiseFunction=(s3, s3Params)=>{
+const getPresignUrlPromiseFunction = async (Key) => {
     return new Promise(async (resolve, reject) => {
-    try {
-        await s3.getSignedUrl('getObject', s3Params, function (err,         data) {
-    if (err) {
-    return reject(err);
-    }
-    resolve(data);
-  });
-} catch (error) {
-    return reject(error);
-    }
-  });
+        try {
+            let s3Params = {
+                Bucket: 'chillar-platform-assets',
+                Key,
+            }
+            console.log({ s3 })
+            await s3.getSignedUrl('getObject', s3Params, function (err, data) {
+                if (err) {
+                    return reject(err)
+                }
+                resolve(data)
+            })
+        } catch (error) {
+            return reject(error)
+        }
+    })
 }
 
-
- 
-
-export default { uploadToS3 }
+export default { uploadToS3, getPresignUrlPromiseFunction }

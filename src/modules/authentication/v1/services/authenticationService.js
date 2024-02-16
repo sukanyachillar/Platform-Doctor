@@ -26,12 +26,12 @@ const register = async (userData, res) => {
                     refresh_token: tokens.refreshToken,
                     profile_completed: getUser.profile_completed,
                     status: getUser.status,
-                    entity_type: getUser.entity_type?  getUser.entity_type: "",
+                    entity_type: getUser.entity_type ? getUser.entity_type : '',
                 },
             })
         }
         const newUser = new authenticationModel(userData)
-        const addedUser = await newUser.save();
+        const addedUser = await newUser.save()
         return handleResponse({
             res,
             statusCode: '200',
@@ -41,7 +41,7 @@ const register = async (userData, res) => {
                 phone: addedUser.phone,
                 profile_completed: addedUser.profile_completed,
                 status: addedUser.status,
-                entity_type: addedUser.entity_type? addedUser.entity_type: "",
+                entity_type: addedUser.entity_type ? addedUser.entity_type : '',
                 access_token: tokens.accessToken,
                 refresh_token: tokens.refreshToken,
             },
@@ -108,7 +108,7 @@ const addProfile = async (userData, image, res) => {
                 phone,
                 department_id,
                 description,
-                profileImageUrl: imageUrl.Location ? imageUrl.Location : '',
+                profileImageUrl: imageUrl.Key ? imageUrl.Key : '',
             })
         } else {
             userProfile.doctor_name = doctor_name
@@ -122,9 +122,7 @@ const addProfile = async (userData, image, res) => {
             userProfile.profile_completed = profile_completed
             userProfile.department_id = department_id
             userProfile.description = description ? description.trim() : ''
-            userProfile.profileImageUrl = imageUrl.Location
-                ? imageUrl.Location
-                : ''
+            userProfile.profileImageUrl = imageUrl.Key ? imageUrl.Key : ''
         }
         let profile = await userProfile.save()
 
@@ -154,8 +152,8 @@ const addProfile = async (userData, image, res) => {
 
 const getProfile = async (req, res) => {
     try {
-        const phone = req.user.phone;
-        let getUser = await authenticationModel.findOne({ where: { phone } });
+        const phone = req.user.phone
+        let getUser = await authenticationModel.findOne({ where: { phone } })
         let userProfile = await profileModel.findOne({
             where: { entity_id: getUser.entity_id },
         })
@@ -194,6 +192,9 @@ const getProfile = async (req, res) => {
                 where: { department_id: userProfile.department_id },
             })
         }
+        let key = userProfile?.profileImageUrl
+        const url = await awsUtils.getPresignUrlPromiseFunction(key)
+        console.log({ url })
 
         return handleResponse({
             res,
@@ -207,7 +208,7 @@ const getProfile = async (req, res) => {
                 consultation_time: userProfile?.consultation_time,
                 consultation_charge: userProfile?.consultation_charge,
                 doctor_id: userProfile?.doctor_id,
-                profileImageUrl: userProfile?.profileImageUrl,
+                profileImageUrl: url,
                 description: userProfile?.description,
                 // uniqueDays,
                 designation: getDepartment?.department_name,
@@ -264,6 +265,9 @@ const getProfileForCustomer = async ({ phone }, res) => {
                 where: { department_id: userProfile.department_id },
             })
         }
+        let key = userProfile?.profileImageUrl
+        const url = await awsUtils.getPresignUrlPromiseFunction(key)
+        console.log({ url })
 
         return handleResponse({
             res,
@@ -277,7 +281,7 @@ const getProfileForCustomer = async ({ phone }, res) => {
                 consultation_time: userProfile?.consultation_time,
                 consultation_charge: userProfile?.consultation_charge,
                 doctor_id: userProfile?.doctor_id,
-                profileImageUrl: userProfile?.profileImageUrl,
+                profileImageUrl: url,
                 description: userProfile?.description,
                 uniqueDays,
                 designation: getDepartment?.department_name,
