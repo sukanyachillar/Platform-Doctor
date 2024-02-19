@@ -122,9 +122,11 @@ const listBooking = async ({ doctorId, date }, res) => {
                         [Op.not]: 3,
                     },
                 },
+                as: 'booking',
             }],
         });
 
+        console.log({ appointmentList })
         if (!appointmentList || appointmentList.length === 0) {
             return handleResponse({
                 res,
@@ -133,9 +135,11 @@ const listBooking = async ({ doctorId, date }, res) => {
             });
         }
 
-        let totalAppointments = 0;
-        let completedAppointments = 0;
-        let pendingAppointments = 0;
+        const totalAppointments =  await bookingModel.count({
+          where: {
+              workSlotId: { [Op.in]: appointmentList.map(appointment => appointment.time_slot_id) },
+          },
+      });
 
         const formattedAppointments = appointmentList.map(({ time_slot, bookings }) => {
             const formattedBookings = bookings.map(({ bookingId, customerName, customerPhone, bookingStatus }) => {

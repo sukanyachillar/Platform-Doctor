@@ -32,10 +32,7 @@ const weeklyTimeSlotsModel = sequelize.define('weeklyTimeSlots', {
     }
 });
 
-// weeklyTimeSlotsModel.hasMany(bookingModel, {
-//     foreignKey: 'workSlotId', // This should be the foreign key in the BookingModel table
-//     as: 'bookingdata',
-// });
-
+await weeklyTimeSlotsModel.hasOne(bookingModel, { foreignKey: 'workSlotId', as: 'booking' });
+await bookingModel.belongsTo(weeklyTimeSlotsModel, { foreignKey: 'workSlotId', as: 'booking' });
 
 export default weeklyTimeSlotsModel;
