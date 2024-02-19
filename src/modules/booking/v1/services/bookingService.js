@@ -6,6 +6,9 @@ import bookingModel from '../../../../models/bookingModel.js'
 import payment from '../../../../utils/pg.js'
 import { Op } from 'sequelize'
 import doctorModel from '../../../../models/doctorModel.js'
+import paymentModel from '../../../../models/paymentModel.js'
+import userModel from '../../../../models/userModel.js';
+import generateUuid from '../../../../utils/generateUuid.js';
 
 const bookAppointment = async (req, res) => {
     try {
@@ -79,7 +82,6 @@ const bookAppointment = async (req, res) => {
                 statusCode: 404,
             })
         }
-        console.log("existingTimeslot>>>>>>", existingTimeslot.booking_status)
         if (existingTimeslot.booking_status === 1 ) {
             return handleResponse({
                 res,
@@ -131,8 +133,20 @@ const bookAppointment = async (req, res) => {
             workSlotId: existingTimeslot.time_slot_id,
         }
         const newBooking = new bookingModel(customerData)
-        const addedBooking = await newBooking.save()
-        // console.log({addedBooking})
+        const addedBooking = await newBooking.save();
+        await paymentModel.create({
+            bookingId: addedBooking.bookingId,
+            orderId: data?.id,
+        });
+        const randomUUID = await generateUuid();
+        console.log("randomUUID>>>>>>", randomUUID)
+        await userModel.create({
+            uuid: randomUUID,
+            userType: 'cutomer',
+            name: customerName,
+            phone: customerPhone,
+        });
+        
         return handleResponse({
             res,
             statusCode: '200',

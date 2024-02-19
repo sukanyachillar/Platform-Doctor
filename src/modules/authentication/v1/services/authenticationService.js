@@ -7,9 +7,10 @@ import { generateTokens } from '../../../../utils/token.js'
 import awsUtils from '../../../../utils/aws.js'
 import entityModel from '../../../../models/entityModel.js'
 import departmentModel from '../../../../models/departmentModel.js'
-import workScheduleModel from '../../../../models/workScheduleModel.js'
+import workScheduleModel from '../../../../models/workScheduleModel.js';
+import generateUuid from  '../../../../utils/generateUuid.js';
 
-const register = async (userData, res) => {
+const register = async (userData, res) => {  // enitity add
     try {
         const { phone } = userData
         const getUser = await authenticationModel.findOne({ where: { phone } })
@@ -56,7 +57,7 @@ const register = async (userData, res) => {
     }
 }
 
-const addProfile = async (userData, image, res) => {
+const addProfile = async (userData, image, res) => {  // doctor add
     try {
         let {
             phone,
@@ -124,7 +125,15 @@ const addProfile = async (userData, image, res) => {
             userProfile.description = description ? description.trim() : ''
             userProfile.profileImageUrl = imageUrl.Key ? imageUrl.Key : ''
         }
-        let profile = await userProfile.save()
+        let profile = await userProfile.save();
+        const randomUUID = await generateUuid();
+        console.log("randomUUID>>>>>>", randomUUID)
+        await userModel.create({
+            uuid: randomUUID,
+            userType: 'doctor',
+            name: doctor_name,
+            phone
+        });
 
         return handleResponse({
             res,

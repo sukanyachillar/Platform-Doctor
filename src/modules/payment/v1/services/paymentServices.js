@@ -1,4 +1,5 @@
 import bookingModel from '../../../../models/bookingModel.js'
+import paymentModel from '../../../../models/paymentModel.js'
 import weeklyTimeSlotsModel from '../../../../models/weeklyTimeSlotsModel.js'
 import { handleResponse } from '../../../../utils/handlers.js'
 
@@ -30,6 +31,14 @@ const paymentStatusCapture = async (req, res) => {
                     { booking_status: 1 },
                     { where: { time_slot_id: timeSlot.workSlotId } }
                 )
+                await paymentModel.update(
+                    { 
+                        paymentStatus: 1,
+                        transactionId: req.body?.payload?.payment?.entity?.id,
+                    },
+                    { where: { orderId: req.body?.payload?.order?.entity?.id } }
+                )
+
             }
         }
 
@@ -64,6 +73,13 @@ const paymentUpdate = async (bookingData, res) => {
             { booking_status: 1 },
             { where: { time_slot_id: timeSlot.workSlotId } }
         )
+        await paymentModel.update(
+            { 
+                paymentStatus: 1,
+                transactionId: req.body?.payload?.payment?.entity?.id,
+            },
+            { where: { orderId: req.body?.payload?.order?.entity?.id } }
+        )
         return handleResponse({
             res,
             message: 'Successfully updated with status',
@@ -79,4 +95,4 @@ const paymentUpdate = async (bookingData, res) => {
     }
 }
 
-export default { paymentStatusCapture,paymentUpdate }
+export default { paymentStatusCapture, paymentUpdate }
