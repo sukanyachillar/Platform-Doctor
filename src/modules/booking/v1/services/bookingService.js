@@ -134,12 +134,14 @@ const listBooking = async ({ doctorId, date }, res) => {
                 message: 'No appointments found',
             });
         }
+        const totalAppointments = appointmentList.length()
+        console.log("no totalAppointments",totalAppointments)
 
-        const totalAppointments =  await bookingModel.count({
+        const completedAppointments =  await bookingModel.count({
           where: {
               workSlotId: { [Op.in]: appointmentList.map(appointment => appointment.time_slot_id) },
           },
-      });
+      });  // should match with appointment date of booking table
 
         const formattedAppointments = appointmentList.map(({ time_slot, bookings }) => {
             const formattedBookings = bookings.map(({ bookingId, customerName, customerPhone, bookingStatus }) => {
