@@ -1,5 +1,6 @@
 import { DataTypes } from 'sequelize'
-import sequelize from '../dbConnect.js'
+import sequelize from '../dbConnect.js';
+import bookingModel from './bookingModel.js';
 
 const paymentModel = sequelize.define('payment', {
   paymentId: {
@@ -44,6 +45,10 @@ const paymentModel = sequelize.define('payment', {
   },
   
 });
+// await paymentModel.hasOne(bookingModel, { foreignKey: 'bookingId' });
+
+// await weeklyTimeSlotsModel.hasOne(bookingModel, { foreignKey: 'workSlotId', as: 'booking' });
+// await bookingModel.belongsTo(weeklyTimeSlotsModel, { foreignKey: 'workSlotId', as: 'booking' });
 
 export default paymentModel;
 

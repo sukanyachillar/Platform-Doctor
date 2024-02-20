@@ -12,10 +12,10 @@ const paymentStatusCapture = async (req, res) => {
             if (req.body?.payload?.order?.entity?.status == 'paid') {
                 await bookingModel.update(
                     {
-                        paymentStatus: 1,
+                        // paymentStatus: 1,
                         bookingStatus: 0,
                         updatedAt: new Date(),
-                        transactionId: req.body?.payload?.payment?.entity?.id,
+                        // transactionId: req.body?.payload?.payment?.entity?.id,
                     },
                     {
                         where: {
@@ -52,23 +52,33 @@ const paymentUpdate = async (bookingData, res) => {
     try {
         console.log({bookingData})
         let { paymentId, orderId } = bookingData
-        await bookingModel.update(
-            {
-                paymentStatus: 1,
-                bookingStatus: 0,
-                updatedAt: new Date(),
-                transactionId: paymentId,
-            },
-            {
-                where: {
-                    orderId,
-                },
-            }
-        )
+        // await bookingModel.update(
+        //     {
+        //         // paymentStatus: 1,
+        //         bookingStatus: 0,
+        //         updatedAt: new Date(),
+        //         // transactionId: paymentId,
+        //     },
+        //     {
+        //         where: {
+        //             orderId,
+        //         },
+        //     }
+        // )
         const timeSlot = await bookingModel.findOne({
             attributes: ['workSlotId'],
             where: { orderId },
-        })
+        });
+
+        await bookingModel.update(
+            {
+                // paymentStatus: 1,
+                bookingStatus: 0,
+                updatedAt: new Date(),
+                // transactionId: paymentId,
+            },
+            { where: { workSlotId: timeSlot.workSlotId } }
+        )
         await weeklyTimeSlotsModel.update(
             { booking_status: 1 },
             { where: { time_slot_id: timeSlot.workSlotId } }
@@ -76,9 +86,9 @@ const paymentUpdate = async (bookingData, res) => {
         await paymentModel.update(
             { 
                 paymentStatus: 1,
-                transactionId: req.body?.payload?.payment?.entity?.id,
+                transactionId: paymentId,
             },
-            { where: { orderId: req.body?.payload?.order?.entity?.id } }
+            {  where: { orderId }, }
         )
         return handleResponse({
             res,

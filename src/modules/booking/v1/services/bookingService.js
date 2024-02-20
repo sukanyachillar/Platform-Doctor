@@ -8,7 +8,7 @@ import { Op } from 'sequelize'
 import doctorModel from '../../../../models/doctorModel.js'
 import paymentModel from '../../../../models/paymentModel.js'
 import userModel from '../../../../models/userModel.js';
-import generateUuid from '../../../../utils/generateUuid.js';
+import { generateUuid } from '../../../../utils/generateUuid.js';
 
 const bookAppointment = async (req, res) => {
     try {
@@ -129,7 +129,7 @@ const bookAppointment = async (req, res) => {
             amount,
             bookingDate: new Date(),
             appointmentDate,
-            orderId: data?.id,
+            // orderId: data?.id,
             workSlotId: existingTimeslot.time_slot_id,
         }
         const newBooking = new bookingModel(customerData)
@@ -139,7 +139,6 @@ const bookAppointment = async (req, res) => {
             orderId: data?.id,
         });
         const randomUUID = await generateUuid();
-        console.log("randomUUID>>>>>>", randomUUID)
         await userModel.create({
             uuid: randomUUID,
             userType: 'cutomer',
@@ -258,10 +257,29 @@ const getBookingReport = async (req, res) => {
             departmentId: doctorId,
             appointmentDate: { [Op.eq]: new Date(date) }, // Filter appointments on or after the specified date
         }
-        const bookingReport = await bookingModel.findAll({
-            where: queryPart,
-            attributes: ['customerName', 'orderId', 'amount', 'bookingStatus'], // Select specific attributes
-        })
+        // const bookingReport = await bookingModel.findAll({
+        //     where: queryPart,
+        //     attributes: ['customerName', 'orderId', 'amount', 'bookingStatus'], // Select specific attributes
+        // })
+
+        const getBookings = await bookingModel.findAll({
+          where: queryPart,
+          include: [
+            {
+              model: paymentModel,
+              attributes: ['orderId'],
+            },
+          ],
+          attributes: ['customerName', 'amount', 'bookingStatus', 'payment.orderId'], 
+        });
+        
+        const bookingReport = getBookings.map((booking) => ({
+            customerName: booking.customerName,
+            orderId: booking.payment ? booking.payment.orderId : "",
+            amount: booking.amount,
+            bookingStatus: booking.bookingStatus,
+          }))
+    
         return handleResponse({
             res,
             statusCode: 200,
@@ -282,7 +300,11 @@ const getBookingReport = async (req, res) => {
 const bookingConfirmationData = async (bookingData, res) => {
     try {
         let { bookingId } = bookingData
-        let response = await bookingModel.findOne({ where: { bookingId } })
+        let response = await bookingModel.findOne({ where: { bookingId } });
+        let paymentData = await paymentModel.findOne({ where: { bookingId } });
+
+        console.log("paymentData", paymentData)
+
         console.log({ response })
         const weeklyTimeSlot = await weeklyTimeSlotsModel.findOne({
             attributes: ['time_slot', 'date', 'doctor_id'],
@@ -314,7 +336,8 @@ const bookingConfirmationData = async (bookingData, res) => {
                 appointmentTimeSlot: weeklyTimeSlot.time_slot,
                 appointmentDate: weeklyTimeSlot.date,
                 paymentDate: data.updatedAt,
-                paymentID: data.transactionId,
+                // paymentID: data.transactionId,
+                paymentID: paymentData ? paymentData.transactionId : '',
             },
         })
     } catch (error) {

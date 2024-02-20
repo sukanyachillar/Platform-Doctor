@@ -8,7 +8,8 @@ import awsUtils from '../../../../utils/aws.js'
 import entityModel from '../../../../models/entityModel.js'
 import departmentModel from '../../../../models/departmentModel.js'
 import workScheduleModel from '../../../../models/workScheduleModel.js';
-import generateUuid from  '../../../../utils/generateUuid.js';
+import { generateUuid } from  '../../../../utils/generateUuid.js';
+import userModel from '../../../../models/userModel.js';
 
 const register = async (userData, res) => {  // enitity add
     try {
@@ -79,7 +80,7 @@ const addProfile = async (userData, image, res) => {  // doctor add
 
         let getUser = await authenticationModel.findOne({ where: { phone } })
 
-        let imageUrl = await awsUtils.uploadToS3(image)
+        // let imageUrl = await awsUtils.uploadToS3(image)
         getUser.entity_name = entity_name
         getUser.business_type_id = business_type == 'individual' ? 1 : 0
         getUser.email = email
@@ -109,7 +110,7 @@ const addProfile = async (userData, image, res) => {  // doctor add
                 phone,
                 department_id,
                 description,
-                profileImageUrl: imageUrl.Key ? imageUrl.Key : '',
+                // profileImageUrl: imageUrl.Key ? imageUrl.Key : '',
             })
         } else {
             userProfile.doctor_name = doctor_name
@@ -123,7 +124,7 @@ const addProfile = async (userData, image, res) => {  // doctor add
             userProfile.profile_completed = profile_completed
             userProfile.department_id = department_id
             userProfile.description = description ? description.trim() : ''
-            userProfile.profileImageUrl = imageUrl.Key ? imageUrl.Key : ''
+            // userProfile.profileImageUrl = imageUrl.Key ? imageUrl.Key : ''
         }
         let profile = await userProfile.save();
         const randomUUID = await generateUuid();
@@ -132,7 +133,7 @@ const addProfile = async (userData, image, res) => {  // doctor add
             uuid: randomUUID,
             userType: 'doctor',
             name: doctor_name,
-            phone
+            phone,
         });
 
         return handleResponse({
