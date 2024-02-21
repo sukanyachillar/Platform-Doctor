@@ -3,6 +3,7 @@ import config from '../../config.js'
 import CryptoJS from 'crypto-js'
 import { handleResponse } from './handlers.js'
 import entityModel from '../models/entityModel.js'
+import userModel from '../models/userModel.js'
 
 let accessTokenSecret = config.JWT_SECRET
 let accessExpiry = config.JWT_REFRESH_EXPIRATION
@@ -91,4 +92,74 @@ const decrypt = async (encryptedData, key) => {
         CryptoJS.enc.Utf8
     )
     return decryptedData
+}
+
+export const generateAdminTokens = async (email) => {
+    try {
+        let encryptData = await encrypt(email, process.env.CRYPTO_SECRET)
+        let accessToken = jwt.sign({ email: encryptData }, accessTokenSecret, {
+            expiresIn: accessExpiry,
+        })
+        let refreshToken = jwt.sign(
+            { email: encryptData },
+            refreshTokenSecret,
+            {
+                expiresIn: refreshExpiry,
+            }
+        )
+        return { accessToken, refreshToken }
+    } catch (err) {
+        console.log({ err })
+        return false
+    }
+}
+
+export const verifyAdminToken = async (req, res, next) => {
+    try {
+        let authHeader = req.headers.authorization
+        let accessToken = authHeader.split(' ')[1]
+        let verify = jwt.verify(accessToken, accessTokenSecret)
+        if (verify) {
+            let email = await decrypt(verify.email, process.env.CRYPTO_SECRET)
+            verify.email = email
+            let user = await userModel.findOne({
+                where: { email },
+                attributes: ['phone'],
+            })
+            let dataValues = user.get()
+            verify.entity_id = dataValues.phone;
+            req.user = verify
+            next()
+        }
+    } catch (err) {
+        console.log({ err })
+
+        return res
+            .status(403)
+            .json({ statusCode: 403, message: 'Token expired' })
+    }
+}
+
+export const verifyAdminRefreshToken = async (req, res) => {
+    try {
+        let authHeader = req.headers.authorization
+        let refreshToken = authHeader.split(' ')[1]
+        let verify = jwt.verify(refreshToken, refreshTokenSecret)
+
+        let accessToken = jwt.sign({ email: verify.email }, accessTokenSecret, {
+            expiresIn: accessExpiry,
+        })
+        return res.status(200).json({
+            statusCode: 200,
+            message: 'Successfully generated access token.',
+            data: {
+                accessToken,
+            },
+        })
+    } catch (err) {
+        console.log({ err })
+        return res
+            .status(403)
+            .json({ statusCode: 403, message: 'Token expired' })
+    }
 }
