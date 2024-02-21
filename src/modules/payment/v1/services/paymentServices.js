@@ -1,4 +1,5 @@
 import bookingModel from '../../../../models/bookingModel.js'
+import paymentModel from '../../../../models/paymentModel.js'
 import weeklyTimeSlotsModel from '../../../../models/weeklyTimeSlotsModel.js'
 import entityModel from '../../../../models/entityModel.js'
 import { handleResponse } from '../../../../utils/handlers.js'
@@ -14,10 +15,10 @@ const paymentStatusCapture = async (req, res) => {
             if (req.body?.payload?.order?.entity?.status == 'paid') {
                 await bookingModel.update(
                     {
-                        paymentStatus: 1,
+                        // paymentStatus: 1,
                         bookingStatus: 0,
                         updatedAt: new Date(),
-                        transactionId: req.body?.payload?.payment?.entity?.id,
+                        // transactionId: req.body?.payload?.payment?.entity?.id,
                     },
                     {
                         where: {
@@ -33,6 +34,14 @@ const paymentStatusCapture = async (req, res) => {
                     { booking_status: 1 },
                     { where: { time_slot_id: timeSlot.workSlotId } }
                 )
+                await paymentModel.update(
+                    { 
+                        paymentStatus: 1,
+                        transactionId: req.body?.payload?.payment?.entity?.id,
+                    },
+                    { where: { orderId: req.body?.payload?.order?.entity?.id } }
+                )
+
             }
         }
 
@@ -48,10 +57,10 @@ const paymentUpdate = async (bookingData, res) => {
         let { paymentId, orderId } = bookingData
         await bookingModel.update(
             {
-                paymentStatus: 1,
+                // paymentStatus: 1,
                 bookingStatus: 0,
                 updatedAt: new Date(),
-                transactionId: paymentId,
+                // transactionId: paymentId,
             },
             {
                 where: {
@@ -62,11 +71,8 @@ const paymentUpdate = async (bookingData, res) => {
         const timeSlot = await bookingModel.findOne({
             attributes: ['workSlotId', 'customerName', 'entityId'],
             where: { orderId },
-        })
-        // const getEntity = await entityModel.findOne({
-        //     where: { entity_id: timeSlot.entityId },
-        //     attributes:['phone']
-        // })
+        });
+
         await weeklyTimeSlotsModel.update(
             { booking_status: 1 },
             { where: { time_slot_id: timeSlot.workSlotId } }
@@ -113,6 +119,13 @@ const paymentUpdate = async (bookingData, res) => {
                 console.log({ error })
             })
 
+        await paymentModel.update(
+            { 
+                paymentStatus: 1,
+                transactionId: paymentId,
+            },
+            {  where: { orderId }, }
+        )
         return handleResponse({
             res,
             message: 'Successfully updated with status',
