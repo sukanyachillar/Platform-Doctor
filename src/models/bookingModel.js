@@ -1,6 +1,9 @@
 import { DataTypes } from 'sequelize'
 import sequelize from '../dbConnect.js'
 import paymentModel from './paymentModel.js';
+import userModel from './userModel.js';
+import entityModel from './entityModel.js';
+import departmentModel from './departmentModel.js';
 
 const bookingModel = sequelize.define('booking', {
   bookingId: {
@@ -9,16 +12,21 @@ const bookingModel = sequelize.define('booking', {
     autoIncrement: true, 
     allowNull: false,
   },
-  customerName: {
-    type: DataTypes.STRING,
+  customerId: {
+    type: DataTypes.INTEGER, 
     allowNull: true,
     unique: false,
   },
-  customerPhone: {
-    type: DataTypes.STRING,
-    allowNull: true,
-    unique: false,
-  },
+  // customerName: {
+  //   type: DataTypes.STRING,
+  //   allowNull: true,
+  //   unique: false,
+  // },
+  // customerPhone: {
+  //   type: DataTypes.STRING,
+  //   allowNull: true,
+  //   unique: false,
+  // },
   entityId: {
     type: DataTypes.STRING,
     allowNull: true,
@@ -70,11 +78,11 @@ const bookingModel = sequelize.define('booking', {
     allowNull: true,
     unique: false,
   },
-  // orderId: {
-  //   type: DataTypes.STRING, 
-  //   allowNull: true,
-  //   unique: false,
-  // },
+  orderId: {
+    type: DataTypes.STRING, 
+    allowNull: true,
+    unique: false,
+  },
   transactionId: {
     type: DataTypes.STRING, 
     allowNull: true,
@@ -94,6 +102,7 @@ const bookingModel = sequelize.define('booking', {
 });
 
 bookingModel.hasOne(paymentModel, { foreignKey: 'bookingId' });
+
 
 export default bookingModel;
 

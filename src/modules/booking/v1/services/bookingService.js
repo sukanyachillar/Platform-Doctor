@@ -28,13 +28,6 @@ const bookAppointment = async (req, res) => {
         const getEntity = await entityModel.findOne({
             where: { entity_id: doctorProfile.entity_id },
         })
-
-        console.log({
-            time_slot: timeSlot,
-            doctor_id: doctorId,
-            date: appointmentDate,
-        })
-
         const existingTimeslot = await weeklyTimeSlotsModel.findOne({
             where: {
                 time_slot: timeSlot,
@@ -119,31 +112,30 @@ const bookAppointment = async (req, res) => {
                     message: data?.Error?.error?.description,
                 },
             })
+            const randomUUID = await generateUuid();
+            const newCustomer = await userModel.create({
+                uuid: randomUUID,
+                userType: 'cutomer',
+                name: customerName,
+                phone: customerPhone,
+            });
 
-        const customerData = {
-            customerName,
-            customerPhone,
-            entityId: doctorProfile.entity_id,
-            departmentId: doctorProfile.department_id,
-            bookingType: 1,
-            amount,
-            bookingDate: new Date(),
-            appointmentDate,
-            // orderId: data?.id,
-            workSlotId: existingTimeslot.time_slot_id,
-        }
+            const customerData = {
+                  customerId: newCustomer.userId,
+                  entityId: doctorProfile.entity_id,
+                  departmentId: doctorProfile.department_id,
+                  bookingType: 1,
+                  amount,
+                  bookingDate: new Date(),
+                  appointmentDate,
+                  orderId: data?.id,
+                  workSlotId: existingTimeslot.time_slot_id,
+            }
         const newBooking = new bookingModel(customerData)
         const addedBooking = await newBooking.save();
         await paymentModel.create({
             bookingId: addedBooking.bookingId,
             orderId: data?.id,
-        });
-        const randomUUID = await generateUuid();
-        await userModel.create({
-            uuid: randomUUID,
-            userType: 'cutomer',
-            name: customerName,
-            phone: customerPhone,
         });
         
         return handleResponse({
@@ -257,28 +249,28 @@ const getBookingReport = async (req, res) => {
             departmentId: doctorId,
             appointmentDate: { [Op.eq]: new Date(date) }, // Filter appointments on or after the specified date
         }
-        // const bookingReport = await bookingModel.findAll({
-        //     where: queryPart,
-        //     attributes: ['customerName', 'orderId', 'amount', 'bookingStatus'], // Select specific attributes
-        // })
+        const bookingReport = await bookingModel.findAll({
+            where: queryPart,
+            attributes: ['customerName', 'orderId', 'amount', 'bookingStatus'], // Select specific attributes
+        })
 
-        const getBookings = await bookingModel.findAll({
-          where: queryPart,
-          include: [
-            {
-              model: paymentModel,
-              attributes: ['orderId'],
-            },
-          ],
-          attributes: ['customerName', 'amount', 'bookingStatus', 'payment.orderId'], 
-        });
+        // const getBookings = await bookingModel.findAll({
+        //   where: queryPart,
+        //   include: [
+        //     {
+        //       model: paymentModel,
+        //       attributes: ['orderId'],
+        //     },
+        //   ],
+        //   attributes: ['customerName', 'amount', 'bookingStatus', 'payment.orderId'], 
+        // });
         
-        const bookingReport = getBookings.map((booking) => ({
-            customerName: booking.customerName,
-            orderId: booking.payment ? booking.payment.orderId : "",
-            amount: booking.amount,
-            bookingStatus: booking.bookingStatus,
-          }))
+        // const bookingReport = getBookings.map((booking) => ({
+        //     customerName: booking.customerName,
+        //     orderId: booking.payment ? booking.payment.orderId : "",
+        //     amount: booking.amount,
+        //     bookingStatus: booking.bookingStatus,
+        //   }))
     
         return handleResponse({
             res,
@@ -302,8 +294,6 @@ const bookingConfirmationData = async (bookingData, res) => {
         let { bookingId } = bookingData
         let response = await bookingModel.findOne({ where: { bookingId } });
         let paymentData = await paymentModel.findOne({ where: { bookingId } });
-
-        console.log("paymentData", paymentData)
 
         console.log({ response })
         const weeklyTimeSlot = await weeklyTimeSlotsModel.findOne({

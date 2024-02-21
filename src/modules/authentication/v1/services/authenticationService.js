@@ -128,7 +128,6 @@ const addProfile = async (userData, image, res) => {  // doctor add
         }
         let profile = await userProfile.save();
         const randomUUID = await generateUuid();
-        console.log("randomUUID>>>>>>", randomUUID)
         await userModel.create({
             uuid: randomUUID,
             userType: 'doctor',
@@ -202,9 +201,8 @@ const getProfile = async (req, res) => {
                 where: { department_id: userProfile.department_id },
             })
         }
-        let key = userProfile?.profileImageUrl
-        const url = await awsUtils.getPresignUrlPromiseFunction(key)
-        console.log({ url })
+        // let key = userProfile?.profileImageUrl
+        // const url = await awsUtils.getPresignUrlPromiseFunction(key)
 
         return handleResponse({
             res,
@@ -218,7 +216,7 @@ const getProfile = async (req, res) => {
                 consultation_time: userProfile?.consultation_time,
                 consultation_charge: userProfile?.consultation_charge,
                 doctor_id: userProfile?.doctor_id,
-                profileImageUrl: url,
+                // profileImageUrl: url,
                 description: userProfile?.description,
                 // uniqueDays,
                 designation: getDepartment?.department_name,
@@ -275,9 +273,8 @@ const getProfileForCustomer = async ({ phone }, res) => {
                 where: { department_id: userProfile.department_id },
             })
         }
-        let key = userProfile?.profileImageUrl
-        const url = await awsUtils.getPresignUrlPromiseFunction(key)
-        console.log({ url })
+        // let key = userProfile?.profileImageUrl
+        // const url = await awsUtils.getPresignUrlPromiseFunction(key)
 
         return handleResponse({
             res,
@@ -291,7 +288,7 @@ const getProfileForCustomer = async ({ phone }, res) => {
                 consultation_time: userProfile?.consultation_time,
                 consultation_charge: userProfile?.consultation_charge,
                 doctor_id: userProfile?.doctor_id,
-                profileImageUrl: url,
+                // profileImageUrl: url,
                 description: userProfile?.description,
                 uniqueDays,
                 designation: getDepartment?.department_name,

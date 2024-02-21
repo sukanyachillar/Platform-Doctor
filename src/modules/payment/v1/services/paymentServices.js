@@ -52,24 +52,6 @@ const paymentUpdate = async (bookingData, res) => {
     try {
         console.log({bookingData})
         let { paymentId, orderId } = bookingData
-        // await bookingModel.update(
-        //     {
-        //         // paymentStatus: 1,
-        //         bookingStatus: 0,
-        //         updatedAt: new Date(),
-        //         // transactionId: paymentId,
-        //     },
-        //     {
-        //         where: {
-        //             orderId,
-        //         },
-        //     }
-        // )
-        const timeSlot = await bookingModel.findOne({
-            attributes: ['workSlotId'],
-            where: { orderId },
-        });
-
         await bookingModel.update(
             {
                 // paymentStatus: 1,
@@ -77,8 +59,17 @@ const paymentUpdate = async (bookingData, res) => {
                 updatedAt: new Date(),
                 // transactionId: paymentId,
             },
-            { where: { workSlotId: timeSlot.workSlotId } }
+            {
+                where: {
+                    orderId,
+                },
+            }
         )
+        const timeSlot = await bookingModel.findOne({
+            attributes: ['workSlotId'],
+            where: { orderId },
+        });
+
         await weeklyTimeSlotsModel.update(
             { booking_status: 1 },
             { where: { time_slot_id: timeSlot.workSlotId } }
