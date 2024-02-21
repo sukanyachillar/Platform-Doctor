@@ -2,7 +2,7 @@ import { DataTypes } from 'sequelize'
 import sequelize from '../dbConnect.js'
 // import bookingModel from './bookingModel.js'
 // In other files
-import { userModel, doctorModel, bookingModel, paymentModel } from'./models';
+import { userModel, doctorModel, bookingModel, paymentModel } from'../models';
 
 
 const weeklyTimeSlotsModel = sequelize.define('weeklyTimeSlots', {
