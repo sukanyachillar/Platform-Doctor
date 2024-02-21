@@ -2,8 +2,7 @@ import { DataTypes } from 'sequelize'
 import sequelize from '../dbConnect.js'
 import paymentModel from './paymentModel.js';
 import userModel from './userModel.js';
-import entityModel from './entityModel.js';
-import departmentModel from './departmentModel.js';
+import doctorModel from './doctorModel.js';
 
 const bookingModel = sequelize.define('booking', {
   bookingId: {
@@ -100,6 +99,9 @@ const bookingModel = sequelize.define('booking', {
   },
   
 });
+
+bookingModel.belongsTo(userModel, { foreignKey: 'customerId', as: 'customer' });
+bookingModel.belongsTo(doctorModel, { foreignKey: 'entityId', as: 'doctor' });
 
 bookingModel.hasOne(paymentModel, { foreignKey: 'bookingId' });
 

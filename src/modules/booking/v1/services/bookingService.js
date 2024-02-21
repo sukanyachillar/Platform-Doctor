@@ -115,7 +115,7 @@ const bookAppointment = async (req, res) => {
             const randomUUID = await generateUuid();
             const newCustomer = await userModel.create({
                 uuid: randomUUID,
-                userType: 'cutomer',
+                userType: 1,
                 name: customerName,
                 phone: customerPhone,
             });
@@ -369,10 +369,54 @@ const updateBookingStatus = async (bookingData, res) => {
     }
 }
 
+const listCustomers = async ({ page = 1, pageSize = 10 } , res) => {
+    try {
+        const bookings = await bookingModel.findAll({
+            attributes: ['bookingId', 'bookingDate', 'appointmentDate', 'bookingStatus'],
+            include: [
+                {
+                    model: userModel,
+                    as: 'customer',
+                    attributes: ['name', 'phone'],
+                    where: { userType: 1 }, // Assuming userType 1 is for customers
+                  },
+                  {
+                    model: doctorModel,
+                    as: 'doctor', // Use the alias set in the associations
+                    attributes: ['doctor_name'],
+                  },
+            ],
+            limit: pageSize,
+            offset: (page - 1) * pageSize,
+            order: [['appointmentDate', 'ASC']], // Adjust the order as needed
+           
+          });
+
+          console.log("bookings>>>>>>>>>>>>>>", bookings )
+          
+        return handleResponse({
+            res,
+            message: 'Sucessfully fetched all cutomers',
+            statusCode: 200,
+            data: {
+                bookings,
+            }
+        })
+    } catch (err) {
+        console.log({ 'Error while updating booking': err })
+        return handleResponse({
+            res,
+            message: 'Error while updating booking status',
+            statusCode: 422,
+        })
+    }
+}
+
 export default {
     bookAppointment,
     listBooking,
     getBookingReport,
     bookingConfirmationData,
     updateBookingStatus,
+    listCustomers,
 }
