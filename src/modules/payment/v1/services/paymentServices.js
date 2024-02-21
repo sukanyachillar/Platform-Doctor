@@ -1,6 +1,9 @@
 import bookingModel from '../../../../models/bookingModel.js'
 import weeklyTimeSlotsModel from '../../../../models/weeklyTimeSlotsModel.js'
-import { handleResponse } from '../../../../utils/handlers.js'
+import entityModel from '../../../../models/entityModel.js'
+import { handleResponse } from '../../../../utils/handlers.js';
+import admin from 'firebase-admin';
+import serviceAccount from '../../../../utils/chillarprototype-firebase-adminsdk-7wsnl-aff859ec9b.json' assert { type: "json" };;
 
 const paymentStatusCapture = async (req, res) => {
     try {
@@ -57,13 +60,45 @@ const paymentUpdate = async (bookingData, res) => {
             }
         )
         const timeSlot = await bookingModel.findOne({
-            attributes: ['workSlotId'],
+            attributes: ['workSlotId','customerName','entityId'],
             where: { orderId },
         })
+        // const getEntity = await entityModel.findOne({
+        //     where: { entity_id: timeSlot.entityId },
+        //     attributes:['phone']
+        // })
         await weeklyTimeSlotsModel.update(
             { booking_status: 1 },
             { where: { time_slot_id: timeSlot.workSlotId } }
         )
+        let workSlotData = await weeklyTimeSlotsModel.findOne({where:{time_slot_id: timeSlot.workSlotId,
+       }})
+        
+        admin.initializeApp({
+            credential: admin.credential.cert(serviceAccount)
+        });
+
+        const registrationToken = 'etfHl3VTQgSJkxZitec_gq:APA91bFToY4Qd4d93FqviQk3RN1SdJwkoZgSp_3t2CchmVENe8drTvgjyjN6dD4yjDYtl_f5pf0pKdf8FJoYN0jwZ0mdnqL0goXIgjVtfEzqG4lUcPPWb5fa83M2bbhVeJbNiNK2Xces'
+        console.log(timeSlot.customerName,workSlotData.date,workSlotData.day)
+        const payload = { 
+            notification: {
+                title: 'Appointment scheduled!',
+                body: `Mr/Mrs. ${timeSlot.customerName} has booked an appointment for ${workSlotData.date} at ${workSlotData.time_slot}.`
+            }
+        };
+        
+        const options = {
+            priority: "high"
+        };
+        
+        admin.messaging().send(registrationToken, payload, options)
+         .then(function (response) {
+           res.send('message succesfully sent !')
+         })
+         .catch(function (error) {
+           res.send(error).status(500)
+         });
+
         return handleResponse({
             res,
             message: 'Successfully updated with status',

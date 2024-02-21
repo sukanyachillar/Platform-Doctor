@@ -11,7 +11,7 @@ import workScheduleModel from '../../../../models/workScheduleModel.js'
 
 const register = async (userData, res) => {
     try {
-        const { phone } = userData
+        const { phone,deviceId } = userData
         const getUser = await authenticationModel.findOne({ where: { phone } })
         let tokens = await generateTokens(phone)
         if (getUser) {
