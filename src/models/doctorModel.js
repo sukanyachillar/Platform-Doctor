@@ -1,5 +1,6 @@
 import { DataTypes } from 'sequelize'
-import sequelize from '../dbConnect.js'
+import sequelize from '../dbConnect.js';
+import userModel from './userModel.js';
 
 const doctorModel = sequelize.define('doctor', {
     doctor_id: {

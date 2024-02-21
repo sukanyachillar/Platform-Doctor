@@ -1,8 +1,7 @@
 import { DataTypes } from 'sequelize'
 import sequelize from '../dbConnect.js'
 import paymentModel from './paymentModel.js';
-import userModel from './userModel.js';
-import doctorModel from './doctorModel.js';
+
 
 const bookingModel = sequelize.define('booking', {
   bookingId: {
@@ -100,10 +99,16 @@ const bookingModel = sequelize.define('booking', {
   
 });
 
-bookingModel.belongsTo(userModel, { foreignKey: 'customerId', as: 'customer' });
-bookingModel.belongsTo(doctorModel, { foreignKey: 'entityId', as: 'doctor' });
+// bookingModel.belongsTo(userModel, { foreignKey: 'customerId', as: 'customer' });
+// bookingModel.belongsTo(doctorModel, { foreignKey: 'entityId', as: 'doctor' });
+import userModel from './userModel.js';
+import weeklyTimeSlotsModel from './weeklyTimeSlotsModel.js';
 
 bookingModel.hasOne(paymentModel, { foreignKey: 'bookingId' });
+// bookingModel.belongsTo(userModel, { foreignKey: 'customerId', as: 'user' });
+
+bookingModel.belongsTo(userModel, { foreignKey: 'customerId', as: 'customer' });
+bookingModel.hasMany(weeklyTimeSlotsModel, { foreignKey: 'workSlotId', as: 'weeklyTimeSlots' });
 
 
 export default bookingModel;

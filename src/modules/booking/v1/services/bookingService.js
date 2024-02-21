@@ -9,6 +9,7 @@ import doctorModel from '../../../../models/doctorModel.js'
 import paymentModel from '../../../../models/paymentModel.js'
 import userModel from '../../../../models/userModel.js';
 import { generateUuid } from '../../../../utils/generateUuid.js';
+import Sequelize from 'sequelize';
 
 const bookAppointment = async (req, res) => {
     try {
@@ -369,39 +370,69 @@ const updateBookingStatus = async (bookingData, res) => {
     }
 }
 
-const listCustomers = async ({ page = 1, pageSize = 10 } , res) => {
+const listCustomers = async ({ page = 1, pageSize = 10, filter= {} } , res) => {
     try {
-        const bookings = await bookingModel.findAll({
-            attributes: ['bookingId', 'bookingDate', 'appointmentDate', 'bookingStatus'],
+        // const filterConditions = {};
+
+        //      if (filter.appointmentDate) {
+        //        filterConditions.appointmentDate = filter.appointmentDate;
+        //      }
+        //      if (filter.doctorId) {
+        //         filterConditions.doctor_id = filter.doctorId;
+        //      }
+        const usersWithDetails = await userModel.findAndCountAll({
+            attributes: ['userId', 'name', 'phone'],
+            where: {
+              userType: 1, // Assuming userType 1 is for customers
+            },
             include: [
-                {
-                    model: userModel,
-                    as: 'customer',
-                    attributes: ['name', 'phone'],
-                    where: { userType: 1 }, // Assuming userType 1 is for customers
-                  },
+              {
+                model: bookingModel,
+                as: 'bookings', // Specify the alias for the association
+                attributes: ['bookingId', 'bookingDate', 'appointmentDate', 'bookingStatus', 'customerId', 'workSlotId'],
+                where: {
+                  customerId: Sequelize.col('user.userId'),
+                },
+                include: [
                   {
-                    model: doctorModel,
-                    as: 'doctor', // Use the alias set in the associations
-                    attributes: ['doctor_name'],
+                    model: weeklyTimeSlotsModel,
+                    as: 'weeklyTimeSlots', // Specify the alias for the association
+                    attributes: ['time_slot', 'time_slot_id', 'date', 'day', 'doctor_id'],
+                    where: {
+                      time_slot_id: Sequelize.col('bookings.workSlotId'),
+                    },
+                    include: [
+                      {
+                        model: doctorModel,
+                        as: 'doctor', // Specify the alias for the association
+                        attributes: ['doctor_id', 'doctor_name'],
+                        where: {
+                          doctor_id: Sequelize.col('weeklyTimeSlots.doctor_id'),
+                        },
+                      },
+                    ],
                   },
+                ],
+              },
             ],
             limit: pageSize,
             offset: (page - 1) * pageSize,
-            order: [['appointmentDate', 'ASC']], // Adjust the order as needed
-           
+            order: [['createdAt', 'ASC']], // Adjust the order as needed
           });
-
-          console.log("bookings>>>>>>>>>>>>>>", bookings )
-          
-        return handleResponse({
+      
+          const totalPages = Math.ceil(usersWithDetails.count / pageSize);
+      
+          return handleResponse({
             res,
-            message: 'Sucessfully fetched all cutomers',
+            message: 'Successfully fetched all customers',
             statusCode: 200,
             data: {
-                bookings,
-            }
-        })
+              users: usersWithDetails.rows,
+              totalPages,
+              currentPage: page,
+              totalCount: usersWithDetails.count,
+            },
+          });
     } catch (err) {
         console.log({ 'Error while updating booking': err })
         return handleResponse({

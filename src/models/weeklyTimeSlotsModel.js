@@ -31,9 +31,8 @@ const weeklyTimeSlotsModel = sequelize.define('weeklyTimeSlots', {
         defaultValue: 0,
     },
 })
-// await weeklyTimeSlotsModel.belongsTo(bookingModel, {
-//     foreignKey: 'workSlotId', // Adjust the field name if needed
-//     as: 'booking', // Adjust the alias as needed
-// });
+
+weeklyTimeSlotsModel.belongsTo(bookingModel, { foreignKey: 'workSlotId', as: 'booking' });
+weeklyTimeSlotsModel.belongsTo(doctorModel, { foreignKey: 'doctor_id', as: 'doctor' });
 
 export default weeklyTimeSlotsModel
