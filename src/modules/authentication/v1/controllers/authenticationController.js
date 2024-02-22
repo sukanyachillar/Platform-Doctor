@@ -106,7 +106,7 @@ const listDoctors = async (req, res) => {
 
 const listDepartments = async(req,res)=>{
   try{
-    let data = await authenticationService.departmentList(req.body,res);
+    let data = await authenticationService.departmentList(req.query,req.body,res);
     return data;
 
   }catch(err){

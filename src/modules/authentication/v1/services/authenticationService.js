@@ -636,9 +636,9 @@ const doctorsList = async (requestData, res) => {
     }
 }
 
-const departmentList = async (requestData, res) => {
+const departmentList = async (requestData, userData, res) => {
     try {
-        //  let { entity_id } = requestData
+        let { entity_id } = userData
         const page = parseInt(requestData.page) || 1
         const pageSize = parseInt(requestData.limit) || 10
         const searchQuery = requestData.searchQuery || ''
