@@ -622,7 +622,7 @@ const doctorsList = async (requestData, res) => {
     return handleResponse({
       res,
       statusCode: "200",
-      data: { response: response.records, currentPage: page, totalPages },
+      data: { response: response.records, currentPage: page, totalPages,totalCount:count },
     });
   } catch (error) {
     console.log({ error });
