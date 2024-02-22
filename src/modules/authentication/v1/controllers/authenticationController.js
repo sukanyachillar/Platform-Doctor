@@ -16,6 +16,7 @@ const addProfile = async (req, res) => {
     try {
         const profileAdded = await authenticationService.addProfile(
             req.body,
+            req.user,
             req.file,
             res
         )
@@ -89,6 +90,15 @@ const updateEntityStatus = async (req, res) => {
     }
 }
 
+const listDoctors = async (req, res) => {
+    try {
+        let data = await authenticationService.doctorsList(req.query, res);
+        return data;
+    } catch (err) {
+        console.log({ err })
+    }
+}
+
 export default {
     register,
     addProfile,
@@ -98,4 +108,5 @@ export default {
     fetchBankDetails,
     getProfileForCustomer,
     updateEntityStatus,
+    listDoctors
 }

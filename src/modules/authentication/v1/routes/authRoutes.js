@@ -34,5 +34,8 @@ router.post(
     '/update-status',
     verifyToken,
     authenticationController.updateEntityStatus
-)
+);
+
+router.post('/list-doctors',authenticationController.listDoctors)
+
 export default router
