@@ -1,5 +1,6 @@
 import { DataTypes } from 'sequelize'
 import sequelize from '../dbConnect.js'
+import doctorModel from './doctorModel.js'
 
 const departmentModel = sequelize.define('department', {
     department_id: {
@@ -35,5 +36,7 @@ const departmentModel = sequelize.define('department', {
         allowNull: false,
     },
 })
+
+departmentModel.hasOne(doctorModel, { foreignKey: 'department_id' })
 
 export default departmentModel
