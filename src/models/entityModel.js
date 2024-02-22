@@ -89,7 +89,6 @@ const entityModel = sequelize.define('entity', {
         allowNull: false,
     },
 })
-entityModel.hasOne(doctorModel, { foreignKey: 'entity_id' });
 
 
 export default entityModel

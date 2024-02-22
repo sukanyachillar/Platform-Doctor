@@ -37,6 +37,5 @@ const departmentModel = sequelize.define('department', {
     },
 })
 
-departmentModel.hasOne(doctorModel, { foreignKey: 'department_id' })
 
 export default departmentModel
