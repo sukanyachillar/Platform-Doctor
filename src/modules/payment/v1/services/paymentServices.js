@@ -96,4 +96,10 @@ const paymentUpdate = async (bookingData, res) => {
     }
 }
 
+const transactionHistory = async(req,res)=>{
+    try{
+
+    }c
+}
+
 export default { paymentStatusCapture, paymentUpdate }
