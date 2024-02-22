@@ -80,4 +80,5 @@ const doctorModel = sequelize.define('doctor', {
     },
 })
 
-export default doctorModel
+export default doctorModel;
+

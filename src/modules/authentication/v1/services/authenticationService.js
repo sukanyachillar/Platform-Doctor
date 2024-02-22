@@ -6,6 +6,8 @@ import {
   generateTokens,
   generateAdminTokens,
 } from "../../../../utils/token.js";
+import { Op } from "sequelize";
+
 // import upload from '../../../../middlewares/multerConfig.js';
 import awsUtils from "../../../../utils/aws.js";
 import entityModel from "../../../../models/entityModel.js";
@@ -126,7 +128,7 @@ const register = async (userData, res) => {
   }
 };
 
-const addProfile = async (userData, image, res) => {
+const addProfile = async (userData, user, image, res) => {
   // doctor add
   try {
     let {
@@ -147,9 +149,11 @@ const addProfile = async (userData, image, res) => {
       description,
     } = userData;
 
-    let getUser = await authenticationModel.findOne({ where: { phone } });
+    let getUser = await authenticationModel.findOne({
+      where: { phone: user.phone },
+    });
 
-    let imageUrl = await awsUtils.uploadToS3(image);
+    // let imageUrl = await awsUtils.uploadToS3(image);
     getUser.entity_name = entity_name;
     getUser.business_type_id = business_type == "individual" ? 1 : 0;
     getUser.email = email;
@@ -179,7 +183,7 @@ const addProfile = async (userData, image, res) => {
         phone,
         department_id,
         description,
-        profileImageUrl: imageUrl.Key ? imageUrl.Key : "",
+        // profileImageUrl: imageUrl.Key ? imageUrl.Key : "",
       });
     } else {
       userProfile.doctor_name = doctor_name;
@@ -191,7 +195,7 @@ const addProfile = async (userData, image, res) => {
       userProfile.profile_completed = profile_completed;
       userProfile.department_id = department_id;
       userProfile.description = description ? description.trim() : "";
-      userProfile.profileImageUrl = imageUrl.Key ? imageUrl.Key : "";
+      //  userProfile.profileImageUrl = imageUrl.Key ? imageUrl.Key : "";
     }
     let profile = await userProfile.save();
     const randomUUID = await generateUuid();
@@ -544,6 +548,86 @@ const updateProfileDetails = async (doctorProfile, params, res) => {
     });
   }
 };
+const doctorsList = async (requestData, res) => {
+  try {
+    const page = parseInt(requestData.page) || 1;
+    const pageSize = parseInt(requestData.limit) || 10;
+    const searchQuery = requestData.searchQuery || "";
+    const offset = (page - 1) * pageSize;
+
+    const { count, rows: records } = await doctorModel.findAndCountAll({
+      attributes: [
+        "doctor_id",
+        "doctor_name",
+        "qualification",
+        "phone",
+        "consultation_time",
+        "consultation_charge",
+        "status",
+        "description",
+        "department_id",
+        "entity_id",
+      ],
+      where: {
+        [Op.or]: [
+          { doctor_name: { [Op.like]: `%${searchQuery}%` } }, // Search for doctor_name containing the search query
+          { phone: { [Op.like]: `%${searchQuery}%` } }, // Search for phone containing the search query
+        ],
+      },
+      limit: pageSize,
+      offset: offset,
+    });
+    const totalPages = Math.ceil(count / pageSize); // Calculate total number of pages
+
+    const departmentIds = records.map((record) => record.department_id);
+    const entityIds = records.map((record) => record.entity_id);
+    const departments = await departmentModel.findAll({
+      where: {
+        department_id: departmentIds,
+      },
+      attributes: ["department_id", "department_name"],
+    });
+
+    const entities = await entityModel.findAll({
+      where: {
+        entity_id: entityIds,
+      },
+      attributes: ["entity_id", "entity_name"],
+    });
+    const departmentMap = {};
+    departments.forEach((department) => {
+      departmentMap[department.department_id] = department.department_name;
+    });
+
+    const entityMap = {};
+    entities.forEach((entity) => {
+      entityMap[entity.entity_id] = entity.entity_name;
+    });
+
+    // Merging department_name and entity_name into doctor records
+    records.forEach((record) => {
+      record.department_name = departmentMap[record.department_id];
+      record.entity_name = entityMap[record.entity_id];
+      delete record.department_id; // Optional: Remove department_id and entity_id from the record
+      delete record.entity_id;
+    });
+    const response = {
+      records: records.map((record) => ({
+        ...record.dataValues,
+        department_name: record.department_name,
+        entity_name: record.entity_name,
+      })),
+    };
+    console.log(response);
+    return handleResponse({
+      res,
+      statusCode: "200",
+      data: { response: response.records, currentPage: page, totalPages },
+    });
+  } catch (error) {
+    console.log({ error });
+  }
+};
 
 export default {
   register,
@@ -557,4 +641,5 @@ export default {
   updateProfileDetails,
   adminLogin,
   adminRegister,
+  doctorsList,
 };

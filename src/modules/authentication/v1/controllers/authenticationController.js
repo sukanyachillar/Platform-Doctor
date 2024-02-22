@@ -13,17 +13,18 @@ const register = async (req, res) => {
 };
 
 const addProfile = async (req, res) => {
-  try {
-    const profileAdded = await authenticationService.addProfile(
-      req.body,
-      req.file,
-      res
-    );
-    return profileAdded;
-  } catch (error) {
-    console.log({ error });
-  }
-};
+    try {
+        const profileAdded = await authenticationService.addProfile(
+            req.body,
+            req.user,
+            req.file,
+            res
+        )
+        return profileAdded
+    } catch (error) {
+        console.log({ error })
+    }
+}
 
 const getProfile = async (req, res) => {
   try {
@@ -94,14 +95,25 @@ const updateProfile = async (req, res) => {
   }
 };
 
+const listDoctors = async (req, res) => {
+    try {
+        let data = await authenticationService.doctorsList(req.query, res);
+        return data;
+    } catch (err) {
+        console.log({ err })
+    }
+}
+
 export default {
-  register,
-  addProfile,
-  getProfile,
-  addDept,
-  getGeneralSettings,
-  fetchBankDetails,
-  getProfileForCustomer,
-  updateEntityStatus,
-  updateProfile
-};
+    register,
+    addProfile,
+    getProfile,
+    addDept,
+    getGeneralSettings,
+    fetchBankDetails,
+    getProfileForCustomer,
+    updateEntityStatus,
+    listDoctors,
+    updateProfile
+
+}
