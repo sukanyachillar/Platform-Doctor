@@ -41,5 +41,5 @@ router.post(
 );
 router.post("/update-profile", authenticationController.updateProfile);
 router.post('/list-doctors',authenticationController.listDoctors);
-router.post('/list-departments',authenticationController.listDepartments)
+router.get('/list-departments',authenticationController.listDepartments)
 export default router;
