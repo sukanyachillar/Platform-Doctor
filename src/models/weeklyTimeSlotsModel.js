@@ -1,6 +1,6 @@
 import { DataTypes } from 'sequelize'
 import sequelize from '../dbConnect.js'
-import bookingModel from './bookingModel.js'
+// import bookingModel from './bookingModel.js'
 
 const weeklyTimeSlotsModel = sequelize.define('weeklyTimeSlots', {
     time_slot_id: {
@@ -32,7 +32,7 @@ const weeklyTimeSlotsModel = sequelize.define('weeklyTimeSlots', {
     },
 })
 
-weeklyTimeSlotsModel.belongsTo(bookingModel, { foreignKey: 'workSlotId', as: 'booking' });
-weeklyTimeSlotsModel.belongsTo(doctorModel, { foreignKey: 'doctor_id', as: 'doctor' });
+// weeklyTimeSlotsModel.belongsTo(bookingModel, { foreignKey: 'workSlotId', as: 'booking' });
+// weeklyTimeSlotsModel.belongsTo(doctorModel, { foreignKey: 'doctor_id', as: 'doctor' });
 
 export default weeklyTimeSlotsModel
