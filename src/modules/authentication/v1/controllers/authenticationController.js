@@ -114,6 +114,15 @@ const listDepartments = async(req,res)=>{
   }
 }
 
+const listEntity = async(req,res)=>{
+  try{
+    let data = await authenticationService.entityList(req.query,res);
+    return data;
+  }catch(err){
+    console.log({err})
+  }
+}
+
 export default {
     register,
     addProfile,
@@ -125,6 +134,7 @@ export default {
     updateEntityStatus,
     listDoctors,
     updateProfile,
-    listDepartments
+    listDepartments,
+    listEntity
 
 }

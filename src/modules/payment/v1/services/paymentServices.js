@@ -1,7 +1,10 @@
 import bookingModel from "../../../../models/bookingModel.js";
 import paymentModel from "../../../../models/paymentModel.js";
+import userModel from "../../../../models/userModel.js";
+import doctorModel from "../../../../models/doctorModel.js";
 import weeklyTimeSlotsModel from "../../../../models/weeklyTimeSlotsModel.js";
 import { handleResponse } from "../../../../utils/handlers.js";
+import { Op, Sequelize } from "sequelize";
 
 const paymentStatusCapture = async (req, res) => {
   try {
@@ -95,19 +98,25 @@ const paymentUpdate = async (bookingData, res) => {
   }
 };
 
-const transactionHistory = async (req, res) => {
+const transactionHistory = async (requestData, res) => {
   try {
-    let transaction = await bookingModel.findAll({
-      where: {
-        bookingStatus: {
-          [Op.in]: [0, 1],
+    const page = parseInt(requestData.page) || 1
+    const pageSize = parseInt(requestData.limit) || 10
+    const searchQuery = requestData.searchQuery || ''
+    const offset = (page - 1) * pageSize
+  
+     let { count, rows:transactions} = await bookingModel.findAndCountAll({
+        where: {
+          bookingStatus: {
+            [Op.in]: [0, 1],
+          },
         },
         include: [
           {
             model: paymentModel,
             attributes: ["orderId", "transactionId"],
             where: {
-              paymentStatus: 0,
+              paymentStatus: 1,
             },
           },
         ],
@@ -115,14 +124,105 @@ const transactionHistory = async (req, res) => {
           "customerId",
           "amount",
           "bookingId",
-          "doctorId",
+          "workSlotId",
           "bookingStatus",
-          "payment.orderId",
-          "payment.transactionId",
+          "appointmentDate",
+          [Sequelize.literal("`payment`.`orderId`"), "paymentOrderId"],
+          [Sequelize.literal("`payment`.`transactionId`"), "paymentTransactionId"],
         ],
-      },
-    });
-    console.log({ transaction });
+        limit: pageSize,
+        offset: offset,
+      });
+      const totalPages = Math.ceil(count / pageSize) // Calculate total number of pages
+  
+      // Extract unique customerIds and workSlotIds
+      const customerIds = new Set(transactions.map(transaction => transaction.customerId));
+      const workSlotIds = new Set(transactions.map(transaction => transaction.workSlotId));
+  
+      // Fetch doctors corresponding to workSlotIds
+      const doctorIds = await weeklyTimeSlotsModel.findAll({
+        where: {
+          time_slot_id: {
+            [Op.in]: [...workSlotIds],
+          },
+        },
+        attributes: ["doctor_id", "time_slot_id"],
+      });
+  
+      // Create a map of workSlotIds to doctorIds
+      const doctorIdMap = {};
+      doctorIds.forEach(doctor => {
+        doctorIdMap[doctor.time_slot_id] = doctor.doctor_id;
+      });
+  
+      // Fetch doctors corresponding to uniqueDoctorIds
+      const doctors = await doctorModel.findAll({
+        where: {
+          doctor_id: {
+            [Op.in]: Object.values(doctorIdMap),
+          },
+        },
+        attributes: ["doctor_id", "doctor_name"],
+      });
+  
+      // Create a map of doctorIds to doctor names
+      const doctorNameMap = {};
+      doctors.forEach(doctor => {
+        doctorNameMap[doctor.doctor_id] = doctor.doctor_name;
+
+      });
+  
+      // Update transactions with doctorName, customerName, and customerPhone
+      transactions = transactions.map(transaction => ({
+        ...transaction.toJSON(),
+        doctorName: doctorNameMap[doctorIdMap[transaction.workSlotId]],
+      }));
+  
+      // Fetch customer names and phone numbers
+      const customers = await userModel.findAll({
+        where: {
+          userId: {
+            [Op.in]: [...customerIds],
+          },
+        },
+        attributes: ["userId", "name", "phone"],
+      });
+  
+      // Create a map of customerIds to customer details
+      const customerMap = {};
+      customers.forEach(customer => {
+        customerMap[customer.userId] = {
+          customerName: customer.name,
+          customerPhone: customer.phone,
+        };
+      });
+  
+      // Update transactions with customerName and customerPhone
+      transactions.forEach(transaction => {
+        const customerDetails = customerMap[transaction.customerId];
+        transaction.customerName = customerDetails ? customerDetails.customerName : null;
+        transaction.customerPhone = customerDetails ? customerDetails.customerPhone : null;
+      });
+      
+      console.log(transactions);
+      let message ,data
+
+      if(!transactions){
+        message='Sorry! no transaction history.'
+      }else{
+        message='Successfully fetched transaction details.'
+      }
+      return handleResponse({
+        res,
+        statusCode:200,
+        message,
+        data:{
+            transactions,
+            totalPages,
+            currentPage:page,
+            totalCount:count
+        }
+      })
   } catch (err) {
     console.log({ err });
     return handleResponse({

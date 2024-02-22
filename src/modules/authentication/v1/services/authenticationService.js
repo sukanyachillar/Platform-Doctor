@@ -646,7 +646,12 @@ const departmentList = async (requestData, userData, res) => {
         const { count, rows: data } = await departmentModel.findAndCountAll(
             //{where:{entity_id}}
             {
-                attributes: ['department_name', 'department_id', 'entity_id'],
+                attributes: [
+                    'department_name',
+                    'department_id',
+                    'entity_id',
+                    'status',
+                ],
                 where: {
                     [Op.or]: [
                         { department_name: { [Op.like]: `%${searchQuery}%` } },
@@ -679,6 +684,41 @@ const departmentList = async (requestData, userData, res) => {
     }
 }
 
+const entityList = async (requestData, res) => {
+    try {
+        const page = parseInt(requestData.page) || 1
+        const pageSize = parseInt(requestData.limit) || 10
+        const offset = (page - 1) * pageSize
+        const { count, rows: data } = await authenticationModel.findAndCountAll(
+            {
+                attributes: ['entity_name', 'entity_id', 'status'],
+                where: {
+                    status: 1,
+                },
+                limit: pageSize,
+                offset: offset,
+            }
+        )
+        const totalPages = Math.ceil(count / pageSize)
+        let message
+        if (data) message = 'Sucessfully fetched data'
+        else message = 'No data found'
+        return handleResponse({
+            res,
+            message,
+            data:{
+              data,
+              currentPage:page,
+              totalCount:count,
+              data,
+              totalPages
+            }
+        })
+    } catch (err) {
+        console.log({ err })
+    }
+}
+
 export default {
     register,
     addProfile,
@@ -693,4 +733,5 @@ export default {
     adminRegister,
     doctorsList,
     departmentList,
+    entityList
 }
