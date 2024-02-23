@@ -311,6 +311,7 @@ const getSingleWorkSchedule = async (req, res) => {
         let workSlots = await weeklyTimeSlots.findAll({
             where: { date: formattedDate, doctor_id: doctorData.doctor_id },
         })
+        console.log({formattedDate})
         let availableWorkSlots = await weeklyTimeSlots.findAll({
             where: {
                 date: formattedDate,
