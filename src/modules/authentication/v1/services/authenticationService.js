@@ -207,12 +207,13 @@ const addProfile = async (userData, user, image, res) => {
     }
     let profile = await userProfile.save();
     const randomUUID = await generateUuid();
-    await userModel.create({
+    let data = await new userModel({
       uuid: randomUUID,
       userType: 2,
       name: doctor_name,
       phone: doctor_phone,
     });
+    await data.save()
 
     return handleResponse({
       res,
