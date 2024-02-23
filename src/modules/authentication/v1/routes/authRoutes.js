@@ -23,6 +23,7 @@ router.post(
   authenticationController.addProfile
 );
 router.post("/adddept", verifyToken, authenticationController.addDept);
+
 router.post("/refreshToken", verifyRefreshToken);
 router.get(
   "/generalSettings",

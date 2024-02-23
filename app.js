@@ -60,7 +60,7 @@ Sequelize.sync().then(() => {
 //*route to get the api doc
 // app.use('/supervault/api',swaggerUiExpress.serve,swaggerUiExpress.setup(swaggerDocument))
 
-app.get('/', (req, res) => {
+app.get('/api', (req, res) => {
     res.status(200).json({
         status: true,
         message: 'welcome',
