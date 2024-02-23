@@ -129,6 +129,7 @@ const transactionHistory = async (requestData, res) => {
           "appointmentDate",
           [Sequelize.literal("`payment`.`orderId`"), "paymentOrderId"],
           [Sequelize.literal("`payment`.`transactionId`"), "paymentTransactionId"],
+          [Sequelize.literal("`payment`.`createdAt`"), "createdAt"],
         ],
         limit: pageSize,
         offset: offset,
