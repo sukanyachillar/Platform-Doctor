@@ -1,5 +1,5 @@
 import bcrypt from "bcrypt";
-const saltRounds = process.env.SALT_ROUNDS; 
+const saltRounds = parseInt(process.env.SALT_ROUNDS); 
 
 
 export const hashPassword = async (plainPassword) => {
