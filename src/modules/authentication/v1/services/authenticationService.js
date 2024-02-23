@@ -153,7 +153,7 @@ const addProfile = async (userData, user, image, res) => {
       description,
       doctor_phone,
     } = userData;
-
+    console.log({entity_type})
     let getUser = await authenticationModel.findOne({
       where: { phone: user.phone },
     });
@@ -176,7 +176,6 @@ const addProfile = async (userData, user, image, res) => {
     let userProfile = await profileModel.findOne({
       where: { doctor_phone },
     });
-    console.log({ userProfile });
     const getDepartment = await departmentModel.findOne({
       where: { department_id },
     });
