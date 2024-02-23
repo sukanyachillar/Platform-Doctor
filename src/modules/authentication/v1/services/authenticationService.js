@@ -209,7 +209,7 @@ const addProfile = async (userData, user, image, res) => {
     const randomUUID = await generateUuid();
     await userModel.create({
       uuid: randomUUID,
-      userType: "doctor",
+      userType: 2,
       name: doctor_name,
       phone: doctor_phone,
     });
