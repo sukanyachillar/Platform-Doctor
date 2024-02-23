@@ -41,7 +41,7 @@ router.post(
 );
 router.post("/update-profile", authenticationController.updateProfile);
 router.post('/list-doctors',authenticationController.listDoctors);
-router.get('/list-departments',authenticationController.listDepartments);
+router.post('/list-departments',authenticationController.listDepartments);
 ;
 router.post('/list-entity',authenticationController.listEntity);
 router.post('/admin-register',authenticationController.adminRegister);

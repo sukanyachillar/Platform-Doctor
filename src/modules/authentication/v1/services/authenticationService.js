@@ -711,6 +711,7 @@ const entityList = async (requestData, res) => {
         return handleResponse({
             res,
             message,
+            statusCode:200,
             data:{
               data,
               currentPage:page,
