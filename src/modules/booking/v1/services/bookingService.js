@@ -115,7 +115,7 @@ const bookAppointment = async (req, res) => {
             const randomUUID = await generateUuid();
             const newCustomer = await userModel.create({
                 uuid: randomUUID,
-                userType: 'cutomer',
+                userType: 1,
                 name: customerName,
                 phone: customerPhone,
             });
