@@ -86,6 +86,15 @@ const addDept = async (req, res) => {
   }
 };
 
+const addDepart = async (req, res) => {
+  try {
+    const dept = await authenticationService.addDept(req.body, req.body, res);
+    return dept;
+  } catch (error) {
+    console.log({ error });
+  }
+};
+
 const fetchBankDetails = async (req, res) => {
   try {
     let bankData = await authenticationService.getBankDetails(req.user, res);
@@ -146,6 +155,7 @@ export default {
     addProfile,
     getProfile,
     addDept,
+    addDepart,
     getGeneralSettings,
     fetchBankDetails,
     getProfileForCustomer,
