@@ -308,9 +308,10 @@ const bookingConfirmationData = async (bookingData, res) => {
         })
         let userData
         let data, message, statusCode
+        let dataValues = response.get();
+       console.log({dataValues})
         if (response) {
             data = response
-            console.log(data)
             userData = await userModel.findOne({where:{userId:data.customerId}})
                 (message = 'Successfully fetched booking details.'),
                 (statusCode = 200)
