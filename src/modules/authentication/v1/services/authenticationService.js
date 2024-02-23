@@ -354,7 +354,7 @@ const getProfileForCustomer = async ({ phone }, res) => {
       });
     }
     let key = userProfile?.profileImageUrl;
-    const url = await awsUtils.getPresignUrlPromiseFunction(key);
+  //  const url = await awsUtils.getPresignUrlPromiseFunction(key);
 
     return handleResponse({
       res,
@@ -368,7 +368,7 @@ const getProfileForCustomer = async ({ phone }, res) => {
         consultation_time: userProfile?.consultation_time,
         consultation_charge: userProfile?.consultation_charge,
         doctor_id: userProfile?.doctor_id,
-        profileImageUrl: url,
+      //  profileImageUrl: url,
         description: userProfile?.description,
         uniqueDays,
         designation: getDepartment?.department_name,
