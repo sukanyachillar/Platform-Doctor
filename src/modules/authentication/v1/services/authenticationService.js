@@ -29,7 +29,7 @@ const adminRegister = async (credentials, res) => {
         let uuid = await generateUuid()
         let hashedPassword = await hashPassword(password)
 
-        let newData = await userModel({
+        let newData = await new userModel({
             phone,
             name,
             uuid,
@@ -37,7 +37,12 @@ const adminRegister = async (credentials, res) => {
             email,
             password: hashedPassword,
         })
-        await newData.save()
+        await newData.save();
+        return handleResponse({
+            res,
+            message:'Successfully registered user',
+            statusCode:200
+        })
     } catch (err) {
         console.log({ err })
     }

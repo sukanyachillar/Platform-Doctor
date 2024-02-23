@@ -12,6 +12,24 @@ const register = async (req, res) => {
   }
 };
 
+const adminRegister = async(req,res)=>{
+  try{
+    let data = await authenticationService.adminRegister(req.body,res);
+    return data;
+
+  }catch(error){
+    console.log({error})
+  }
+}
+
+const adminLogin = async(req,res)=>{
+  try{
+    let data = await authenticationService.adminLogin(req.body,res);
+    return data;
+  }catch(error){
+    console.log({error})
+  }
+}
 const addProfile = async (req, res) => {
     try {
         const profileAdded = await authenticationService.addProfile(
@@ -135,6 +153,8 @@ export default {
     listDoctors,
     updateProfile,
     listDepartments,
-    listEntity
+    listEntity,
+    adminRegister,
+    adminLogin
 
 }
