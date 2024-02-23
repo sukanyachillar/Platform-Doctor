@@ -306,14 +306,15 @@ const bookingConfirmationData = async (bookingData, res) => {
     });
     let userData;
     let data, message, statusCode;
-    let dataValues = response.get();
+    let dataValues = response.toJSON(); ;
     let userId =dataValues.customerId
     userData = await userModel.findOne({
       where: { userId },
     });
     if (response) {
-      (data = dataValues((message = "Successfully fetched booking details."))),
-        (statusCode = 200);
+      data = dataValues
+      message = "Successfully fetched booking details.",
+        statusCode = 200
     } else {
       (message = "Sorry no data found for this bookingId."), (statusCode = 404);
     }
