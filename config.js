@@ -3,7 +3,7 @@ dotenv.config()
 let env = process.env.NOD_ENV
 const config = {
     local: {
-        PORT: 3333,
+        PORT: 3001,
         // MONGO_URL1:
         //   "mongodb+srv://vijith:1234@cluster0.qyrtq.mongodb.net/super_vault?retryWrites=true&w=majority",
         // MONGO_URL:
