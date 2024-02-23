@@ -9,7 +9,7 @@ const entityModel = sequelize.define('entity', {
         autoIncrement: true,
         allowNull: false,
     },
-    entity_type: {
+    entity_type: {  //refering business model
         type: DataTypes.INTEGER,
         allowNull: true,
         unique: false,
