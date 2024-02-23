@@ -306,9 +306,11 @@ const bookingConfirmationData = async (bookingData, res) => {
             where: { doctor_id: weeklyTimeSlot.doctor_id },
             attributes: ['doctor_name'],
         })
+        let userData
         let data, message, statusCode
         if (response) {
-            ;(data = response),
+            (data = response),
+            userData = await userModel.findOne({where:data.customerId})
                 (message = 'Successfully fetched booking details.'),
                 (statusCode = 200)
         } else {
@@ -320,9 +322,9 @@ const bookingConfirmationData = async (bookingData, res) => {
             message,
             statusCode,
             data: {
-                doctorName: doctorData.doctor_name,
-                customerName: data.customerName,
-                customerPhone: data.customerPhone,
+                doctorName: doctorData?.doctor_name,
+                customerName: userData?.name,
+                customerPhone: userData.phone,
                 appointmentTimeSlot: weeklyTimeSlot.time_slot,
                 appointmentDate: weeklyTimeSlot.date,
                 paymentDate: data.updatedAt,
