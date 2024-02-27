@@ -515,13 +515,14 @@ const getUserDetails = async (search) => {
   
           const appointments = await Promise.all(
             bookingDetails.map(async (booking) => {
-              const doctorDetails = await getDoctorDetails(booking.workSlotId);
-  
+              const doctorDetails = await getDoctorDetails(booking.workSlotId, filter);
+
               return {
                 bookingId: booking.bookingId,
                 appointmentDate: booking.appointmentDate,
                 bookingStatus: booking.bookingStatus,
                 doctorName: doctorDetails.length ? doctorDetails[0].doctor_name : '',
+                doctorId: doctorDetails.length ? doctorDetails[0].doctor_id : '',
               };
             })
           );
@@ -534,13 +535,28 @@ const getUserDetails = async (search) => {
           };
         })
       );
-  
+
+      let finalCustomerList = customers;
+      console.log("filter>>>>>>>>>", filter)
+      console.log('customers', customers)
+      if (filter.doctorId) {
+        const filteredCustomers = customers.filter(customer => {
+            const matchingAppointments = customer.appointmentsDetails.filter(appointment => appointment.doctorId === filter.doctorId);
+          
+            if (matchingAppointments.length > 0) {
+              console.log('Matching Customer:', customer);
+            }
+          
+            return matchingAppointments.length > 0;
+          });
+          finalCustomerList = filteredCustomers.length > 0 ? filteredCustomers: [];
+      } 
       return handleResponse({
         res,
         statusCode: 200,
         message: 'Customer listing fetched successfully',
         data: {
-          customers,
+          customers: finalCustomerList,
           totalCount: totalUsersCount,
           currentPage: page,
           pageSize: pageSize,
