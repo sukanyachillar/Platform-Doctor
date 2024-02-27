@@ -1,3 +1,14 @@
+// import models from '../../../../models/index.js';
+// const {
+//     doctorProfileModel,
+//     weeklyTimeSlotsModel,
+//     // entityModel,
+//     bookingModel,
+//     doctorModel,
+//     paymentModel,
+//     userModel,
+//   } = models;
+
 import doctorProfileModel from '../../../../models/doctorModel.js'
 import { handleResponse } from '../../../../utils/handlers.js'
 import weeklyTimeSlotsModel from '../../../../models/weeklyTimeSlotsModel.js'
@@ -11,6 +22,7 @@ import userModel from '../../../../models/userModel.js';
 import { generateUuid } from '../../../../utils/generateUuid.js';
 import Sequelize from 'sequelize';
 
+
 const bookAppointment = async (req, res) => {
     try {
         const {
@@ -22,6 +34,7 @@ const bookAppointment = async (req, res) => {
             amount,
             paymentMethod,
         } = req.body
+
 
         const doctorProfile = await doctorProfileModel.findOne({
             where: { doctor_id: doctorId },
@@ -370,84 +383,187 @@ const updateBookingStatus = async (bookingData, res) => {
     }
 }
 
-const listCustomers = async ({ page = 1, pageSize = 10, filter= {} } , res) => {
-    try {
-        // const filterConditions = {};
+// const listCustomers = async ({ page = 1, pageSize = 10, filter= {} } , res) => {
+//     try {
+//         // const filterConditions = {};
 
-        //      if (filter.appointmentDate) {
-        //        filterConditions.appointmentDate = filter.appointmentDate;
-        //      }
-        //      if (filter.doctorId) {
-        //         filterConditions.doctor_id = filter.doctorId;
-        //      }
-        const usersWithDetails = await userModel.findAndCountAll({
-            attributes: ['userId', 'name', 'phone'],
-            where: {
-              userType: 1, // Assuming userType 1 is for customers
-            },
-            include: [
-              {
-                model: bookingModel,
-                as: 'bookings', // Specify the alias for the association
-                attributes: ['bookingId', 'bookingDate', 'appointmentDate', 'bookingStatus', 'customerId', 'workSlotId'],
-                where: {
-                  customerId: Sequelize.col('user.userId'),
-                },
-                include: [
-                  {
-                    model: weeklyTimeSlotsModel,
-                    as: 'weeklyTimeSlots', // Specify the alias for the association
-                    attributes: ['time_slot', 'time_slot_id', 'date', 'day', 'doctor_id'],
-                    where: {
-                      time_slot_id: Sequelize.col('bookings.workSlotId'),
-                    },
-                    include: [
-                      {
-                        model: doctorModel,
-                        as: 'doctor', // Specify the alias for the association
-                        attributes: ['doctor_id', 'doctor_name'],
-                        where: {
-                          doctor_id: Sequelize.col('weeklyTimeSlots.doctor_id'),
-                        },
-                      },
-                    ],
-                  },
-                ],
-              },
-            ],
-            limit: pageSize,
-            offset: (page - 1) * pageSize,
-            order: [['createdAt', 'ASC']], // Adjust the order as needed
-          });
+//         //      if (filter.appointmentDate) {
+//         //        filterConditions.appointmentDate = filter.appointmentDate;
+//         //      }
+//         //      if (filter.doctorId) {
+//         //         filterConditions.doctor_id = filter.doctorId;
+//         //      }
+//         // const usersWithDetails = await userModel.findAndCountAll({
+//         //     attributes: ['userId', 'name', 'phone'],
+//         //     where: {
+//         //       userType: 1, // Assuming userType 1 is for customers
+//         //     },
+//         //     include: [
+//         //       {
+//         //         model: bookingModel,
+//         //         as: 'customer', // Specify the alias for the association
+//         //         attributes: ['bookingId', 'bookingDate', 'appointmentDate', 'bookingStatus', 'customerId', 'workSlotId'],
+//         //         where: {
+//         //           customerId: Sequelize.col('customer.userId'),
+//         //         },
+//         //         include: [
+//         //           {
+//         //             model: weeklyTimeSlotsModel,
+//         //             as: 'weeklyTimeSlots', // Specify the alias for the association
+//         //             attributes: ['time_slot', 'time_slot_id', 'date', 'day', 'doctor_id'],
+//         //             where: {
+//         //               time_slot_id: Sequelize.col('bookings.workSlotId'),
+//         //             },
+//         //             include: [
+//         //               {
+//         //                 model: doctorModel,
+//         //                 as: 'doctor', // Specify the alias for the association
+//         //                 attributes: ['doctor_id', 'doctor_name'],
+//         //                 where: {
+//         //                   doctor_id: Sequelize.col('weeklyTimeSlots.doctor_id'),
+//         //                 },
+//         //               },
+//         //             ],
+//         //           },
+//         //         ],
+//         //       },
+//         //     ],
+//         //     limit: pageSize,
+//         //     offset: (page - 1) * pageSize,
+//         //     order: [['createdAt', 'ASC']], // Adjust the order as needed
+//         //   });
       
-          const totalPages = Math.ceil(usersWithDetails.count / pageSize);
+//         //   const totalPages = Math.ceil(usersWithDetails.count / pageSize);
       
-          return handleResponse({
-            res,
-            message: 'Successfully fetched all customers',
-            statusCode: 200,
-            data: {
-              users: usersWithDetails.rows,
-              totalPages,
-              currentPage: page,
-              totalCount: usersWithDetails.count,
-            },
-          });
-    } catch (err) {
-        console.log({ 'Error while updating booking': err })
-        return handleResponse({
-            res,
-            message: 'Error while updating booking status',
-            statusCode: 422,
-        })
+//         //   return handleResponse({
+//         //     res,
+//         //     message: 'Successfully fetched all customers',
+//         //     statusCode: 200,
+//         //     data: {
+//         //       users: usersWithDetails.rows,
+//         //       totalPages,
+//         //       currentPage: page,
+//         //       totalCount: usersWithDetails.count,
+//         //     },
+//         //   });
+
+const getUserDetails = async (search) => {
+    const whereCondition = {};
+    if (search) {
+        whereCondition.name = { [Sequelize.Op.like]: `%${search}%` };
+      }
+    const usersWithDetails = await userModel.findAll({
+      attributes: ['userId', 'name', 'phone'],
+      where: {
+        userType: 1, 
+        ...whereCondition,
+      },
+      raw: true,
+    });
+  
+    return usersWithDetails;
+  };
+  
+  const getBookingDetails = async (customerId) => {
+    const bookingDetails = await bookingModel.findAll({
+      attributes: ['bookingId', 'bookingDate', 'appointmentDate', 'bookingStatus', 'workSlotId'],
+      where: {
+        customerId,
+      },
+      raw: true,
+    });
+  
+    return bookingDetails;
+  };
+  
+  const getDoctorDetails = async (workSlotId) => {
+    const weeklyTimeSlots = await weeklyTimeSlotsModel.findAll({
+      attributes: ['time_slot', 'time_slot_id', 'date', 'day', 'doctor_id'],
+      where: {
+        time_slot_id: workSlotId,
+      },
+      raw: true,
+    });
+  
+    if (!weeklyTimeSlots.length) {
+      return [];
     }
-}
-
+  
+    const doctorDetails = await doctorModel.findAll({
+      attributes: ['doctor_id', 'doctor_name'],
+      where: {
+        doctor_id: weeklyTimeSlots[0].doctor_id,
+      },
+      raw: true,
+    });
+  
+    return doctorDetails;
+  };
+  
+  const listAllCustomers = async ({ page = 1, pageSize = 10, search= '', filter = {} }, res) => {
+    try {
+      const users = await getUserDetails(search);
+  
+      const totalUsersCount = users.length;
+      const totalPages = Math.ceil(totalUsersCount / pageSize);
+  
+      const paginatedUsers = users.slice((page - 1) * pageSize, page * pageSize);
+  
+      const customers = await Promise.all(
+        paginatedUsers.map(async (user) => {
+          const bookingDetails = await getBookingDetails(user.userId);
+  
+          const appointments = await Promise.all(
+            bookingDetails.map(async (booking) => {
+              const doctorDetails = await getDoctorDetails(booking.workSlotId);
+  
+              return {
+                bookingId: booking.bookingId,
+                appointmentDate: booking.appointmentDate,
+                bookingStatus: booking.bookingStatus,
+                doctorName: doctorDetails.length ? doctorDetails[0].doctor_name : '',
+              };
+            })
+          );
+  
+          return {
+            userId: user.userId,
+            customerName: user.name,
+            phone: user.phone,
+            appointmentsDetails: appointments,
+          };
+        })
+      );
+  
+      return handleResponse({
+        res,
+        statusCode: 200,
+        message: 'Customer listing fetched successfully',
+        data: {
+          customers,
+          totalCount: totalUsersCount,
+          currentPage: page,
+          pageSize: pageSize,
+          totalPages,
+        },
+      });
+    } catch (error) {
+      console.log({ error });
+      return handleResponse({
+        res,
+        statusCode: 500,
+        message: 'Something went wrong',
+        data: {},
+      });
+    }
+  };
+  
+  
 export default {
     bookAppointment,
     listBooking,
     getBookingReport,
     bookingConfirmationData,
     updateBookingStatus,
-    listCustomers,
+    listAllCustomers,
 }

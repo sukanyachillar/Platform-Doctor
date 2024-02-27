@@ -58,10 +58,10 @@ const register = async (userData, res) => {  // enitity add
     }
 }
 
-const addProfile = async (userData, image, res) => {  // doctor add
+const addProfile = async (req, image, res) => {  // doctor add
     try {
         let {
-            phone,
+            doctor_phone,
             entity_name,
             email,
             business_type,
@@ -76,9 +76,9 @@ const addProfile = async (userData, image, res) => {  // doctor add
             consultation_charge,
             department_id,
             description,
-        } = userData
+        } = req.body
 
-        let getUser = await authenticationModel.findOne({ where: { phone } })
+        let getUser = await authenticationModel.findOne({ where: { phone: req.user.phone } })
 
         // let imageUrl = await awsUtils.uploadToS3(image)
         getUser.entity_name = entity_name
@@ -94,7 +94,7 @@ const addProfile = async (userData, image, res) => {  // doctor add
         let entityData = await getUser.save()
 
         let entity_id = entityData.entity_id
-        let userProfile = await profileModel.findOne({ where: { phone } })
+        let userProfile = await profileModel.findOne({ where: { phone: req.user.phone } })
         const getDepartment = await departmentModel.findOne({
             where: { department_id },
         })
@@ -107,7 +107,7 @@ const addProfile = async (userData, image, res) => {  // doctor add
                 consultation_time,
                 entity_id,
                 profile_completed,
-                phone,
+                doctor_phone,
                 department_id,
                 description,
                 // profileImageUrl: imageUrl.Key ? imageUrl.Key : '',
@@ -132,7 +132,7 @@ const addProfile = async (userData, image, res) => {  // doctor add
             uuid: randomUUID,
             userType: 2,
             name: doctor_name,
-            phone,
+            phone: doctor_phone,
         });
 
         return handleResponse({

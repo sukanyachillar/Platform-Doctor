@@ -24,7 +24,7 @@ const doctorModel = sequelize.define('doctor', {
         allowNull: true,
     },
     entity_id: {
-        type: DataTypes.STRING,
+        type: DataTypes.INTEGER,
         allowNull: true,
         unique: false,
     },

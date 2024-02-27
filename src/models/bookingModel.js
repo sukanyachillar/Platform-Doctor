@@ -26,7 +26,7 @@ const bookingModel = sequelize.define('booking', {
   //   unique: false,
   // },
   entityId: {
-    type: DataTypes.STRING,
+    type: DataTypes.INTEGER,
     allowNull: true,
     unique: false,
   },
@@ -104,11 +104,11 @@ const bookingModel = sequelize.define('booking', {
 import userModel from './userModel.js';
 import weeklyTimeSlotsModel from './weeklyTimeSlotsModel.js';
 
-bookingModel.hasOne(paymentModel, { foreignKey: 'bookingId' });
+// bookingModel.hasOne(paymentModel, { foreignKey: 'bookingId' });
 // bookingModel.belongsTo(userModel, { foreignKey: 'customerId', as: 'user' });
 
-bookingModel.belongsTo(userModel, { foreignKey: 'customerId', as: 'customer' });
-bookingModel.hasMany(weeklyTimeSlotsModel, { foreignKey: 'workSlotId', as: 'weeklyTimeSlots' });
+// bookingModel.belongsTo(userModel, { foreignKey: 'customerId', as: 'customer' });
+// bookingModel.hasMany(weeklyTimeSlotsModel, { foreignKey: 'workSlotId', as: 'weeklyTimeSlots' });
 
 
 export default bookingModel;

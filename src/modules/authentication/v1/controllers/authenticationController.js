@@ -15,7 +15,7 @@ const register = async (req, res) => {
 const addProfile = async (req, res) => {
     try {
         const profileAdded = await authenticationService.addProfile(
-            req.body,
+            req,
             req.file,
             res
         )

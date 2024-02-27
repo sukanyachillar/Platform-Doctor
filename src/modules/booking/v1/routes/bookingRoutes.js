@@ -16,6 +16,6 @@ router.post(
     '/booking-confirmation-data',
     bookingController.bookingConfirmationData
 );
-router.post('/listCustomers', verifyToken, bookingController.listCustomers)
+router.post('/listAllCustomers', verifyToken, bookingController.listAllCustomers)
 
 export default router

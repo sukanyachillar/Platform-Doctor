@@ -57,8 +57,8 @@ const userModel = sequelize.define('user', {
     },
 })
 
-userModel.belongsTo(bookingModel, { foreignKey: 'userId', as: 'booking' });
+// userModel.belongsTo(bookingModel, { foreignKey: 'userId', as: 'booking' });
 
-userModel.hasMany(bookingModel, { foreignKey: 'customerId', as: 'bookings' });
+// userModel.hasMany(bookingModel, { foreignKey: 'customerId', as: 'bookings' });
 
 export default userModel;

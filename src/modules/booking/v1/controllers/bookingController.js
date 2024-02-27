@@ -54,9 +54,9 @@ const bookingConfirmationData = async (req, res) => {
     }
 }
 
-const listCustomers = async (req, res) => {
+const listAllCustomers = async (req, res) => {
     try {
-        let response = await bookingService.listCustomers(
+        let response = await bookingService.listAllCustomers(
             req.body,
             res
         )
@@ -72,5 +72,5 @@ export default {
     listBooking,
     getBookingReport,
     bookingConfirmationData,
-    listCustomers,
+    listAllCustomers,
 }

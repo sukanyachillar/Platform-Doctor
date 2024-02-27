@@ -1,20 +1,20 @@
-import userModel from './userModel';
-import doctorModel from './doctorModel';
-import bookingModel from './bookingModel';
-import weeklyTimeSlotsModel from './weeklyTimeSlotsModel';
-import paymentModel from './paymentModel';
+import userModel from './userModel.js';
+import doctorProfileModel from './doctorModel.js';
+import bookingModel from './bookingModel.js';
+import weeklyTimeSlotsModel from './weeklyTimeSlotsModel.js';
+import paymentModel from './paymentModel.js';
 
 // Define Associations
 bookingModel.belongsTo(userModel, { foreignKey: 'customerId', as: 'customer' });
-bookingModel.belongsTo(doctorModel, { foreignKey: 'entityId', as: 'doctor' });
+bookingModel.belongsTo(doctorProfileModel, { foreignKey: 'entityId', as: 'doctor' });
 bookingModel.hasOne(paymentModel, { foreignKey: 'bookingId' });
 
 // Add more associations as needed
 
 // Export the models
-module.exports = {
+export default {
   userModel,
-  doctorModel,
+  doctorProfileModel,
   bookingModel,
   weeklyTimeSlotsModel,
   paymentModel,

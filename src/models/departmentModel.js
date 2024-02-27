@@ -14,7 +14,7 @@ const departmentModel = sequelize.define('department', {
         unique: false,
     },
     entity_id: {
-        type: DataTypes.STRING,
+        type: DataTypes.INTEGER,
         allowNull: true,
         unique: false,
     },
