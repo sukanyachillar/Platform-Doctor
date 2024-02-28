@@ -1,5 +1,6 @@
 import { DataTypes } from 'sequelize'
 import sequelize from '../dbConnect.js'
+import bookingModel from './bookingModel.js';
 
 const userModel = sequelize.define('user', {
     userId: {
@@ -55,5 +56,9 @@ const userModel = sequelize.define('user', {
         allowNull: false,
     },
 })
+
+// userModel.belongsTo(bookingModel, { foreignKey: 'userId', as: 'booking' });
+
+// userModel.hasMany(bookingModel, { foreignKey: 'customerId', as: 'bookings' });
 
 export default userModel;

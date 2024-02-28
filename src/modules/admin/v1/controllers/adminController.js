@@ -63,6 +63,14 @@ const addProfile = async(req,res)=>{
     }
 }
 
+  const listAllCustomers = async (req, res) => {
+    try {
+        let data = await adminServices.listAllCustomers(req.body, res)
+    } catch (error) {
+        
+    }
+  }
+
 export default {
     adminRegister,
     adminLogin,
@@ -70,5 +78,6 @@ export default {
     listDoctors,
     listEntity,
     transactionHistory,
-    addProfile
+    addProfile,
+    listAllCustomers,
 }

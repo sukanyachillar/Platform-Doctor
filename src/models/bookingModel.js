@@ -1,9 +1,17 @@
 import { DataTypes } from 'sequelize'
 import sequelize from '../dbConnect.js'
-import paymentModel from './paymentModel.js';
-import userModel from './userModel.js';
-import entityModel from './entityModel.js';
-import departmentModel from './departmentModel.js';
+
+// // In other files
+// import userModel from './models/userModel.js';
+// import doctorModel from './models/doctorModel.js';
+// import weeklyTimeSlotsModel from './models/weeklyTimeSlotsModel.js';
+// import paymentModel from './models/paymentModel.js';
+
+// import { userModel, doctorModel, weeklyTimeSlotsModel, paymentModel } from '../models';
+// const models = require('./models');
+// import { userModel, doctorModel, weeklyTimeSlotsModel, paymentModel } from 'models';
+
+
 
 const bookingModel = sequelize.define('booking', {
   bookingId: {
@@ -28,7 +36,7 @@ const bookingModel = sequelize.define('booking', {
   //   unique: false,
   // },
   entityId: {
-    type: DataTypes.STRING,
+    type: DataTypes.INTEGER,
     allowNull: true,
     unique: false,
   },
@@ -101,7 +109,14 @@ const bookingModel = sequelize.define('booking', {
   
 });
 
-bookingModel.hasOne(paymentModel, { foreignKey: 'bookingId' });
+// bookingModel.belongsTo(userModel, { foreignKey: 'customerId', as: 'customer' });
+// bookingModel.belongsTo(doctorModel, { foreignKey: 'entityId', as: 'doctor' });
+
+// bookingModel.hasOne(paymentModel, { foreignKey: 'bookingId' });
+// bookingModel.belongsTo(userModel, { foreignKey: 'customerId', as: 'user' });
+
+// bookingModel.belongsTo(userModel, { foreignKey: 'customerId', as: 'customer' });
+// bookingModel.hasMany(weeklyTimeSlotsModel, { foreignKey: 'workSlotId', as: 'weeklyTimeSlots' });
 
 
 export default bookingModel;

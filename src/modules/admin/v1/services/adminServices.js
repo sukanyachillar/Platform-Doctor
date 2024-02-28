@@ -526,6 +526,134 @@ const staffProfile = async ({
         return false
     }
 }
+const getUserDetails = async (search) => {
+    const whereCondition = {};
+    if (search) {
+        whereCondition.name = { [Sequelize.Op.like]: `%${search}%` };
+      }
+    const usersWithDetails = await userModel.findAll({
+      attributes: ['userId', 'name', 'phone'],
+      where: {
+        userType: 1, 
+        ...whereCondition,
+      },
+      raw: true,
+    });
+  
+    return usersWithDetails;
+  };
+  
+  const getBookingDetails = async (customerId) => {
+    const bookingDetails = await bookingModel.findAll({
+      attributes: ['bookingId', 'bookingDate', 'appointmentDate', 'bookingStatus', 'workSlotId'],
+      where: {
+        customerId,
+        bookingStatus: {
+            [Op.not]: 3,
+          },
+      },
+      raw: true,
+    });
+  
+    return bookingDetails;
+  };
+
+
+  const getDoctorDetails = async (workSlotId) => {
+    const weeklyTimeSlots = await weeklyTimeSlotsModel.findAll({
+      attributes: ['time_slot', 'time_slot_id', 'date', 'day', 'doctor_id'],
+      where: {
+        time_slot_id: workSlotId,
+      },
+      raw: true,
+    });
+  
+    if (!weeklyTimeSlots.length) {
+      return [];
+    }
+  
+    const doctorDetails = await doctorModel.findAll({
+      attributes: ['doctor_id', 'doctor_name'],
+      where: {
+        doctor_id: weeklyTimeSlots[0].doctor_id,
+      },
+      raw: true,
+    });
+  
+    return doctorDetails;
+  };
+  
+const listAllCustomers = async ({ page = 1, limit = 10, searchQuery= '', filter = {} }, res) => {
+    try {
+      const users = await getUserDetails(searchQuery);
+  
+      const totalUsersCount = users.length;
+      const totalPages = Math.ceil(totalUsersCount / limit);
+  
+      const paginatedUsers = users.slice((page - 1) * limit, page * limit);
+  
+      const customers = await Promise.all(
+        paginatedUsers.map(async (user) => {
+          const bookingDetails = await getBookingDetails(user.userId);
+  
+          const appointments = await Promise.all(
+            bookingDetails.map(async (booking) => {
+              const doctorDetails = await getDoctorDetails(booking.workSlotId, filter);
+
+              return {
+                bookingId: booking.bookingId,
+                appointmentDate: booking.appointmentDate,
+                bookingStatus: booking.bookingStatus,
+                doctorName: doctorDetails.length ? doctorDetails[0].doctor_name : '',
+                doctorId: doctorDetails.length ? doctorDetails[0].doctor_id : '',
+              };
+            })
+          );
+  
+          return {
+            userId: user.userId,
+            customerName: user.name,
+            phone: user.phone,
+            appointmentsDetails: appointments,
+          };
+        })
+      );
+
+      let finalCustomerList = customers;
+      if (filter.doctorId) {
+        const filteredCustomers = customers.filter(customer => {
+            const matchingAppointments = customer.appointmentsDetails.filter(appointment => appointment.doctorId === filter.doctorId);
+          
+            if (matchingAppointments.length > 0) {
+              console.log('Matching Customer:', customer);
+            }
+          
+            return matchingAppointments.length > 0;
+          });
+          finalCustomerList = filteredCustomers.length > 0 ? filteredCustomers: [];
+      } 
+      return handleResponse({
+        res,
+        statusCode: 200,
+        message: 'Customer listing fetched successfully',
+        data: {
+          customers: finalCustomerList,
+          totalCount: totalUsersCount,
+          currentPage: page,
+          limit: limit,
+          totalPages,
+        },
+      });
+    } catch (error) {
+      console.log({ error });
+      return handleResponse({
+        res,
+        statusCode: 500,
+        message: 'Something went wrong',
+        data: {},
+      });
+    }
+  };
 
 export default {
     adminLogin,
@@ -535,4 +663,5 @@ export default {
     entityList,
     transactionHistory,
     addProfile,
+    listAllCustomers,
 }
