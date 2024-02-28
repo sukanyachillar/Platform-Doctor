@@ -9,5 +9,7 @@ router.post('/admin-login', adminController.adminLogin)
 router.post('/add-dept', verifyAdminToken, adminController.addDepart)
 router.post('/list-doctors', adminController.listDoctors)
 router.post('/list-entity', adminController.listEntity)
+router.post('/transaction-history',adminController.transactionHistory)
+
 
 export default router

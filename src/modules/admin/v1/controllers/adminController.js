@@ -45,10 +45,20 @@ const listEntity = async (req, res) => {
     }
 }
 
+const transactionHistory = async (req, res) => {
+    try {
+      let data = await adminServices.transactionHistory(req.query, res);
+      return data;
+    } catch (err) {
+      console.log({ err });
+    }
+  };
+
 export default {
     adminRegister,
     adminLogin,
     addDepart,
     listDoctors,
     listEntity,
+    transactionHistory
 }

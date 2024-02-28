@@ -2,11 +2,14 @@ import userModel from '../../../../models/userModel.js'
 import doctorModel from '../../../../models/doctorModel.js'
 import entityModel from '../../../../models/entityModel.js'
 import departmentModel from '../../../../models/departmentModel.js'
+import paymentModel from '../../../../models/paymentModel.js'
+import bookingModel from '../../../../models/bookingModel.js'
+import weeklyTimeSlotsModel from '../../../../models/weeklyTimeSlotsModel.js'
 import { hashPassword, comparePasswords } from '../../../../utils/password.js'
 import { generateAdminTokens } from '../../../../utils/token.js'
 import { generateUuid } from '../../../../utils/generateUuid.js'
 import { handleResponse } from '../../../../utils/handlers.js'
-import { Op } from 'sequelize'
+import { Op, Sequelize } from 'sequelize'
 
 const adminRegister = async (credentials, res) => {
     try {
@@ -383,10 +386,56 @@ const transactionHistory = async (requestData, res) => {
     }
 }
 
+const addProfile = async (docData, res) => {
+    try {
+        let {
+            businessType,
+            doctorName,
+            doctorPhone,
+            qualification,
+            email,
+            consultationTime,
+            consultationCharge,
+            designation,
+            description,
+        } = docData
+
+        let doctorProfile
+        if (businessType == 'individual') {
+            doctorProfile = await entityModel.findOne({ phone: doctorPhone })
+        }
+        if (!doctorProfile) {
+            doctorProfile = await new doctorModel({
+                doctorName,
+                doctorPhone,
+                qualification,
+                email,
+                consultationTime,
+                consultationCharge,
+                designation,
+                description,
+            })
+        } else {
+            doctorProfile.doctorName = doctorName
+            doctorProfile.doctorPhone = doctorPhone
+            doctorProfile.qualification = qualification
+            doctorProfile.email = email
+            doctorProfile.consultationTime = consultationTime
+            doctorProfile.consultationCharge = consultationCharge
+            doctorProfile.designation = designation
+            doctorProfile.description = description
+        }
+    } catch (error) {
+        console.log({ error })
+    }
+}
+
 export default {
     adminLogin,
     adminRegister,
     addDept,
     doctorsList,
     entityList,
+    transactionHistory,
+    addProfile,
 }

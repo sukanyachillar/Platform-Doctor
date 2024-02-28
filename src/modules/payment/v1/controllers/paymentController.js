@@ -18,13 +18,6 @@ const paymentUpdate = async (req, res) => {
   }
 };
 
-const transactionHistory = async (req, res) => {
-  try {
-    let data = await paymentService.transactionHistory(req.query, res);
-    return data;
-  } catch (err) {
-    console.log({ err });
-  }
-};
 
-export default { paymentCapture, paymentUpdate, transactionHistory };
+
+export default { paymentCapture, paymentUpdate };
