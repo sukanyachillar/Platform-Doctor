@@ -3,7 +3,7 @@ dotenv.config()
 let env = process.env.NOD_ENV
 const config = {
     local: {
-        PORT: 3001,
+        PORT: process.env.PORT,
         // MONGO_URL1:
         //   "mongodb+srv://vijith:1234@cluster0.qyrtq.mongodb.net/super_vault?retryWrites=true&w=majority",
         // MONGO_URL:
@@ -32,7 +32,7 @@ const config = {
         // AWS_SECRET_KEY: "soMLJuVe8lwvoPEhzZyKqcH6uR+9voe6R9X1vYIv",
     },
     dev: {
-        PORT: 3002,
+        PORT: process.env.PORT,
         // MONGO_URL1:
         //   "mongodb+srv://vijith:1234@cluster0.qyrtq.mongodb.net/super_vault?retryWrites=true&w=majority",
         // MONGO_URL:
