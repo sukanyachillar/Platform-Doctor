@@ -295,7 +295,7 @@ const getSingleWorkSchedule = async (req, res) => {
         const slotDate = String(date.getDate()).padStart(2, '0')
         const formattedDate = `${year}-${month}-${slotDate}`
         let doctorData = await doctorModel.findOne({
-            where: { phone },
+            where: { doctor_phone:phone },
             attributes: ['doctor_id', 'entity_id'],
         })
         let getEntity = await entityModel.findOne({
@@ -311,6 +311,7 @@ const getSingleWorkSchedule = async (req, res) => {
         let workSlots = await weeklyTimeSlots.findAll({
             where: { date: formattedDate, doctor_id: doctorData.doctor_id },
         })
+        console.log({formattedDate})
         let availableWorkSlots = await weeklyTimeSlots.findAll({
             where: {
                 date: formattedDate,

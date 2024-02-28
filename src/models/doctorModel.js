@@ -28,7 +28,7 @@ const doctorModel = sequelize.define('doctor', {
         allowNull: true,
         unique: false,
     },
-    phone: {
+    doctor_phone: {
         type: DataTypes.STRING,
         allowNull: true,
         unique: false,
@@ -81,4 +81,5 @@ const doctorModel = sequelize.define('doctor', {
     },
 })
 
-export default doctorModel
+export default doctorModel;
+

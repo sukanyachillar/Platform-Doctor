@@ -15,7 +15,7 @@ const userModel = sequelize.define('user', {
         allowNull: false,
     },
     userType: {
-        type: DataTypes.INTEGER, // 1. cutomer, 2. doctor
+        type: DataTypes.INTEGER, // 0- Entity,1. cutomer, 2. doctor
         allowNull: true,
         unique: false,
     },

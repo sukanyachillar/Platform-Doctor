@@ -54,17 +54,17 @@ const bookingConfirmationData = async (req, res) => {
     }
 }
 
-const listAllCustomers = async (req, res) => {
-    try {
-        let response = await bookingService.listAllCustomers(
-            req.body,
-            res
-        )
-        return response
-    } catch (err) {
-        console.log(err)
-    }
-}
+// const listAllCustomers = async (req, res) => {
+//     try {
+//         let response = await bookingService.listAllCustomers(
+//             req.body,
+//             res
+//         )
+//         return response
+//     } catch (err) {
+//         console.log(err)
+//     }
+// }
 
 export default {
     bookAppointment,
@@ -72,5 +72,5 @@ export default {
     listBooking,
     getBookingReport,
     bookingConfirmationData,
-    listAllCustomers,
+    // listAllCustomers,
 }

@@ -23,6 +23,7 @@ router.post(
     authenticationController.addProfile
 )
 router.post('/adddept', verifyToken, authenticationController.addDept)
+
 router.post('/refreshToken', verifyRefreshToken)
 router.get(
     '/generalSettings',
@@ -35,4 +36,7 @@ router.post(
     verifyToken,
     authenticationController.updateEntityStatus
 )
+router.post('/update-profile', authenticationController.updateProfile)
+router.post('/list-departments', authenticationController.listDepartments)
+
 export default router
