@@ -52,7 +52,16 @@ const transactionHistory = async (req, res) => {
     } catch (err) {
       console.log({ err });
     }
-  };
+};
+
+const addProfile = async(req,res)=>{
+    try{
+        let data = await adminServices.addProfile(req.body,res);
+        return data
+    }catch(error){
+        console.log({error})
+    }
+}
 
 export default {
     adminRegister,
@@ -60,5 +69,6 @@ export default {
     addDepart,
     listDoctors,
     listEntity,
-    transactionHistory
+    transactionHistory,
+    addProfile
 }
