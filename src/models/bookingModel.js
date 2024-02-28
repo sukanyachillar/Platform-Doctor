@@ -1,6 +1,16 @@
 import { DataTypes } from 'sequelize'
 import sequelize from '../dbConnect.js'
-import paymentModel from './paymentModel.js';
+
+// // In other files
+// import userModel from './models/userModel.js';
+// import doctorModel from './models/doctorModel.js';
+// import weeklyTimeSlotsModel from './models/weeklyTimeSlotsModel.js';
+// import paymentModel from './models/paymentModel.js';
+
+// import { userModel, doctorModel, weeklyTimeSlotsModel, paymentModel } from '../models';
+// const models = require('./models');
+// import { userModel, doctorModel, weeklyTimeSlotsModel, paymentModel } from 'models';
+
 
 
 const bookingModel = sequelize.define('booking', {
@@ -101,8 +111,6 @@ const bookingModel = sequelize.define('booking', {
 
 // bookingModel.belongsTo(userModel, { foreignKey: 'customerId', as: 'customer' });
 // bookingModel.belongsTo(doctorModel, { foreignKey: 'entityId', as: 'doctor' });
-import userModel from './userModel.js';
-import weeklyTimeSlotsModel from './weeklyTimeSlotsModel.js';
 
 // bookingModel.hasOne(paymentModel, { foreignKey: 'bookingId' });
 // bookingModel.belongsTo(userModel, { foreignKey: 'customerId', as: 'user' });

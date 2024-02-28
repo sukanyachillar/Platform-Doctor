@@ -538,7 +538,6 @@ const getUserDetails = async (search) => {
 
       let finalCustomerList = customers;
       console.log("filter>>>>>>>>>", filter)
-      console.log('customers', customers)
       if (filter.doctorId) {
         const filteredCustomers = customers.filter(customer => {
             const matchingAppointments = customer.appointmentsDetails.filter(appointment => appointment.doctorId === filter.doctorId);
