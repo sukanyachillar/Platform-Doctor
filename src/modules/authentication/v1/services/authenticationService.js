@@ -18,72 +18,7 @@ import userModel from "../../../../models/userModel.js";
 import doctorModel from "../../../../models/doctorModel.js";
 import { hashPassword, comparePasswords } from "../../../../utils/password.js";
 
-const adminRegister = async (credentials, res) => {
-  try {
-    let { email, phone, password, name } = credentials;
-    let data = await userModel.findOne({ where: { phone } });
-    if (data) {
-      return handleResponse({
-        res,
-        statusCode: 404,
-        message: "Admin registeration not possible",
-      });
-    }
-    let uuid = await generateUuid();
-    let hashedPassword = await hashPassword(password);
 
-    let newData = await new userModel({
-      phone,
-      name,
-      uuid,
-      userType: 0,
-      email,
-      password: hashedPassword,
-    });
-    await newData.save();
-    return handleResponse({
-      res,
-      message: "Successfully registered user",
-      statusCode: 200,
-    });
-  } catch (err) {
-    console.log({ err });
-  }
-};
-
-const adminLogin = async (credentials, res) => {
-  try {
-    let { email, password } = credentials;
-    let userData = await userModel.findOne({
-      where: { email },
-      attributes: ["password"],
-    });
-    let passwordCheck = await comparePasswords(password, userData.password);
-    if (!passwordCheck)
-      return handleResponse({
-        res,
-        message: "Please check the credentials",
-        statusCode: 404,
-      });
-    let tokens = await generateAdminTokens(email);
-    return handleResponse({
-      res,
-      statusCode: 200,
-      message: "Successfully signed in.",
-      data: {
-        refreshToken: tokens.refreshToken,
-        accessToken: tokens.accessToken,
-      },
-    });
-  } catch (err) {
-    console.log({ err });
-    return handleResponse({
-      res,
-      message: "Sorry! Unable to login",
-      statusCode: 404,
-    });
-  }
-};
 
 const register = async (userData, res) => {
   try {
@@ -416,43 +351,7 @@ const getGeneralSettings = async (req, res) => {
   }
 };
 
-const addDept = async (deptData, userData, res) => {
-  try {
-    let { department_name } = deptData;
-    let { entity_id } = userData;
-    let status = 1;
-    let dept, message, statusCode;
-    dept = await deptModel.findOne({
-      where: { entity_id, department_name },
-    });
-    message = "Department already exist.";
-    statusCode = 422;
-    if (!dept) {
-      let newDept = new deptModel({ entity_id, department_name, status });
-      dept = await newDept.save();
-      message = "Department added";
-      statusCode = 200;
-    }
-    return handleResponse({
-      res,
-      statusCode,
-      message,
-      data: {
-        department_id: dept.department_id,
-        entity_id: dept.entity_id,
-        status: dept.status,
-        department_name: dept.department_name,
-      },
-    });
-  } catch (error) {
-    console.log({ error });
-    return handleResponse({
-      res,
-      statusCode: 500,
-      message: "Error while adding department.",
-    });
-  }
-};
+
 
 const getBankDetails = async (userData, res) => {
   try {
@@ -557,91 +456,7 @@ const updateProfileDetails = async (doctorProfile, params, res) => {
     });
   }
 };
-const doctorsList = async (requestData, res) => {
-  try {
-    const page = parseInt(requestData.page) || 1;
-    const pageSize = parseInt(requestData.limit) || 10;
-    const searchQuery = requestData.searchQuery || "";
-    const offset = (page - 1) * pageSize;
 
-    const { count, rows: records } = await doctorModel.findAndCountAll({
-      attributes: [
-        "doctor_id",
-        "doctor_name",
-        "qualification",
-        "doctor_phone",
-        "consultation_time",
-        "consultation_charge",
-        "status",
-        "description",
-        "department_id",
-        "entity_id",
-      ],
-      where: {
-        [Op.or]: [
-          { doctor_name: { [Op.like]: `%${searchQuery}%` } }, // Search for doctor_name containing the search query
-          { doctor_phone: { [Op.like]: `%${searchQuery}%` } }, // Search for phone containing the search query
-        ],
-      },
-      limit: pageSize,
-      offset: offset,
-    });
-    const totalPages = Math.ceil(count / pageSize); // Calculate total number of pages
-
-    const departmentIds = records.map((record) => record.department_id);
-    const entityIds = records.map((record) => record.entity_id);
-    const departments = await departmentModel.findAll({
-      where: {
-        department_id: departmentIds,
-      },
-      attributes: ["department_id", "department_name"],
-    });
-
-    const entities = await entityModel.findAll({
-      where: {
-        entity_id: entityIds,
-      },
-      attributes: ["entity_id", "entity_name"],
-    });
-    const departmentMap = {};
-    departments.forEach((department) => {
-      departmentMap[department.department_id] = department.department_name;
-    });
-
-    const entityMap = {};
-    entities.forEach((entity) => {
-      entityMap[entity.entity_id] = entity.entity_name;
-    });
-
-    // Merging department_name and entity_name into doctor records
-    records.forEach((record) => {
-      record.department_name = departmentMap[record.department_id];
-      record.entity_name = entityMap[record.entity_id];
-      delete record.department_id; // Optional: Remove department_id and entity_id from the record
-      delete record.entity_id;
-    });
-    const response = {
-      records: records.map((record) => ({
-        ...record.dataValues,
-        department_name: record.department_name,
-        entity_name: record.entity_name,
-      })),
-    };
-    console.log(response);
-    return handleResponse({
-      res,
-      statusCode: "200",
-      data: {
-        response: response.records,
-        currentPage: page,
-        totalPages,
-        totalCount: count,
-      },
-    });
-  } catch (error) {
-    console.log({ error });
-  }
-};
 
 const departmentList = async (requestData, userData, res) => {
   try {
@@ -687,53 +502,16 @@ const departmentList = async (requestData, userData, res) => {
   }
 };
 
-const entityList = async (requestData, res) => {
-  try {
-    const page = parseInt(requestData.page) || 1;
-    const pageSize = parseInt(requestData.limit) || 10;
-    const offset = (page - 1) * pageSize;
-    const { count, rows: data } = await authenticationModel.findAndCountAll({
-      attributes: ["entity_name", "entity_id", "status"],
-      where: {
-        status: 1,
-      },
-      limit: pageSize,
-      offset: offset,
-    });
-    const totalPages = Math.ceil(count / pageSize);
-    let message;
-    if (data) message = "Sucessfully fetched data";
-    else message = "No data found";
-    return handleResponse({
-      res,
-      message,
-      statusCode: 200,
-      data: {
-        data,
-        currentPage: page,
-        totalCount: count,
-        data,
-        totalPages,
-      },
-    });
-  } catch (err) {
-    console.log({ err });
-  }
-};
+
 
 export default {
   register,
   addProfile,
-  addDept,
   getProfile,
   getGeneralSettings,
   getBankDetails,
   getProfileForCustomer,
   updateEntityStatus,
   updateProfileDetails,
-  adminLogin,
-  adminRegister,
-  doctorsList,
   departmentList,
-  entityList,
 };

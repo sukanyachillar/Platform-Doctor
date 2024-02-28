@@ -1,0 +1,441 @@
+import userModel from '../../../../models/userModel.js'
+import doctorModel from '../../../../models/doctorModel.js'
+import entityModel from '../../../../models/entityModel.js'
+import departmentModel from '../../../../models/departmentModel.js'
+import paymentModel from '../../../../models/paymentModel.js'
+import bookingModel from '../../../../models/bookingModel.js'
+import weeklyTimeSlotsModel from '../../../../models/weeklyTimeSlotsModel.js'
+import { hashPassword, comparePasswords } from '../../../../utils/password.js'
+import { generateAdminTokens } from '../../../../utils/token.js'
+import { generateUuid } from '../../../../utils/generateUuid.js'
+import { handleResponse } from '../../../../utils/handlers.js'
+import { Op, Sequelize } from 'sequelize'
+
+const adminRegister = async (credentials, res) => {
+    try {
+        let { email, phone, password, name } = credentials
+        let data = await userModel.findOne({ where: { phone } })
+        if (data) {
+            return handleResponse({
+                res,
+                statusCode: 404,
+                message: 'Admin registeration not possible',
+            })
+        }
+        let uuid = await generateUuid()
+        let hashedPassword = await hashPassword(password)
+
+        let newData = await new userModel({
+            phone,
+            name,
+            uuid,
+            userType: 0,
+            email,
+            password: hashedPassword,
+        })
+        await newData.save()
+        return handleResponse({
+            res,
+            message: 'Successfully registered user',
+            statusCode: 200,
+        })
+    } catch (err) {
+        console.log({ err })
+    }
+}
+
+const adminLogin = async (credentials, res) => {
+    try {
+        let { email, password } = credentials
+        let userData = await userModel.findOne({
+            where: { email },
+            attributes: ['password'],
+        })
+        let passwordCheck = await comparePasswords(password, userData.password)
+        if (!passwordCheck)
+            return handleResponse({
+                res,
+                message: 'Please check the credentials',
+                statusCode: 404,
+            })
+        let tokens = await generateAdminTokens(email)
+        return handleResponse({
+            res,
+            statusCode: 200,
+            message: 'Successfully signed in.',
+            data: {
+                refreshToken: tokens.refreshToken,
+                accessToken: tokens.accessToken,
+            },
+        })
+    } catch (err) {
+        console.log({ err })
+        return handleResponse({
+            res,
+            message: 'Sorry! Unable to login',
+            statusCode: 404,
+        })
+    }
+}
+
+const addDept = async (deptData, userData, res) => {
+    try {
+        let { department_name } = deptData
+        let { entity_id } = userData
+        let status = 1
+        let dept, message, statusCode
+        dept = await departmentModel.findOne({
+            where: { entity_id, department_name },
+        })
+        message = 'Department already exist.'
+        statusCode = 422
+        if (!dept) {
+            let newDept = new departmentModel({
+                entity_id,
+                department_name,
+                status,
+            })
+            dept = await newDept.save()
+            message = 'Department added'
+            statusCode = 200
+        }
+        return handleResponse({
+            res,
+            statusCode,
+            message,
+            data: {
+                department_id: dept.department_id,
+                entity_id: dept.entity_id,
+                status: dept.status,
+                department_name: dept.department_name,
+            },
+        })
+    } catch (error) {
+        console.log({ error })
+        return handleResponse({
+            res,
+            statusCode: 500,
+            message: 'Error while adding department.',
+        })
+    }
+}
+
+const doctorsList = async (requestData, res) => {
+    try {
+        const page = parseInt(requestData.page) || 1
+        const pageSize = parseInt(requestData.limit) || 10
+        const searchQuery = requestData.searchQuery || ''
+        const offset = (page - 1) * pageSize
+
+        const { count, rows: records } = await doctorModel.findAndCountAll({
+            attributes: [
+                'doctor_id',
+                'doctor_name',
+                'qualification',
+                'doctor_phone',
+                'consultation_time',
+                'consultation_charge',
+                'status',
+                'description',
+                'department_id',
+                'entity_id',
+            ],
+            where: {
+                [Op.or]: [
+                    { doctor_name: { [Op.like]: `%${searchQuery}%` } }, // Search for doctor_name containing the search query
+                    { doctor_phone: { [Op.like]: `%${searchQuery}%` } }, // Search for phone containing the search query
+                ],
+            },
+            limit: pageSize,
+            offset: offset,
+        })
+        const totalPages = Math.ceil(count / pageSize) // Calculate total number of pages
+
+        const departmentIds = records.map((record) => record.department_id)
+        const entityIds = records.map((record) => record.entity_id)
+        const departments = await departmentModel.findAll({
+            where: {
+                department_id: departmentIds,
+            },
+            attributes: ['department_id', 'department_name'],
+        })
+
+        const entities = await entityModel.findAll({
+            where: {
+                entity_id: entityIds,
+            },
+            attributes: ['entity_id', 'entity_name'],
+        })
+        const departmentMap = {}
+        departments.forEach((department) => {
+            departmentMap[department.department_id] = department.department_name
+        })
+
+        const entityMap = {}
+        entities.forEach((entity) => {
+            entityMap[entity.entity_id] = entity.entity_name
+        })
+
+        // Merging department_name and entity_name into doctor records
+        records.forEach((record) => {
+            record.department_name = departmentMap[record.department_id]
+            record.entity_name = entityMap[record.entity_id]
+            delete record.department_id // Optional: Remove department_id and entity_id from the record
+            delete record.entity_id
+        })
+        const response = {
+            records: records.map((record) => ({
+                ...record.dataValues,
+                department_name: record.department_name,
+                entity_name: record.entity_name,
+            })),
+        }
+        console.log(response)
+        return handleResponse({
+            res,
+            statusCode: '200',
+            data: {
+                response: response.records,
+                currentPage: page,
+                totalPages,
+                totalCount: count,
+            },
+        })
+    } catch (error) {
+        console.log({ error })
+    }
+}
+
+const entityList = async (requestData, res) => {
+    try {
+        const page = parseInt(requestData.page) || 1
+        const pageSize = parseInt(requestData.limit) || 10
+        const offset = (page - 1) * pageSize
+        const { count, rows: data } = await entityModel.findAndCountAll({
+            attributes: ['entity_name', 'entity_id', 'status'],
+            where: {
+                status: 1,
+            },
+            limit: pageSize,
+            offset: offset,
+        })
+        const totalPages = Math.ceil(count / pageSize)
+        let message
+        if (data) message = 'Sucessfully fetched data'
+        else message = 'No data found'
+        return handleResponse({
+            res,
+            message,
+            statusCode: 200,
+            data: {
+                data,
+                currentPage: page,
+                totalCount: count,
+                data,
+                totalPages,
+            },
+        })
+    } catch (err) {
+        console.log({ err })
+    }
+}
+
+const transactionHistory = async (requestData, res) => {
+    try {
+        const page = parseInt(requestData.page) || 1
+        const pageSize = parseInt(requestData.limit) || 10
+        const searchQuery = requestData.searchQuery || ''
+        const offset = (page - 1) * pageSize
+
+        let { count, rows: transactions } = await bookingModel.findAndCountAll({
+            where: {
+                bookingStatus: {
+                    [Op.in]: [0, 1],
+                },
+            },
+            include: [
+                {
+                    model: paymentModel,
+                    attributes: ['orderId', 'transactionId'],
+                    where: {
+                        paymentStatus: 1,
+                    },
+                },
+            ],
+            attributes: [
+                'customerId',
+                'amount',
+                'bookingId',
+                'workSlotId',
+                'bookingStatus',
+                'appointmentDate',
+                [Sequelize.literal('`payment`.`orderId`'), 'paymentOrderId'],
+                [
+                    Sequelize.literal('`payment`.`transactionId`'),
+                    'paymentTransactionId',
+                ],
+                [Sequelize.literal('`payment`.`updatedAt`'), 'paymentDate'],
+            ],
+            limit: pageSize,
+            offset: offset,
+        })
+        const totalPages = Math.ceil(count / pageSize) // Calculate total number of pages
+
+        // Extract unique customerIds and workSlotIds
+        const customerIds = new Set(
+            transactions.map((transaction) => transaction.customerId)
+        )
+        const workSlotIds = new Set(
+            transactions.map((transaction) => transaction.workSlotId)
+        )
+
+        // Fetch doctors corresponding to workSlotIds
+        const doctorIds = await weeklyTimeSlotsModel.findAll({
+            where: {
+                time_slot_id: {
+                    [Op.in]: [...workSlotIds],
+                },
+            },
+            attributes: ['doctor_id', 'time_slot_id'],
+        })
+
+        // Create a map of workSlotIds to doctorIds
+        const doctorIdMap = {}
+        doctorIds.forEach((doctor) => {
+            doctorIdMap[doctor.time_slot_id] = doctor.doctor_id
+        })
+
+        // Fetch doctors corresponding to uniqueDoctorIds
+        const doctors = await doctorModel.findAll({
+            where: {
+                doctor_id: {
+                    [Op.in]: Object.values(doctorIdMap),
+                },
+            },
+            attributes: ['doctor_id', 'doctor_name'],
+        })
+
+        // Create a map of doctorIds to doctor names
+        const doctorNameMap = {}
+        doctors.forEach((doctor) => {
+            doctorNameMap[doctor.doctor_id] = doctor.doctor_name
+        })
+
+        // Update transactions with doctorName, customerName, and customerPhone
+        transactions = transactions.map((transaction) => ({
+            ...transaction.toJSON(),
+            doctorName: doctorNameMap[doctorIdMap[transaction.workSlotId]],
+        }))
+
+        // Fetch customer names and phone numbers
+        const customers = await userModel.findAll({
+            where: {
+                userId: {
+                    [Op.in]: [...customerIds],
+                },
+            },
+            attributes: ['userId', 'name', 'phone'],
+        })
+
+        // Create a map of customerIds to customer details
+        const customerMap = {}
+        customers.forEach((customer) => {
+            customerMap[customer.userId] = {
+                customerName: customer.name,
+                customerPhone: customer.phone,
+            }
+        })
+
+        // Update transactions with customerName and customerPhone
+        transactions.forEach((transaction) => {
+            const customerDetails = customerMap[transaction.customerId]
+            transaction.customerName = customerDetails
+                ? customerDetails.customerName
+                : null
+            transaction.customerPhone = customerDetails
+                ? customerDetails.customerPhone
+                : null
+        })
+
+        console.log(transactions)
+        let message, data
+
+        if (!transactions) {
+            message = 'Sorry! no transaction history.'
+        } else {
+            message = 'Successfully fetched transaction details.'
+        }
+        return handleResponse({
+            res,
+            statusCode: 200,
+            message,
+            data: {
+                transactions,
+                totalPages,
+                currentPage: page,
+                totalCount: count,
+            },
+        })
+    } catch (err) {
+        console.log({ err })
+        return handleResponse({
+            res,
+            message: 'Error in fetching transaction history.',
+            statusCode: 500,
+        })
+    }
+}
+
+const addProfile = async (docData, res) => {
+    try {
+        let {
+            businessType,
+            doctorName,
+            doctorPhone,
+            qualification,
+            email,
+            consultationTime,
+            consultationCharge,
+            designation,
+            description,
+        } = docData
+
+        let doctorProfile
+        if (businessType == 'individual') {
+            doctorProfile = await entityModel.findOne({ phone: doctorPhone })
+        }
+        if (!doctorProfile) {
+            doctorProfile = await new doctorModel({
+                doctorName,
+                doctorPhone,
+                qualification,
+                email,
+                consultationTime,
+                consultationCharge,
+                designation,
+                description,
+            })
+        } else {
+            doctorProfile.doctorName = doctorName
+            doctorProfile.doctorPhone = doctorPhone
+            doctorProfile.qualification = qualification
+            doctorProfile.email = email
+            doctorProfile.consultationTime = consultationTime
+            doctorProfile.consultationCharge = consultationCharge
+            doctorProfile.designation = designation
+            doctorProfile.description = description
+        }
+    } catch (error) {
+        console.log({ error })
+    }
+}
+
+export default {
+    adminLogin,
+    adminRegister,
+    addDept,
+    doctorsList,
+    entityList,
+    transactionHistory,
+    addProfile,
+}
