@@ -47,14 +47,32 @@ const listEntity = async (req, res) => {
 
 const transactionHistory = async (req, res) => {
     try {
-      let data = await adminServices.transactionHistory(req.query, res);
-      return data;
+        let data = await adminServices.transactionHistory(req.query, res)
+        return data
     } catch (err) {
-      console.log({ err });
+        console.log({ err })
     }
-  };
+}
 
-  const listAllCustomers = async (req, res) => {
+const addProfile = async (req, res) => {
+    try {
+        let data = await adminServices.addProfile(req.body, res)
+        return data
+    } catch (error) {
+        console.log({ error })
+    }
+}
+
+const addBankDetails = async(req,res)=>{
+    try{
+        let data = await adminServices.addBankDetails(req.body,res);
+        return data;
+    }catch(err){
+        console.log(err)
+    }
+}
+
+const listAllCustomers = async (req, res) => {
     try {
       let data = await adminServices.listAllCustomers(req.body, res)
       return data;
@@ -72,5 +90,7 @@ export default {
     listDoctors,
     listEntity,
     transactionHistory,
+    addProfile,
     listAllCustomers,
+    addBankDetails
 }

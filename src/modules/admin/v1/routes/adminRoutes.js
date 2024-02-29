@@ -9,7 +9,9 @@ router.post('/admin-login', adminController.adminLogin)
 router.post('/add-dept', verifyAdminToken, adminController.addDepart)
 router.post('/list-doctors', adminController.listDoctors)
 router.post('/list-entity', adminController.listEntity)
-router.post('/transaction-history',adminController.transactionHistory)
-router.post('/customer-listing', adminController.listAllCustomers);
+router.post('/transaction-history', adminController.transactionHistory)
+router.post('/add-profile', adminController.addProfile)
+router.post('/customer-listing', adminController.listAllCustomers)
+router.post('/add-bank',adminController.addBankDetails)
 
 export default router
