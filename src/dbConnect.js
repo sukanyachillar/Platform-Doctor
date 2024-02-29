@@ -1,7 +1,7 @@
 import currentConfig from '../config.js'
 import Sequelize from 'sequelize'
 
-const sequelize = new Sequelize('platform_doctor', 'root', '', {
+const sequelize = new Sequelize('platform_doctor', process.env.MYSQL_USER, '', {
     dialect: 'mysql',
     host: 'localhost',
     // host: currentConfig.MYSQL_HOST,

@@ -56,8 +56,11 @@ const transactionHistory = async (req, res) => {
 
   const listAllCustomers = async (req, res) => {
     try {
-        let data = await adminServices.listAllCustomers(req.body, res)
+      let data = await adminServices.listAllCustomers(req.body, res)
+      return data;
+
     } catch (error) {
+      console.log({ err });
         
     }
   }
