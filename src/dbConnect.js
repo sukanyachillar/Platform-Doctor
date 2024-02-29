@@ -3,8 +3,8 @@ import Sequelize from 'sequelize'
 
 const sequelize = new Sequelize('platform_doctor', process.env.MYSQL_USER, '', {
     dialect: 'mysql',
-    host: 'localhost',
-    // host: currentConfig.MYSQL_HOST,
+    // host: 'localhost',
+    host: process.env.MYSQL_HOST,
     port: currentConfig.MYSQL_PORT,
     username: currentConfig.MYSQL_USER,
     password: currentConfig.MYSQL_PASSWORD,
