@@ -63,6 +63,15 @@ const addProfile = async (req, res) => {
     }
 }
 
+const addBankDetails = async(req,res)=>{
+    try{
+        let data = await adminServices.addBankDetails(req.body,res);
+        return data;
+    }catch(err){
+        console.log(err)
+    }
+}
+
 const listAllCustomers = async (req, res) => {
     try {
         let data = await adminServices.listAllCustomers(req.body, res)
@@ -78,4 +87,5 @@ export default {
     transactionHistory,
     addProfile,
     listAllCustomers,
+    addBankDetails
 }

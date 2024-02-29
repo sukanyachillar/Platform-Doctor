@@ -389,7 +389,7 @@ const transactionHistory = async (requestData, res) => {
 const addProfile = async (docData, res) => {
     try {
         let redirection, addValue, message, statusCode
-        if (businessType == 'individual') {
+        if (docData.businessType == 'individual') {
             addValue = await individualProfile(docData)
             redirection = true
         } else {
@@ -400,13 +400,12 @@ const addProfile = async (docData, res) => {
             ? 'Successfully added profile.'
             : 'Sorry try after sometime.'
         statusCode = addValue ? 200 : 404
-
         return handleResponse({
             res,
             message,
             statusCode,
             data: {
-                entityId: addValue.entity_id,
+                entityId: addValue.entityId,
                 redirection,
             },
         })
@@ -421,62 +420,67 @@ const addProfile = async (docData, res) => {
 }
 
 const individualProfile = async ({
-    doctorName,
-    doctorPhone,
+    doctor_name,
+    doctor_phone,
     qualification,
     email,
-    consultationTime,
-    consultationCharge,
-    designation,
+    consultation_time,
+    consultation_charge,
+    department_id,
     description,
+    business_type_id,
 }) => {
     try {
-        let entityData = await entityModel.findOne({ phone: doctorPhone })
+        let entityData = await entityModel.findOne({
+            where: { phone: doctor_phone },
+        })
         let docData, newEntity, newDocData
         if (!entityData) {
             entityData = await new entityModel({
-                phone: doctorPhone,
-                name: doctorName,
+                phone: doctor_phone,
+                entity_name: doctor_name,
+                business_type_id,
             })
             newEntity = await entityData.save()
             docData = await new doctorModel({
-                doctorName,
-                doctorPhone,
+                doctor_name,
+                doctor_phone,
                 qualification,
                 description,
                 email,
-                consultationTime,
-                consultationCharge,
-                designation,
+                consultation_time,
+                consultation_charge,
+                department_id,
                 entity_id: newEntity.entity_id,
             })
         } else {
-            docData = await doctorModel.findOne({ doctorPhone })
+            docData = await doctorModel.findOne({ where: { doctor_phone } })
             if (!docData) {
                 docData = await new doctorModel({
-                    doctorName,
-                    doctorPhone,
+                    doctor_name,
+                    doctor_phone,
                     qualification,
                     description,
                     email,
-                    consultationTime,
-                    consultationCharge,
-                    designation,
+                    consultation_time,
+                    consultation_charge,
+                    department_id,
                     entity_id: entityData.entity_id,
                 })
+                console.log({ docData })
             } else {
-                doctorProfile.doctorName = doctorName
-                doctorProfile.qualification = qualification
-                doctorProfile.email = email
-                doctorProfile.consultationTime = consultationTime
-                doctorProfile.consultationCharge = consultationCharge
-                doctorProfile.designation = designation
-                doctorProfile.description = description
-                doctorProfile.entity_id = entityData.entity_id
+                docData.doctor_name = doctor_name
+                docData.qualification = qualification
+                docData.email = email
+                docData.consultation_time = consultation_time
+                docData.consultation_charge = consultation_charge
+                docData.department_id = department_id
+                docData.description = description
+                docData.entity_id = entityData.entity_id
             }
-            newDocData = await docData.save()
         }
-        return { entityId: doctorProfile.entity_id }
+        newDocData = await docData.save()
+        return { entityId: newDocData.entity_id }
     } catch (error) {
         console.log({ error })
         return false
@@ -490,13 +494,15 @@ const staffProfile = async ({
     email,
     consultationTime,
     consultationCharge,
-    designation,
+    department_id,
     description,
     entity_id,
 }) => {
     try {
         let docData, newDocData
-        docData = await doctorModel.findOne({ doctorPhone, entity_id })
+        docData = await doctorModel.findOne({
+            where: { doctorPhone, entity_id },
+        })
         if (!docData) {
             docData = await new doctorModel({
                 doctorName,
@@ -505,7 +511,7 @@ const staffProfile = async ({
                 email,
                 consultationTime,
                 consultationCharge,
-                designation,
+                department_id,
                 description,
                 entity_id,
             })
@@ -516,12 +522,12 @@ const staffProfile = async ({
             ;(docData.email = email),
                 (docData.consultationTime = consultationTime)
             docData.consultationCharge = consultationCharge
-            docData.designation = designation
-            docData.description = description
+            docData.department_id = department_id
+            docData.department_id = department_id
             docData.entity_id = entity_id
         }
         newDocData = await docData.save()
-        return { entityId: doctorProfile.entity_id }
+        return { entityId: newDocData.entity_id }
     } catch (error) {
         console.log({ error })
         return false
@@ -676,6 +682,44 @@ const listAllCustomers = async (
     }
 }
 
+const addBankDetails = async (
+    { entityId, account_no, ifsc_code, bank_name, account_holder_name, UPI_ID },
+    res
+) => {
+    try {
+        let entityData = await entityModel.findOne({
+            where: { entity_id: entityId },
+        })
+        let newData, message, statusCode
+        if (!entityData) {
+            message = 'Sorry no entity data available with this ID.'
+            statusCode = 404
+        } else {
+            entityData.account_no = account_no
+            entityData.ifsc_code = ifsc_code
+            entityData.bank_name = bank_name
+            entityData.account_holder_name = account_holder_name
+            entityData.UPI_ID = UPI_ID
+            message = 'Successfully added bank details'
+            statusCode = 200
+            newData = await entityData.save()
+        }
+        return handleResponse({
+            res,
+            statusCode,
+            message,
+            data: { newData },
+        })
+    } catch (error) {
+        console.log({ error })
+        return handleResponse({
+            res,
+            message: 'Sorry try after sometime.',
+            statusCode: 404,
+        })
+    }
+}
+
 export default {
     adminLogin,
     adminRegister,
@@ -685,4 +729,5 @@ export default {
     transactionHistory,
     addProfile,
     listAllCustomers,
+    addBankDetails,
 }
