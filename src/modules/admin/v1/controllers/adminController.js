@@ -47,29 +47,27 @@ const listEntity = async (req, res) => {
 
 const transactionHistory = async (req, res) => {
     try {
-      let data = await adminServices.transactionHistory(req.query, res);
-      return data;
-    } catch (err) {
-      console.log({ err });
-    }
-};
-
-const addProfile = async(req,res)=>{
-    try{
-        let data = await adminServices.addProfile(req.body,res);
+        let data = await adminServices.transactionHistory(req.query, res)
         return data
-    }catch(error){
-        console.log({error})
+    } catch (err) {
+        console.log({ err })
     }
 }
 
-  const listAllCustomers = async (req, res) => {
+const addProfile = async (req, res) => {
+    try {
+        let data = await adminServices.addProfile(req.body, res)
+        return data
+    } catch (error) {
+        console.log({ error })
+    }
+}
+
+const listAllCustomers = async (req, res) => {
     try {
         let data = await adminServices.listAllCustomers(req.body, res)
-    } catch (error) {
-        
-    }
-  }
+    } catch (error) {}
+}
 
 export default {
     adminRegister,
