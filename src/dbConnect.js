@@ -5,7 +5,7 @@ const sequelize = new Sequelize('platform_doctor', process.env.MYSQL_USER, '', {
     dialect: 'mysql',
     host: 'localhost',
     // host: currentConfig.MYSQL_HOST,
-    // port: currentConfig.MYSQL_PORT,
+    port: currentConfig.MYSQL_PORT,
     username: currentConfig.MYSQL_USER,
     password: currentConfig.MYSQL_PASSWORD,
     // database: currentConfig.MYSQL_DATABASE,
