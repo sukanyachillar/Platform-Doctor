@@ -255,7 +255,7 @@ const getWorkSchedule = async (data, user, res) => {
                                   startTime: null,
                                   endTime: null,
                                   work_schedule_id: null,
-                                  entity_id: (user?.entity_id).toString(),
+                                  entity_id: parseInt(user?.entity_id),
                                   session: null,
                                   doctor_id: Number(doctor_id),
                                   created_date_time: null,
