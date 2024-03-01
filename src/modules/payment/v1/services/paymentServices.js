@@ -5,6 +5,10 @@ import doctorModel from "../../../../models/doctorModel.js";
 import weeklyTimeSlotsModel from "../../../../models/weeklyTimeSlotsModel.js";
 import { handleResponse } from "../../../../utils/handlers.js";
 import { Op, Sequelize } from "sequelize";
+import admin from 'firebase-admin';
+import serviceAccount from '../../../../utils/chillarprototype-firebase-adminsdk-7wsnl-aff859ec9b.json'  assert { type: 'json' };
+
+
 
 const paymentStatusCapture = async (req, res) => {
   try {
@@ -67,6 +71,7 @@ const paymentUpdate = async (bookingData, res) => {
         },
       }
     );
+
     const timeSlot = await bookingModel.findOne({
       attributes: ["workSlotId"],
       where: { orderId },
@@ -76,6 +81,7 @@ const paymentUpdate = async (bookingData, res) => {
       { booking_status: 1 },
       { where: { time_slot_id: timeSlot.workSlotId } }
     );
+
     await paymentModel.update(
       {
         paymentStatus: 1,
@@ -83,11 +89,36 @@ const paymentUpdate = async (bookingData, res) => {
       },
       { where: { orderId } }
     );
+
+    admin.initializeApp({
+      credential: admin.credential.cert(serviceAccount),
+    });
+
+    const messaging = admin.messaging();
+
+    const message = {
+      notification: {
+        title: 'New message',
+        body: 'You have a new message from John',
+      },
+      token: 'ffaIDwLJQOmwIwdyqquKVv:APA91bFxQpz4eCVf2U_pdz64ORNaSgQRuYDP0OPQDixgkJl35GOwXZD2Hln48JDsG-_CP4sFQDauGVIY8fFwfERPbOAtOu4_vJZzbbrYEIb-lIZyqht3zGwj4d1LbIAcqXCOyuwkuBng',
+    };
+   
+    messaging.send(message)
+      .then((response) => {
+        console.log('Successfully sent message:', response);
+      })
+      .catch((error) => {
+        console.log('Error sending message:', error);
+      });
+   
+
     return handleResponse({
       res,
       message: "Successfully updated with status",
       statusCode: 200,
     });
+
   } catch (error) {
     console.log({ error });
     return handleResponse({
