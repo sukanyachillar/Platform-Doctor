@@ -1,5 +1,6 @@
 import { DataTypes } from 'sequelize'
-import sequelize from '../dbConnect.js'
+import sequelize from '../dbConnect.js';
+import userModel from './userModel.js';
 
 const doctorModel = sequelize.define('doctor', {
     doctor_id: {
@@ -23,11 +24,11 @@ const doctorModel = sequelize.define('doctor', {
         allowNull: true,
     },
     entity_id: {
-        type: DataTypes.STRING,
+        type: DataTypes.INTEGER,
         allowNull: true,
         unique: false,
     },
-    phone: {
+    doctor_phone: {
         type: DataTypes.STRING,
         allowNull: true,
         unique: false,
@@ -80,4 +81,5 @@ const doctorModel = sequelize.define('doctor', {
     },
 })
 
-export default doctorModel
+export default doctorModel;
+

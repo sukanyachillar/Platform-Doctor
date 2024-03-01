@@ -1,5 +1,6 @@
 import { DataTypes } from 'sequelize'
 import sequelize from '../dbConnect.js'
+import doctorModel from './doctorModel.js';
 
 const entityModel = sequelize.define('entity', {
     entity_id: {
@@ -8,7 +9,7 @@ const entityModel = sequelize.define('entity', {
         autoIncrement: true,
         allowNull: false,
     },
-    entity_type: {
+    entity_type: {  //refering business model
         type: DataTypes.INTEGER,
         allowNull: true,
         unique: false,
@@ -88,5 +89,6 @@ const entityModel = sequelize.define('entity', {
         allowNull: false,
     },
 })
+
 
 export default entityModel
