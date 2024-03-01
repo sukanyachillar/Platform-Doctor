@@ -216,8 +216,8 @@ const getProfile = async (req, res) => {
         where: { department_id: userProfile.department_id },
       });
     }
-    let key = userProfile?.profileImageUrl;
-    const url = await awsUtils.getPresignUrlPromiseFunction(key);
+  //  let key = userProfile?.profileImageUrl;
+  //  const url = await awsUtils.getPresignUrlPromiseFunction(key);
 
     return handleResponse({
       res,
@@ -231,7 +231,7 @@ const getProfile = async (req, res) => {
         consultation_time: userProfile?.consultation_time,
         consultation_charge: userProfile?.consultation_charge,
         doctor_id: userProfile?.doctor_id,
-        profileImageUrl: url,
+      //  profileImageUrl: url,
         description: userProfile?.description,
         // uniqueDays,
         designation: getDepartment?.department_name,
