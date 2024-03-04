@@ -723,7 +723,7 @@ const addBankDetails = async (
 const customerHistory = async (req, res) => {
     try {
 
-        const { customerId }  = req.body;
+        const { customerId, filter={} } = req.body;
         let userDetails = await userModel.findOne({ where: { userId: customerId } })
 
         if (!userDetails) {
@@ -738,30 +738,36 @@ const customerHistory = async (req, res) => {
         const bookingDetails = await getBookingDetails(userDetails.userId);
 
         const visitingHistory = {};
-
         await Promise.all(
             bookingDetails.map(async (booking) => {
                 const doctorDetails = await getDoctorDetails(booking.workSlotId);
-                const paymentDetails = await paymentModel.findOne({ where: { bookingId: booking.bookingId } })
+                const paymentDetails = await paymentModel.findOne({ where: { bookingId: booking.bookingId } });
 
                 if (doctorDetails.length) {
                     const doctorId = doctorDetails[0].doctor_id;
+                    const appointmentDate = booking.appointmentDate.toISOString(); // Convert to ISO string for direct comparison
 
-                    if (!visitingHistory[doctorId]) {
-                        visitingHistory[doctorId] = {
-                            doctorId: doctorId,
-                            doctorName: doctorDetails[0].doctor_name,
-                            appointments: [],
-                        };
+                    // Apply filters
+                    const matchesDoctorId = !filter.doctorId || doctorId === filter.doctorId;
+                    const matchesAppointmentDate = !filter.appointmentDate || appointmentDate.includes(filter.appointmentDate);
+
+                    if (matchesDoctorId && matchesAppointmentDate) {
+                        if (!visitingHistory[doctorId]) {
+                            visitingHistory[doctorId] = {
+                                doctorId: doctorId,
+                                doctorName: doctorDetails[0].doctor_name,
+                                appointments: [],
+                            };
+                        }
+
+                        visitingHistory[doctorId].appointments.push({
+                            bookingId: booking.bookingId,
+                            bookingDate: booking.bookingDate,
+                            appointmentDate: appointmentDate,
+                            bookingStatus: booking.bookingStatus,
+                            transactionId: paymentDetails ? paymentDetails.transactionId : "",
+                        });
                     }
-
-                    visitingHistory[doctorId].appointments.push({
-                        bookingId: booking.bookingId,
-                        bookingDate: booking.bookingDate,
-                        appointmentDate: booking.appointmentDate,
-                        bookingStatus: booking.bookingStatus,
-                        transactionId: paymentDetails ? paymentDetails.transactionId : "",
-                    });
                 }
             })
         );
