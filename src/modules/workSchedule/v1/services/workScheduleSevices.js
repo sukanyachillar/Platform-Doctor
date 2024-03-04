@@ -312,7 +312,7 @@ const getSingleWorkSchedule = async (req, res) => {
         let workSlots = await weeklyTimeSlots.findAll({
             where: { date: formattedDate, doctor_id: doctorData.doctor_id },
             order: [
-                [Sequelize.literal("STR_TO_DATE(time_slot, '%h:%i %p')"), 'ASC']
+                [Sequelize.fn('TIME_TO_SEC', Sequelize.fn('STR_TO_DATE', Sequelize.literal("CONCAT(date, ' ', time_slot)"), '%Y-%m-%d %h:%i %p')), 'ASC']
             ],
         })
         console.log({formattedDate})
@@ -323,7 +323,7 @@ const getSingleWorkSchedule = async (req, res) => {
                 booking_status: 0,
             },
             order: [
-                [Sequelize.literal("STR_TO_DATE(time_slot, '%h:%i %p')"), 'ASC']
+                [Sequelize.fn('TIME_TO_SEC', Sequelize.fn('STR_TO_DATE', Sequelize.literal("CONCAT(date, ' ', time_slot)"), '%Y-%m-%d %h:%i %p')), 'ASC']
             ],
         })
 
