@@ -558,6 +558,94 @@ const listAllCustomers = async ({ page = 1, limit = 10, searchQuery= '', filter 
     }
   };
 
+  const addEntity = async (req, res) => {
+    try {
+        const {
+          businessId,
+          entityType,
+          entityName,
+          phone,
+          location,
+          streetName,
+          cityName,
+          stateId,
+          districtId,
+          pincodeId,
+        } = req.body;
+    
+        let existingEntity = await entityModel.findOne({where: { phone }});
+    
+        if (existingEntity) {
+          // If the entity already exists, update its details
+          existingEntity = await existingEntity.update({
+            entity_type: businessId,
+            business_type_id: entityType,
+            entity_name: entityName,
+            phone,
+            location,
+        });
+    
+          // Update the entity address
+          await entityAddressModel.update(
+            {
+              streetName,
+              cityName,
+              stateId,
+              districtId,
+              pincodeId,
+              updated_at,
+            },
+            { where: { entityId: existingEntity.entityId } }
+          );
+    
+          return handleResponse({
+            res,
+            statusCode: 200,
+            message: 'Entity updated successfully',
+            data: { entityId: existingEntity.entityId }, 
+          });
+        }
+    
+        // If the entity does not exist, create a new one
+        const newEntity = await entityModel.create({
+          entity_type: businessId,
+          business_type_id: entityType,
+          entity_name: entityName,
+          phone,
+          location,
+          created_at,
+          updated_at,
+        });
+    
+        // Create a new entity address
+        await entityAddressModel.create({
+          streetName,
+          cityName,
+          stateId,
+          districtId,
+          pincodeId,
+          entityId: newEntity.entityId,
+          created_at,
+          updated_at,
+        });
+    
+        return handleResponse({
+          res,
+          statusCode: 201,
+          message: 'Entity added successfully',
+          data: { entityId: newEntity.entityId }, // Sending the entityId in the response data
+        });
+
+      } catch (error) {
+        console.error(error);
+        return handleResponse({
+          res,
+          message: 'Internal Server Error',
+          statusCode: 500,
+        });
+      }
+}
+
 export default {
     adminLogin,
     adminRegister,
@@ -567,4 +655,5 @@ export default {
     transactionHistory,
     addProfile,
     listAllCustomers,
+    addEntity,
 }

@@ -65,6 +65,15 @@ const transactionHistory = async (req, res) => {
     }
   }
 
+  const addEntity = async (req, res)=> {
+    try {
+        const data = await adminServices.addEntity(req, res);
+        return data;
+    } catch (error) {
+        
+    }
+  }
+
 export default {
     adminRegister,
     adminLogin,
@@ -73,4 +82,5 @@ export default {
     listEntity,
     transactionHistory,
     listAllCustomers,
+    addEntity,
 }
