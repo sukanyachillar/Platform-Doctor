@@ -311,9 +311,9 @@ const getSingleWorkSchedule = async (req, res) => {
         }
         let workSlots = await weeklyTimeSlots.findAll({
             where: { date: formattedDate, doctor_id: doctorData.doctor_id },
-            order: [
-                [Sequelize.fn('TIME_TO_SEC', Sequelize.fn('STR_TO_DATE', Sequelize.literal("CONCAT(date, ' ', time_slot)"), '%Y-%m-%d %h:%i %p')), 'ASC']
-            ],
+            // order: [
+            //     [Sequelize.fn('TIME_TO_SEC', Sequelize.fn('STR_TO_DATE', Sequelize.literal("CONCAT(date, ' ', time_slot)"), '%Y-%m-%d %h:%i %p')), 'ASC']
+            // ],
         })
         console.log({formattedDate})
         let availableWorkSlots = await weeklyTimeSlots.findAll({
@@ -322,17 +322,28 @@ const getSingleWorkSchedule = async (req, res) => {
                 doctor_id: doctorData.doctor_id,
                 booking_status: 0,
             },
-            order: [
-                [Sequelize.fn('TIME_TO_SEC', Sequelize.fn('STR_TO_DATE', Sequelize.literal("CONCAT(date, ' ', time_slot)"), '%Y-%m-%d %h:%i %p')), 'ASC']
-            ],
+          
         })
+
+        const customSort = (a, b) => {
+            const timeA = new Date('1970-01-01 ' + a.time_slot);
+            const timeB = new Date('1970-01-01 ' + b.time_slot);
+        
+            return timeA - timeB;
+        };
+        
+        // Sorting the workSlots array using the custom sorting function
+        const sortedWorkSlots = workSlots.sort(customSort);
+        
+        // console.log(sortedWorkSlots);
 
         return handleResponse({
             res,
             statusCode: 200,
             message: 'Sucessfully fetched work slots',
             data: {
-                workSlots,
+                // workSlots,
+                sortedWorkSlots,
                 availableWorkSlots: availableWorkSlots.length,
             },
         })
