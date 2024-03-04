@@ -12,8 +12,9 @@ const sequelize = new Sequelize('platform_doctor', process.env.MYSQL_USER, '', {
     logging: false, // Set to true to log SQL queries (optional)
 })
 
-// const sequelize = new Sequelize('sample', 'root', '', {
+// const sequelize = new Sequelize('platform_doctor', 'root', '', {
 //   host: 'localhost',
 //   dialect: 'mysql',
+//   logging: false
 // });
 export default sequelize
