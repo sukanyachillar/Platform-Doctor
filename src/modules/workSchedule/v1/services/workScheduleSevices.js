@@ -2,8 +2,7 @@ import doctorModel from '../../../../models/doctorModel.js'
 import entityModel from '../../../../models/entityModel.js'
 import weeklyTimeSlots from '../../../../models/weeklyTimeSlotsModel.js'
 import workScheduleModel from '../../../../models/workScheduleModel.js'
-import { handleResponse } from '../../../../utils/handlers.js';
-import { Sequelize } from 'sequelize';
+import { handleResponse } from '../../../../utils/handlers.js'
 
 const addWorkSchedule = async (data, userData, res) => {
     try {
@@ -311,9 +310,6 @@ const getSingleWorkSchedule = async (req, res) => {
         }
         let workSlots = await weeklyTimeSlots.findAll({
             where: { date: formattedDate, doctor_id: doctorData.doctor_id },
-            order: [
-                [Sequelize.literal("STR_TO_DATE(time_slot, '%h:%i %p')"), 'ASC']
-            ],
         })
         console.log({formattedDate})
         let availableWorkSlots = await weeklyTimeSlots.findAll({
@@ -322,9 +318,6 @@ const getSingleWorkSchedule = async (req, res) => {
                 doctor_id: doctorData.doctor_id,
                 booking_status: 0,
             },
-            order: [
-                [Sequelize.literal("STR_TO_DATE(time_slot, '%h:%i %p')"), 'ASC']
-            ],
         })
 
         return handleResponse({
