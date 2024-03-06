@@ -34,7 +34,7 @@ Sequelize.sync().then(() => {
     console.log('Connected to the database.')
 })
 
-cron.schedule('0 0 * * *', async () => {
+cron.schedule('* * * * *', async () => {
     cronJobs.timeSlotCron();
 });
 
