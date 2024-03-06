@@ -1,4 +1,3 @@
-// awsUtils.js
 
 import aws from 'aws-sdk'
 import path from 'path'
