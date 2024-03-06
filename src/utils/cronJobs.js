@@ -114,8 +114,13 @@ const timeSlotCron = async() => {
     //   console.log("timeslots", timeslots)y
       
       const nextWeekDate = await dateFromDay(record.day);
+      const currentDate = new Date(nextWeekDate)
+            const year = currentDate.getFullYear()
+            const month = String(currentDate.getMonth() + 1).padStart(2, '0') // Adding 1 to month as it's zero-based
+            const date = String(currentDate.getDate()).padStart(2, '0')
+            const formattedDate = `${year}-${month}-${date}`
     //   const nextWeekDate = getNextWeekDate(date);
-      console.log("nextWeekDate>>>>>>>", nextWeekDate)
+      console.log("formattedDate", formattedDate)
 
     //   console.log("record", record)
 
@@ -125,12 +130,12 @@ const timeSlotCron = async() => {
               where: {
                   time_slot: ele,
                   doctor_id: record.doctor_id,
-                  date: nextWeekDate,
+                  date: formattedDate,
               },
           })
           if (!existingTimeslot) {
               await weeklyTimeSlotsModel.create({
-                  date: nextWeekDate,
+                  date: formattedDate,
                   day: record.day,
                   time_slot: ele,
                   doctor_id: record.doctor_id,
