@@ -92,9 +92,8 @@ const timeSlotCron = async() => {
         where: {day: previousDateDay}
     })
 
-    console.log('previousDateDay:', previousDateDay);
-    console.log('previousDateData:', previousDateData);
-
+    // console.log('previousDateDay:', previousDateDay);
+    // console.log('previousDateData:', previousDateData);
    
    for (const record of previousDateData) {
       const doctorData = await doctorModel.findOne({
@@ -106,7 +105,7 @@ const timeSlotCron = async() => {
           where: { doctor_id: record.doctor_id },
         
       })
-      // console.log("doctorData", doctorData)
+      console.log("doctorData", doctorData)
       const startTime = record.startTime;
       const endTime = record.endTime;
       const consultationTime = doctorData.consultation_time;
