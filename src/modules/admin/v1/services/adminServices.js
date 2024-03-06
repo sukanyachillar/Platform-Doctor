@@ -9,7 +9,8 @@ import { hashPassword, comparePasswords } from '../../../../utils/password.js'
 import { generateAdminTokens } from '../../../../utils/token.js'
 import { generateUuid } from '../../../../utils/generateUuid.js'
 import { handleResponse } from '../../../../utils/handlers.js'
-import { Op, Sequelize } from 'sequelize'
+import { Op, Sequelize } from 'sequelize';
+import businessModel from '../../../../models/businessModel.js'
 
 const adminRegister = async (credentials, res) => {
     try {
