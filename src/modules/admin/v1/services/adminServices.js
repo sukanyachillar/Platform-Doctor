@@ -428,18 +428,20 @@ const individualProfile = async ({
     consultation_charge,
     department_id,
     description,
-    business_type_id,
+    // business_type_id,
 }) => {
     try {
         let entityData = await entityModel.findOne({
             where: { phone: doctor_phone },
         })
+       let business_type_id = await businessModel.findOne({where:{businessName:'Clinic'},attributes:['businessId']})
+
         let docData, newEntity, newDocData
         if (!entityData) {
             entityData = await new entityModel({
                 phone: doctor_phone,
                 entity_name: doctor_name,
-                business_type_id,
+                business_type_id:business_type_id.businessId,
             })
             newEntity = await entityData.save()
             docData = await new doctorModel({

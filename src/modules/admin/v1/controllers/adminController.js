@@ -29,7 +29,7 @@ const addDepart = async (req, res) => {
 
 const listDoctors = async (req, res) => {
     try {
-        let data = await adminServices.doctorsList(req.query, res)
+        let data = await adminServices.doctorsList(req.body, res)
         return data
     } catch (err) {
         console.log({ err })
