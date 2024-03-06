@@ -113,7 +113,7 @@ const timeSlotCron = async() => {
       const timeslots =  generateTimeslots(startTime, endTime, consultationTime );
     //   console.log("timeslots", timeslots)y
       
-      const nextWeekDate = dateFromDay(record.day);
+      const nextWeekDate = await dateFromDay(record.day);
     //   const nextWeekDate = getNextWeekDate(date);
       console.log("nextWeekDate>>>>>>>", nextWeekDate)
 
