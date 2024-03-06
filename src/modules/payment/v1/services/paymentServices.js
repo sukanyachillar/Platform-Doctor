@@ -110,7 +110,6 @@ const paymentUpdate = async (bookingData, res) => {
                 body: `You have got an booking on ${timeData.date} at ${timeData.time_slot}`,
             },
             tokens: registration_ids,
-            //token: 'ffaIDwLJQOmwIwdyqquKVv:APA91bFxQpz4eCVf2U_pdz64ORNaSgQRuYDP0OPQDixgkJl35GOwXZD2Hln48JDsG-_CP4sFQDauGVIY8fFwfERPbOAtOu4_vJZzbbrYEIb-lIZyqht3zGwj4d1LbIAcqXCOyuwkuBng',
         }
 
         messaging
