@@ -35,7 +35,7 @@ const generateTimeslots = (startTime, endTime, consultationTime) => {
 
   const getNextWeekDate = (date) => {
     const nextWeekDate = new Date(date);
-    nextWeekDate.setDate(nextWeekDate.getDate() + 7);
+    nextWeekDate.setDate(nextWeekDate.getDate() + 6);
     return formatDate(nextWeekDate);
   };
   
@@ -88,11 +88,11 @@ const timeSlotCron = async() => {
     console.log("inside crone")
     const previousDateDay = await getPreviousDayName();
 
-    let previousDateData = await weeklyTimeSlotsModel.findAll({
+    let previousDateData = await workScheduleModel.findAll({
         where: {day: previousDateDay}
     })
 
-    // console.log('previousDateDay:', previousDateDay);
+    console.log('previousDateDay:', previousDateDay);
     // console.log('previousDateData:', previousDateData);
    
    for (const record of previousDateData) {
@@ -111,7 +111,8 @@ const timeSlotCron = async() => {
       const consultationTime = doctorData.consultation_time;
    
       const timeslots =  generateTimeslots(startTime, endTime, consultationTime );
-      console.log("timeslots", timeslots)
+    //   console.log("timeslots", timeslots)y
+    
       const nextWeekDate = getNextWeekDate(record.created_date_time);
     //   console.log("nextWeekDate>>>>>>>", nextWeekDate)
 
