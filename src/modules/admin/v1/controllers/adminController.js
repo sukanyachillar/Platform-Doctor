@@ -82,6 +82,16 @@ const listAllCustomers = async (req, res) => {
         
     }
   }
+  const customerHistory = async (req, res) => {
+    try {
+      let data = await adminServices.customerHistory(req, res)
+      return data;
+
+    } catch (error) {
+      console.log({ err });
+        
+    }
+  }
 
 export default {
     adminRegister,
@@ -92,5 +102,6 @@ export default {
     transactionHistory,
     addProfile,
     listAllCustomers,
-    addBankDetails
+    addBankDetails,
+    customerHistory
 }

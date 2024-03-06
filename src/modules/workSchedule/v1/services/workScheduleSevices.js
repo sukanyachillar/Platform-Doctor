@@ -2,7 +2,8 @@ import doctorModel from '../../../../models/doctorModel.js'
 import entityModel from '../../../../models/entityModel.js'
 import weeklyTimeSlots from '../../../../models/weeklyTimeSlotsModel.js'
 import workScheduleModel from '../../../../models/workScheduleModel.js'
-import { handleResponse } from '../../../../utils/handlers.js'
+import { handleResponse } from '../../../../utils/handlers.js';
+import { Sequelize } from 'sequelize';
 
 const addWorkSchedule = async (data, userData, res) => {
     try {
@@ -308,8 +309,11 @@ const getSingleWorkSchedule = async (req, res) => {
                 statusCode: 404,
             })
         }
-        let workSlots = await weeklyTimeSlots.findAll({
+        let data = await weeklyTimeSlots.findAll({
             where: { date: formattedDate, doctor_id: doctorData.doctor_id },
+            // order: [
+            //     [Sequelize.fn('TIME_TO_SEC', Sequelize.fn('STR_TO_DATE', Sequelize.literal("CONCAT(date, ' ', time_slot)"), '%Y-%m-%d %h:%i %p')), 'ASC']
+            // ],
         })
         console.log({formattedDate})
         let availableWorkSlots = await weeklyTimeSlots.findAll({
@@ -318,14 +322,28 @@ const getSingleWorkSchedule = async (req, res) => {
                 doctor_id: doctorData.doctor_id,
                 booking_status: 0,
             },
+          
         })
+
+        const customSort = (a, b) => {
+            const timeA = new Date('1970-01-01 ' + a.time_slot);
+            const timeB = new Date('1970-01-01 ' + b.time_slot);
+        
+            return timeA - timeB;
+        };
+        
+        // Sorting the workSlots array using the custom sorting function
+        const sortedWorkSlots = data.sort(customSort);
+        
+        // console.log(sortedWorkSlots);
 
         return handleResponse({
             res,
             statusCode: 200,
             message: 'Sucessfully fetched work slots',
             data: {
-                workSlots,
+                workSlots: sortedWorkSlots,
+                // sortedWorkSlots,
                 availableWorkSlots: availableWorkSlots.length,
             },
         })

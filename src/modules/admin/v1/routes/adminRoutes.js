@@ -13,5 +13,6 @@ router.post('/transaction-history', adminController.transactionHistory)
 router.post('/add-profile', adminController.addProfile)
 router.post('/customer-listing', adminController.listAllCustomers)
 router.post('/add-bank',adminController.addBankDetails)
+router.post('/customer-history', adminController.customerHistory)
 
 export default router
