@@ -112,8 +112,11 @@ const timeSlotCron = async() => {
    
       const timeslots =  generateTimeslots(startTime, endTime, consultationTime );
     //   console.log("timeslots", timeslots)y
-      
-      const nextWeekDate = await dateFromDay(record.day);
+      console.log('record.day', record.day)
+
+      let index = await getDayOfWeekIndex(record.day)
+      const nextWeekDate = await dateFromDay(index);
+      console.log("nextWeekDate", nextWeekDate )
       const currentDate = new Date(nextWeekDate)
             const year = currentDate.getFullYear()
             const month = String(currentDate.getMonth() + 1).padStart(2, '0') // Adding 1 to month as it's zero-based
@@ -162,7 +165,27 @@ const dateFromDay = async (day) => {
         console.log({ error })
     }
 }
+const getDayOfWeekIndex = async (dayName) => {
+    try {
+        console.log({ dayName })
+        const lowercaseDayName = dayName.toLowerCase()
+        const dayOfWeekMap = {
+            sunday: 0,
+            monday: 1,
+            tuesday: 2,
+            wednesday: 3,
+            thursday: 4,
+            friday: 5,
+            saturday: 6,
+        }
 
+        return dayOfWeekMap[lowercaseDayName] !== undefined
+            ? dayOfWeekMap[lowercaseDayName]
+            : null
+    } catch (err) {
+        console.log({ err })
+    }
+}
 // const startTest = async () => {
 //     const currentDate = new Date();
   
