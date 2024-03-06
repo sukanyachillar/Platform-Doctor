@@ -1,6 +1,5 @@
 // consolidatedScript.js
 
-
 import doctorModel from '../models/doctorModel.js';
 import weeklyTimeSlotsModel from '../models/weeklyTimeSlotsModel.js';
 import workScheduleModel from '../models/workScheduleModel.js';
@@ -47,38 +46,11 @@ const generateTimeslots = (startTime, endTime, consultationTime) => {
   };
 
 
-// Run the script initially
-// (async () => {
-//     const doctors = getActiveDoctors();
-//     console.log("active doctors", doctors)
-
-//     for (const doctor of doctors) {
-//         const lastDate = await getLastDateForDoctor(doctor.doctor_id);
-//         const startDate = lastDate || new Date(); // If no last date found, use the current date
-
-//         const endDate = new Date(startDate);
-//         endDate.setDate(endDate.getDate() + 7);
-
-//         await generateAndInsertTimeSlots(doctor, startDate, endDate);
-//     }
-// })();
-
-// Schedule the cron job to run daily at midnight
-// cron.schedule('* * * * *', async () => {
-//      timeSlotCron();
-// });
-
 async function getPreviousDayName() {
-    // Days of the week
     const daysOfWeek = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
-
-    // Get today's date
     const today = new Date();
     
-    // Calculate the previous day's index
     const previousDayIndex = (today.getDay() + 6) % 7; // Adding 6 and modulo 7 ensures the result is between 0 and 6
-    
-    // Get the name of the previous day
     const previousDayName = daysOfWeek[previousDayIndex];
 
     return previousDayName;
@@ -186,70 +158,5 @@ const getDayOfWeekIndex = async (dayName) => {
         console.log({ err })
     }
 }
-// const startTest = async () => {
-//     const currentDate = new Date();
-  
-//       const previousDateData = await workScheduleModel.findAll({
-//         where: {
-//             created_date_time: {
-//             [Op.lt]: currentDate,
-//           },
-//         },
-//       });
-  
-//     //   console.log('Previous date data:', previousDateData);
-     
-//      for (const record of previousDateData) {
-//         const doctorData = await doctorModel.findOne({
-//             attributes: [
-//                 'doctor_id',
-//                 'doctor_name',
-//                 'consultation_time',
-//                 'consultation_charge',
-//                 'status',
-//                 'description',
-//                 'department_id',
-//                 'entity_id',
-//             ],
-//             where: { doctor_id: record.doctor_id },
-          
-//         })
-//         // console.log("doctorData", doctorData)
-//         const startTime = record.startTime;
-//         const endTime = record.endTime;
-//         const consultationTime = doctorData.consultation_time;
-  
-//         console.log(`Doctor ${record.doctor_id} consultation time: ${startTime} - ${endTime}`);
-     
-//         const timeslots =  generateTimeslots(startTime, endTime, consultationTime );
-//         console.log("timeslots", timeslots)
-//         const nextWeekDate = getNextWeekDate(record.created_date_time);
-//         console.log("nextWeekDate>>>>>>>", nextWeekDate)
-
-//         console.log("record", record)
-
-//         for (const ele of timeslots) {
-
-//             const existingTimeslot = await weeklyTimeSlotsModel.findOne({
-//                 where: {
-//                     time_slot: ele,
-//                     doctor_id: record.doctor_id,
-//                     date: nextWeekDate,
-//                 },
-//             })
-//             if (!existingTimeslot) {
-//                 await weeklyTimeSlotsModel.create({
-//                     date: nextWeekDate,
-//                     day: record.day,
-//                     time_slot: ele,
-//                     doctor_id: record.doctor_id,
-//                     booking_status: 0, // Default value for availability
-//                   });
-//             }
-          
-//           }
-//       }
-// }
-
 
 export default { timeSlotCron } 
