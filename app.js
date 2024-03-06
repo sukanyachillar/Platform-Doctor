@@ -6,9 +6,11 @@ import bookingrouter from './src/modules/booking/v1/routes/bookingRoutes.js'
 import paymentRouter from './src/modules/payment/v1/routes/paymentRoutes.js'
 import businessRouter from './src/modules/business/v1/routes/businessRoutes.js'
 import adminRouter from './src/modules/admin/v1/routes/adminRoutes.js'
-import cors from 'cors'
+import cors from 'cors';
+import cron from 'node-cron';
 import currentConfig from './config.js'
-import Sequelize from './src/dbConnect.js'
+import Sequelize from './src/dbConnect.js';
+import cronJobs from './src/utils/cronJobs.js';
 
 const app = express()
 global.appRoot = process.cwd()
@@ -31,6 +33,11 @@ app.use((req, res, next) => {
 Sequelize.sync().then(() => {
     console.log('Connected to the database.')
 })
+
+cron.schedule('0 0 * * *', async () => {
+    cronJobs.timeSlotCron();
+});
+
 
 app.get('/api', (req, res) => {
     res.status(200).json({
@@ -56,3 +63,6 @@ app.listen(currentConfig.PORT, (err) => {
     if (err) console.log(`server error.`)
     else console.log(`server is on ${currentConfig.PORT}`)
 })
+
+
+
