@@ -767,7 +767,7 @@ const customerHistory = async (req, res) => {
                             bookingId: booking.bookingId,
                             bookingDate: booking.bookingDate,
                             appointmentDate: appointmentDate,
-                            bookingStatus: booking.bookingStatus,
+                            visitingStatus: booking.bookingStatus,
                             transactionId: paymentDetails ? paymentDetails.transactionId : "",
                         });
                     }
