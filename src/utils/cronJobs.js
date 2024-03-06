@@ -2,13 +2,11 @@
 
 
 import doctorModel from '../models/doctorModel.js';
-import sequelize from '../dbConnect.js';
 import weeklyTimeSlotsModel from '../models/weeklyTimeSlotsModel.js';
 import workScheduleModel from '../models/workScheduleModel.js';
 import { Op, Sequelize } from 'sequelize'
 
 const generateTimeslots = (startTime, endTime, consultationTime) => {
-    // Convert start time and end time to Date objects
     const startDate = new Date(`2000-01-01T${startTime}`);
     const endDate = new Date(`2000-01-01T${endTime}`);
   
@@ -70,19 +68,33 @@ const generateTimeslots = (startTime, endTime, consultationTime) => {
 //      timeSlotCron();
 // });
 
+async function getPreviousDayName() {
+    // Days of the week
+    const daysOfWeek = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+
+    // Get today's date
+    const today = new Date();
+    
+    // Calculate the previous day's index
+    const previousDayIndex = (today.getDay() + 6) % 7; // Adding 6 and modulo 7 ensures the result is between 0 and 6
+    
+    // Get the name of the previous day
+    const previousDayName = daysOfWeek[previousDayIndex];
+
+    return previousDayName;
+}
+
 const timeSlotCron = async() => {
     console.log("inside crone")
-    const currentDate = new Date();
-  
-    const previousDateData = await workScheduleModel.findAll({
-      where: {
-          created_date_time: {
-          [Op.lt]: currentDate,
-        },
-      },
-    });
+    const previousDateDay = await getPreviousDayName();
 
-  //   console.log('Previous date data:', previousDateData);
+    let previousDateData = await weeklyTimeSlotsModel.findAll({
+        where: {day: previousDateDay}
+    })
+
+    console.log('previousDateDay:', previousDateDay);
+    console.log('previousDateData:', previousDateData);
+
    
    for (const record of previousDateData) {
       const doctorData = await doctorModel.findOne({
@@ -90,11 +102,6 @@ const timeSlotCron = async() => {
               'doctor_id',
               'doctor_name',
               'consultation_time',
-              'consultation_charge',
-              'status',
-              'description',
-              'department_id',
-              'entity_id',
           ],
           where: { doctor_id: record.doctor_id },
         
