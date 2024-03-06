@@ -105,13 +105,13 @@ const timeSlotCron = async() => {
           where: { doctor_id: record.doctor_id },
         
       })
-      console.log("doctorData", doctorData)
+    //   console.log("doctorData", doctorData)
       const startTime = record.startTime;
       const endTime = record.endTime;
       const consultationTime = doctorData.consultation_time;
    
       const timeslots =  generateTimeslots(startTime, endTime, consultationTime );
-    //   console.log("timeslots", timeslots)
+      console.log("timeslots", timeslots)
       const nextWeekDate = getNextWeekDate(record.created_date_time);
     //   console.log("nextWeekDate>>>>>>>", nextWeekDate)
 
