@@ -35,7 +35,7 @@ const generateTimeslots = (startTime, endTime, consultationTime) => {
 
   const getNextWeekDate = (date) => {
     const nextWeekDate = new Date(date);
-    nextWeekDate.setDate(nextWeekDate.getDate() + 6);
+    nextWeekDate.setDate(nextWeekDate.getDate() + 7);
     return formatDate(nextWeekDate);
   };
   
@@ -112,8 +112,9 @@ const timeSlotCron = async() => {
    
       const timeslots =  generateTimeslots(startTime, endTime, consultationTime );
     //   console.log("timeslots", timeslots)y
-
-      const nextWeekDate = getNextWeekDate(record.created_date_time);
+      
+      const nextWeekDate = dateFromDay(record.day);
+    //   const nextWeekDate = getNextWeekDate(date);
       console.log("nextWeekDate>>>>>>>", nextWeekDate)
 
     //   console.log("record", record)
@@ -138,6 +139,22 @@ const timeSlotCron = async() => {
           }
         
         }
+    }
+}
+
+const dateFromDay = async (day) => {
+    try {
+        const currentDate = new Date()
+        const currentDayOfWeek = currentDate.getDay()
+        let daysToAdd = day - currentDayOfWeek
+        if (daysToAdd <= 0) {
+            daysToAdd += 7
+        }
+        const nextDate = new Date(currentDate)
+        nextDate.setDate(currentDate.getDate() + daysToAdd)
+        return nextDate
+    } catch (error) {
+        console.log({ error })
     }
 }
 
