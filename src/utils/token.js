@@ -75,13 +75,13 @@ export const verifyRefreshToken = async (req, res) => {
   }
 };
 
-const encrypt = async (data, key) => {
+export const encrypt = async (data, key) => {
   const encryptedData = CryptoJS.AES.encrypt(data, key).toString();
   return encryptedData;
 };
 
 // Function to decrypt data
-const decrypt = async (encryptedData, key) => {
+export const decrypt = async (encryptedData, key) => {
   const decryptedData = CryptoJS.AES.decrypt(encryptedData, key).toString(
     CryptoJS.enc.Utf8
   );

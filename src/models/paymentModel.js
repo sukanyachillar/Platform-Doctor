@@ -45,7 +45,7 @@ const paymentModel = sequelize.define('payment', {
   },
   
 });
-// await paymentModel.hasOne(bookingModel, { foreignKey: 'bookingId' });
+await paymentModel.hasOne(bookingModel, { foreignKey: 'bookingId' });
 
 // await weeklyTimeSlotsModel.hasOne(bookingModel, { foreignKey: 'workSlotId', as: 'booking' });
 // await bookingModel.belongsTo(weeklyTimeSlotsModel, { foreignKey: 'workSlotId', as: 'booking' });
