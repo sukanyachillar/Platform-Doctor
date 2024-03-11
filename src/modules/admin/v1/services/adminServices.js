@@ -298,6 +298,8 @@ const transactionHistory = async (requestData, res) => {
             limit: pageSize,
             offset: offset,
         });
+
+        console.log("bookings===>", bookings)
         
         // Extracting bookingIds from the result for the next query
         const bookingIds = bookings.map((booking) => booking.bookingId);
@@ -316,12 +318,12 @@ const transactionHistory = async (requestData, res) => {
                 paymentStatus: 1,
             },
         });
+        console.log("payments===>", payments)
         
-        console.log("transactions===", payments)
-        console.log("payments====", payments)
+
         // Merging booking and payment information based on the orderId
         let transactions = bookings.map((booking) => {
-            const associatedPayment = payments.find((payment) => payment.orderId === booking.bookingId);
+            const associatedPayment = payments.find((payment) => payment.orderId === booking.orderId);
         
             return {
                 ...booking.toJSON(),
