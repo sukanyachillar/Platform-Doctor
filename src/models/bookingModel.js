@@ -109,7 +109,7 @@ const bookingModel = sequelize.define('booking', {
   
 });
 
-bookingModel.belongsTo(paymentModel, { foreignKey: 'paymentId' });
+// bookingModel.belongsTo(paymentModel, { foreignKey: 'paymentId' });
 
 // bookingModel.belongsTo(userModel, { foreignKey: 'customerId', as: 'customer' });
 // bookingModel.belongsTo(doctorModel, { foreignKey: 'entityId', as: 'doctor' });

@@ -248,21 +248,45 @@ const transactionHistory = async (requestData, res) => {
         const searchQuery = requestData.searchQuery || ''
         const offset = (page - 1) * pageSize
 
-        let { count, rows: transactions } = await bookingModel.findAndCountAll({
+        // let { count, rows: transactions } = await bookingModel.findAndCountAll({
+        //     where: {
+        //         bookingStatus: {
+        //             [Op.in]: [0, 1],
+        //         },
+        //     },
+        //     include: [
+        //         {
+        //             model: paymentModel,
+        //             attributes: ['orderId', 'transactionId'],
+        //             where: {
+        //                 paymentStatus: 1,
+        //             },
+        //         },
+        //     ],
+        //     attributes: [
+        //         'customerId',
+        //         'amount',
+        //         'bookingId',
+        //         'workSlotId',
+        //         'bookingStatus',
+        //         'appointmentDate',
+        //         [Sequelize.literal('`payment`.`orderId`'), 'paymentOrderId'],
+        //         [
+        //             Sequelize.literal('`payment`.`transactionId`'),
+        //             'paymentTransactionId',
+        //         ],
+        //         [Sequelize.literal('`payment`.`updatedAt`'), 'paymentDate'],
+        //     ],
+        //     limit: pageSize,
+        //     offset: offset,
+        // })
+
+        const { count, rows: bookings } = await bookingModel.findAndCountAll({
             where: {
                 bookingStatus: {
                     [Op.in]: [0, 1],
                 },
             },
-            include: [
-                {
-                    model: paymentModel,
-                    attributes: ['orderId', 'transactionId'],
-                    where: {
-                        paymentStatus: 1,
-                    },
-                },
-            ],
             attributes: [
                 'customerId',
                 'amount',
@@ -270,16 +294,41 @@ const transactionHistory = async (requestData, res) => {
                 'workSlotId',
                 'bookingStatus',
                 'appointmentDate',
-                [Sequelize.literal('`payment`.`orderId`'), 'paymentOrderId'],
-                [
-                    Sequelize.literal('`payment`.`transactionId`'),
-                    'paymentTransactionId',
-                ],
-                [Sequelize.literal('`payment`.`updatedAt`'), 'paymentDate'],
             ],
             limit: pageSize,
             offset: offset,
-        })
+        });
+        
+        // Extracting bookingIds from the result for the next query
+        const bookingIds = bookings.map((booking) => booking.bookingId);
+        
+        // Query to retrieve associated payment information
+        const payments = await paymentModel.findAll({
+            attributes: [
+                'orderId',
+                'transactionId',
+                [Sequelize.literal('`payment`.`updatedAt`'), 'paymentDate'],
+            ],
+            where: {
+                orderId: {
+                    [Op.in]: bookingIds,
+                },
+                paymentStatus: 1,
+            },
+        });
+        
+        // Merging booking and payment information based on the orderId
+        const transactions = bookings.map((booking) => {
+            const associatedPayment = payments.find((payment) => payment.orderId === booking.bookingId);
+        
+            return {
+                ...booking.toJSON(),
+                paymentOrderId: associatedPayment ? associatedPayment.orderId : null,
+                paymentTransactionId: associatedPayment ? associatedPayment.transactionId : null,
+                paymentDate: associatedPayment ? associatedPayment.paymentDate : null,
+            };
+        });
+        
         const totalPages = Math.ceil(count / pageSize) // Calculate total number of pages
 
         // Extract unique customerIds and workSlotIds
