@@ -5,7 +5,7 @@ import sequelize from '../dbConnect.js'
 // import userModel from './models/userModel.js';
 // import doctorModel from './models/doctorModel.js';
 // import weeklyTimeSlotsModel from './models/weeklyTimeSlotsModel.js';
-// import paymentModel from './models/paymentModel.js';
+import paymentModel from '../models/paymentModel.js';
 
 // import { userModel, doctorModel, weeklyTimeSlotsModel, paymentModel } from '../models';
 // const models = require('./models');
@@ -108,6 +108,8 @@ const bookingModel = sequelize.define('booking', {
   },
   
 });
+
+bookingModel.belongsTo(paymentModel, { foreignKey: 'paymentId' });
 
 // bookingModel.belongsTo(userModel, { foreignKey: 'customerId', as: 'customer' });
 // bookingModel.belongsTo(doctorModel, { foreignKey: 'entityId', as: 'doctor' });
