@@ -318,7 +318,7 @@ const transactionHistory = async (requestData, res) => {
         });
         
         // Merging booking and payment information based on the orderId
-        const transactions = bookings.map((booking) => {
+        let transactions = bookings.map((booking) => {
             const associatedPayment = payments.find((payment) => payment.orderId === booking.bookingId);
         
             return {
