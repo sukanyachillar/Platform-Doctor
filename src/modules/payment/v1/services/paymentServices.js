@@ -100,30 +100,30 @@ const paymentUpdate = async (bookingData, res) => {
         let timeData = await weeklyTimeSlotsModel.findOne({
             where: { time_slot_id: timeSlot.workSlotId },
         })
-     console.log("timeData>>>>", timeData)
-        admin.initializeApp({
-            credential: admin.credential.cert(serviceAccount),
-        })
+       console.log("timeData>>>>", timeData)
+        // admin.initializeApp({
+        //     credential: admin.credential.cert(serviceAccount),
+        // })
 
-        const messaging = admin.messaging()
+        // const messaging = admin.messaging()
 
-        const message = {
-            notification: {
-                title: 'Appointment Booking',
-                body: `You have got an booking on ${timeData.date} at ${timeData.time_slot}`,
-            },
-            tokens: registration_ids,
-        }
+        // const message = {
+        //     notification: {
+        //         title: 'Appointment Booking',
+        //         body: `You have got an booking on ${timeData.date} at ${timeData.time_slot}`,
+        //     },
+        //     tokens: registration_ids,
+        // }
 
-        messaging
-           // .send(message)
-           .sendEachForMulticast(message)
-            .then((response) => {
-                console.log('Successfully sent message:', response)
-            })
-            .catch((error) => {
-                console.log('Error sending message:', error)
-            })
+        // messaging
+        //    // .send(message)
+        //    .sendEachForMulticast(message)
+        //     .then((response) => {
+        //         console.log('Successfully sent message:', response)
+        //     })
+        //     .catch((error) => {
+        //         console.log('Error sending message:', error)
+        //     })
 
         return handleResponse({
             res,
