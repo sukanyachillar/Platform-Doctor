@@ -285,13 +285,13 @@ const getBookingReport = async (req, res) => {
             },
             attributes: ['userId', 'name'],
         });
-        
+        console.log("userRecords=============", userRecords)
         // Create a map of userId to customerName
         const customerNameMap = {};
         userRecords.forEach((user) => {
             customerNameMap[user.userId] = user.name;
         });
-        
+        console.log('customerNameMap>>>>>', customerNameMap)
         // Update bookingReport with customerName
         const bookingReport = bookingList.map((booking) => ({
             ...booking.toJSON(),
