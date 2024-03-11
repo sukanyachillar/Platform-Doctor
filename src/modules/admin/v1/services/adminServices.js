@@ -310,6 +310,7 @@ const transactionHistory = async (requestData, res) => {
             attributes: [
                 'orderId',
                 'transactionId',
+                'paymentDate',
                 [Sequelize.literal('`payment`.`updatedAt`'), 'paymentDate'],
             ],
             where: {
@@ -325,12 +326,12 @@ const transactionHistory = async (requestData, res) => {
         // Merging booking and payment information based on the orderId
         let transactions = bookings.map((booking) => {
             const associatedPayment = payments.find((payment) => payment.orderId === booking.orderId);
-        
+            
             return {
                 ...booking.toJSON(),
                 paymentOrderId: associatedPayment ? associatedPayment.orderId : null,
                 paymentTransactionId: associatedPayment ? associatedPayment.transactionId : null,
-                paymentDate: associatedPayment ? associatedPayment.paymentDate : null,
+                paymentDate: associatedPayment ? associatedPayment.paymentDate : null, 
             };
         });
         
@@ -412,7 +413,7 @@ const transactionHistory = async (requestData, res) => {
                 : null
         })
 
-        console.log(transactions)
+        console.log("transactions1111111111", transactions )
         let message, data
 
         if (!transactions) {
