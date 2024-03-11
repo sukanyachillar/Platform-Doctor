@@ -99,8 +99,8 @@ const paymentUpdate = async (bookingData, res) => {
         )
         let timeData = await weeklyTimeSlotsModel.findOne({
             where: { time_slot_id: timeSlot.workSlotId },
-        })
-       console.log("timeData>>>>", timeData)
+        });
+        console.log("timeData>>>>", timeData)
         // admin.initializeApp({
         //     credential: admin.credential.cert(serviceAccount),
         // })
@@ -124,6 +124,29 @@ const paymentUpdate = async (bookingData, res) => {
         //     .catch((error) => {
         //         console.log('Error sending message:', error)
         //     })
+
+        admin.initializeApp({
+            credential: admin.credential.cert(serviceAccount),
+        })
+
+        const messaging = admin.messaging()
+
+        const message = {
+            notification: {
+                title: 'Appointment Booking',
+                body: `You have got a booking on ${timeData.date} at ${timeData.time_slot}`,
+            },
+            tokens: registration_ids,
+        }
+
+        // Wrap the notification sending logic in a try-catch block
+        try {
+            await messaging.sendEachForMulticast(message)
+            console.log('Successfully sent message')
+        } catch (notificationError) {
+            console.log('Error sending notification:', notificationError)
+            // Handle the notification error as needed, without affecting the overall process
+        }
 
         return handleResponse({
             res,
