@@ -310,7 +310,7 @@ const transactionHistory = async (requestData, res) => {
             attributes: [
                 'orderId',
                 'transactionId',
-                'paymentDate',
+                'createdAt',
                 [Sequelize.literal('`payment`.`updatedAt`'), 'paymentDate'],
             ],
             where: {
@@ -331,7 +331,7 @@ const transactionHistory = async (requestData, res) => {
                 ...booking.toJSON(),
                 paymentOrderId: associatedPayment ? associatedPayment.orderId : null,
                 paymentTransactionId: associatedPayment ? associatedPayment.transactionId : null,
-                paymentDate: associatedPayment ? associatedPayment.paymentDate : null, 
+                paymentDate: associatedPayment ? associatedPayment.createdAt : null,
             };
         });
         
