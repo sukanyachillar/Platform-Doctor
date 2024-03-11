@@ -370,13 +370,13 @@ const transactionHistory = async (requestData, res) => {
         doctors.forEach((doctor) => {
             doctorNameMap[doctor.doctor_id] = doctor.doctor_name
         })
-
+       console.log("transactions====", transactions)
         // Update transactions with doctorName, customerName, and customerPhone
         transactions = transactions.map((transaction) => ({
             ...transaction.toJSON(),
             doctorName: doctorNameMap[doctorIdMap[transaction.workSlotId]],
         }))
-
+      
         // Fetch customer names and phone numbers
         const customers = await userModel.findAll({
             where: {
