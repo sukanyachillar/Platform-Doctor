@@ -275,7 +275,7 @@ const getBookingReport = async (req, res) => {
         
         // Extract customerIds from the booking report
         const customerIds = bookingList.map((booking) => booking.customerId);
-        
+        console.log("customerIds",customerIds)
         // Fetch user details based on customerIds
         const userRecords = await userModel.findAll({
             where: {
