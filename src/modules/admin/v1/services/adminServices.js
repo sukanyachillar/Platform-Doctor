@@ -373,7 +373,7 @@ const transactionHistory = async (requestData, res) => {
        console.log("transactions====", transactions)
         // Update transactions with doctorName, customerName, and customerPhone
         transactions = transactions.map((transaction) => ({
-            ...transaction.toJSON(),
+            ...transaction,
             doctorName: doctorNameMap[doctorIdMap[transaction.workSlotId]],
         }))
       
