@@ -259,15 +259,45 @@ const listBooking = async ({ doctorId, date }, res) => {
 const getBookingReport = async (req, res) => {
     try {
         const { doctorId, date } = req.body
-        const queryPart = {
-            departmentId: doctorId,
-            appointmentDate: { [Op.eq]: new Date(date) }, // Filter appointments on or after the specified date
-        }
-        const bookingReport = await bookingModel.findAll({
-            where: queryPart,
-            attributes: ['customerName', 'orderId', 'amount', 'bookingStatus'], // Select specific attributes
-        })
+        // const queryPart = {
+        //     departmentId: doctorId,
+        //     appointmentDate: { [Op.eq]: new Date(date) }, // Filter appointments on or after the specified date
+        // }
+        // const bookingReport = await bookingModel.findAll({
+        //     where: queryPart,
+        //     attributes: ['customerName', 'orderId', 'amount', 'bookingStatus'], // Select specific attributes
+        // })
 
+        const bookingList = await bookingModel.findAll({
+            where: queryPart,
+            attributes: ['orderId', 'amount', 'bookingStatus', 'customerId'], // Include customerId for later use
+        });
+        
+        // Extract customerIds from the booking report
+        const customerIds = bookingList.map((booking) => booking.customerId);
+        
+        // Fetch user details based on customerIds
+        const userRecords = await userModel.findAll({
+            where: {
+                userId: {
+                    [Op.in]: customerIds,
+                },
+            },
+            attributes: ['userId', 'customerName'],
+        });
+        
+        // Create a map of userId to customerName
+        const customerNameMap = {};
+        userRecords.forEach((user) => {
+            customerNameMap[user.userId] = user.customerName;
+        });
+        
+        // Update bookingReport with customerName
+        const bookingReport = bookingReport.map((booking) => ({
+            ...booking.toJSON(),
+            customerName: customerNameMap[booking.customerId],
+        }));
+        
         // const getBookings = await bookingModel.findAll({
         //   where: queryPart,
         //   include: [
