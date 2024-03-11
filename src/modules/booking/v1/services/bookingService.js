@@ -259,10 +259,10 @@ const listBooking = async ({ doctorId, date }, res) => {
 const getBookingReport = async (req, res) => {
     try {
         const { doctorId, date } = req.body
-        // const queryPart = {
-        //     departmentId: doctorId,
-        //     appointmentDate: { [Op.eq]: new Date(date) }, // Filter appointments on or after the specified date
-        // }
+        const queryPart = {
+            departmentId: doctorId,
+            appointmentDate: { [Op.eq]: new Date(date) }, // Filter appointments on or after the specified date
+        }
         // const bookingReport = await bookingModel.findAll({
         //     where: queryPart,
         //     attributes: ['customerName', 'orderId', 'amount', 'bookingStatus'], // Select specific attributes
