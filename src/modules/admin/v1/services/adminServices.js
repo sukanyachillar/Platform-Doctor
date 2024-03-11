@@ -294,6 +294,7 @@ const transactionHistory = async (requestData, res) => {
                 'workSlotId',
                 'bookingStatus',
                 'appointmentDate',
+                'orderId'
             ],
             limit: pageSize,
             offset: offset,
@@ -302,7 +303,7 @@ const transactionHistory = async (requestData, res) => {
         console.log("bookings===>", bookings)
         
         // Extracting bookingIds from the result for the next query
-        const bookingIds = bookings.map((booking) => booking.bookingId);
+        const bookingIds = bookings.map((booking) => booking.orderId);
         
         // Query to retrieve associated payment information
         const payments = await paymentModel.findAll({
