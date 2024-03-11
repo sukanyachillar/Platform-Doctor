@@ -293,7 +293,7 @@ const getBookingReport = async (req, res) => {
         });
         
         // Update bookingReport with customerName
-        const bookingReport = bookingReport.map((booking) => ({
+        const bookingReport = bookingList.map((booking) => ({
             ...booking.toJSON(),
             customerName: customerNameMap[booking.customerId],
         }));
