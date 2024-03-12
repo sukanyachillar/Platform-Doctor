@@ -1,16 +1,16 @@
-import userModel from '../../../../models/userModel.js'
-import doctorModel from '../../../../models/doctorModel.js'
-import entityModel from '../../../../models/entityModel.js'
-import departmentModel from '../../../../models/departmentModel.js'
-import paymentModel from '../../../../models/paymentModel.js'
-import bookingModel from '../../../../models/bookingModel.js'
-import weeklyTimeSlotsModel from '../../../../models/weeklyTimeSlotsModel.js'
-import { hashPassword, comparePasswords } from '../../../../utils/password.js'
-import { generateAdminTokens } from '../../../../utils/token.js'
-import { generateUuid } from '../../../../utils/generateUuid.js'
-import { handleResponse } from '../../../../utils/handlers.js'
+import userModel from '../../../../models/userModel.js';
+import doctorModel from '../../../../models/doctorModel.js';
+import entityModel from '../../../../models/entityModel.js';
+import departmentModel from '../../../../models/departmentModel.js';
+import paymentModel from '../../../../models/paymentModel.js';
+import bookingModel from '../../../../models/bookingModel.js';
+import weeklyTimeSlotsModel from '../../../../models/weeklyTimeSlotsModel.js';
+import entityAddressModel from '../../../../models/entityAddressModel.js';
+import { hashPassword, comparePasswords } from '../../../../utils/password.js';
+import { generateAdminTokens } from '../../../../utils/token.js';
+import { generateUuid } from '../../../../utils/generateUuid.js';
+import { handleResponse } from '../../../../utils/handlers.js';
 import { Op, Sequelize } from 'sequelize';
-import businessModel from '../../../../models/businessModel.js'
 
 const adminRegister = async (credentials, res) => {
     try {
@@ -855,6 +855,90 @@ const customerHistory = async (req, res) => {
     }
 }
 
+  const addEntity = async (req, res) => {
+    try {
+        const {
+          businessId,
+          entityType,
+          entityName,
+          phone,
+          location,
+          streetName,
+          cityName,
+          stateId,
+          districtId,
+          pincodeId,
+        } = req.body;
+    
+        let existingEntity = await entityModel.findOne({where: { phone }});
+    
+        if (existingEntity) {
+          // If the entity already exists, update its details
+          existingEntity = await existingEntity.update({
+            entity_type: businessId,
+            business_type_id: entityType,
+            entity_name: entityName,
+            phone,
+            location,
+        });
+    
+          // Update the entity address
+          await entityAddressModel.update(
+            {
+              streetName,
+              cityName,
+              stateId,
+              districtId,
+              pincodeId,
+            },
+            { where: { entityId: existingEntity.entity_id } }
+          );
+    
+          return handleResponse({
+            res,
+            statusCode: 200,
+            message: 'Entity updated successfully',
+            data: { entityId: existingEntity.entity_id }, 
+          });
+        }
+        // If the entity does not exist, create a new one
+        const newEntity = await entityModel.create({
+          entity_type: businessId,
+          business_type_id: entityType,
+          entity_name: entityName,
+          phone,
+          location,
+         });
+
+   
+        // Create a new entity address
+        await entityAddressModel.create({
+          streetName,
+          cityName,
+          stateId,
+          districtId,
+          pincodeId,
+          entityId: newEntity.entity_id,
+     
+        });
+    
+        return handleResponse({
+          res,
+          statusCode: 201,
+          message: 'Entity added successfully',
+          data: { entityId: newEntity.entity_id? newEntity.entity_id: existingEntity.entity_id  }, // Sending the entityId in the response data
+        });
+
+      } catch (error) {
+        console.error(error);
+        return handleResponse({
+          res,
+          message: 'Internal Server Error',
+          statusCode: 500,
+        });
+      }
+}
+
 export default {
     adminLogin,
     adminRegister,
@@ -866,4 +950,5 @@ export default {
     listAllCustomers,
     addBankDetails,
     customerHistory,
+    addEntity,
 }

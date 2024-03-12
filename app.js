@@ -61,6 +61,7 @@ app.post('*', (req, res) => {
         message: 'Unknown path specified....',
     })
 })
+
 app.listen(currentConfig.PORT, (err) => {
     if (err) console.log(`server error.`)
     else console.log(`server is on ${currentConfig.PORT}`)

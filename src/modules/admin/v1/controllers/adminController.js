@@ -93,6 +93,15 @@ const listAllCustomers = async (req, res) => {
     }
   }
 
+  const addEntity = async (req, res)=> {
+    try {
+        const data = await adminServices.addEntity(req, res);
+        return data;
+    } catch (error) {
+        
+    }
+  }
+
 export default {
     adminRegister,
     adminLogin,
@@ -103,5 +112,6 @@ export default {
     addProfile,
     listAllCustomers,
     addBankDetails,
-    customerHistory
+    customerHistory,
+    addEntity,
 }

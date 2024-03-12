@@ -4,12 +4,12 @@ import doctorModel from './doctorModel.js';
 
 const entityModel = sequelize.define('entity', {
     entity_id: {
-        type: DataTypes.INTEGER,
+        type: DataTypes.INTEGER, 
         primaryKey: true,
         autoIncrement: true,
         allowNull: false,
     },
-    entity_type: {  //refering business model
+    entity_type: {  //refering business model // actually businessId
         type: DataTypes.INTEGER,
         allowNull: true,
         unique: false,
@@ -37,8 +37,8 @@ const entityModel = sequelize.define('entity', {
             isEmail: true,
         },
     },
-    business_type_id: {
-        type: DataTypes.INTEGER, // individual = 0, business =1
+    business_type_id: { // event_type
+        type: DataTypes.INTEGER, // individual = 0, group =1
         allowNull: true,
         unique: false,
     },
