@@ -1,15 +1,16 @@
-import userModel from '../../../../models/userModel.js'
-import doctorModel from '../../../../models/doctorModel.js'
-import entityModel from '../../../../models/entityModel.js'
-import departmentModel from '../../../../models/departmentModel.js'
-import paymentModel from '../../../../models/paymentModel.js'
-import bookingModel from '../../../../models/bookingModel.js'
-import weeklyTimeSlotsModel from '../../../../models/weeklyTimeSlotsModel.js'
-import { hashPassword, comparePasswords } from '../../../../utils/password.js'
-import { generateAdminTokens } from '../../../../utils/token.js'
-import { generateUuid } from '../../../../utils/generateUuid.js'
-import { handleResponse } from '../../../../utils/handlers.js'
-import { Op, Sequelize } from 'sequelize'
+import userModel from '../../../../models/userModel.js';
+import doctorModel from '../../../../models/doctorModel.js';
+import entityModel from '../../../../models/entityModel.js';
+import departmentModel from '../../../../models/departmentModel.js';
+import paymentModel from '../../../../models/paymentModel.js';
+import bookingModel from '../../../../models/bookingModel.js';
+import weeklyTimeSlotsModel from '../../../../models/weeklyTimeSlotsModel.js';
+import entityAddressModel from '../../../../models/entityAddressModel.js';
+import { hashPassword, comparePasswords } from '../../../../utils/password.js';
+import { generateAdminTokens } from '../../../../utils/token.js';
+import { generateUuid } from '../../../../utils/generateUuid.js';
+import { handleResponse } from '../../../../utils/handlers.js';
+import { Op, Sequelize } from 'sequelize';
 
 const adminRegister = async (credentials, res) => {
     try {
@@ -593,19 +594,17 @@ const listAllCustomers = async ({ page = 1, limit = 10, searchQuery= '', filter 
               stateId,
               districtId,
               pincodeId,
-              updated_at,
             },
-            { where: { entityId: existingEntity.entityId } }
+            { where: { entityId: existingEntity.entity_id } }
           );
     
           return handleResponse({
             res,
             statusCode: 200,
             message: 'Entity updated successfully',
-            data: { entityId: existingEntity.entityId }, 
+            data: { entityId: existingEntity.entity_id }, 
           });
         }
-    
         // If the entity does not exist, create a new one
         const newEntity = await entityModel.create({
           entity_type: businessId,
@@ -613,10 +612,9 @@ const listAllCustomers = async ({ page = 1, limit = 10, searchQuery= '', filter 
           entity_name: entityName,
           phone,
           location,
-          created_at,
-          updated_at,
-        });
-    
+         });
+
+   
         // Create a new entity address
         await entityAddressModel.create({
           streetName,
@@ -624,16 +622,15 @@ const listAllCustomers = async ({ page = 1, limit = 10, searchQuery= '', filter 
           stateId,
           districtId,
           pincodeId,
-          entityId: newEntity.entityId,
-          created_at,
-          updated_at,
+          entityId: newEntity.entity_id,
+     
         });
     
         return handleResponse({
           res,
           statusCode: 201,
           message: 'Entity added successfully',
-          data: { entityId: newEntity.entityId }, // Sending the entityId in the response data
+          data: { entityId: newEntity.entity_id? newEntity.entity_id: existingEntity.entity_id  }, // Sending the entityId in the response data
         });
 
       } catch (error) {
