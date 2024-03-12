@@ -1,11 +1,12 @@
 import express from 'express'
 import morgan from 'morgan'
-import authRouter from './src/modules/authentication/v1/routes/authRoutes.js'
-import workRouter from './src/modules/workSchedule/v1/routes/workScheduleRoutes.js'
-import bookingrouter from './src/modules/booking/v1/routes/bookingRoutes.js'
-import paymentRouter from './src/modules/payment/v1/routes/paymentRoutes.js'
-import businessRouter from './src/modules/business/v1/routes/businessRoutes.js'
-import adminRouter from './src/modules/admin/v1/routes/adminRoutes.js'
+import authRouter from './src/modules/authentication/v1/routes/authRoutes.js';
+import workRouter from './src/modules/workSchedule/v1/routes/workScheduleRoutes.js';
+import bookingrouter from './src/modules/booking/v1/routes/bookingRoutes.js';
+import paymentRouter from './src/modules/payment/v1/routes/paymentRoutes.js';
+import businessRouter from './src/modules/business/v1/routes/businessRoutes.js';
+import adminRouter from './src/modules/admin/v1/routes/adminRoutes.js';
+import customerRouter from './src/modules/customer/routes/customerRoutes.js';
 import cors from 'cors';
 import cron from 'node-cron';
 import currentConfig from './config.js'
@@ -46,12 +47,13 @@ app.get('/api', (req, res) => {
     })
 })
 
-app.use('/api/v1/auth', authRouter)
-app.use('/api/v1/admin', adminRouter)
-app.use('/api/v1/work', workRouter)
-app.use('/api/v1/booking', bookingrouter)
-app.use('/api/v1/payment', paymentRouter)
-app.use('/api/v1/admin/business', businessRouter)
+app.use('/api/v1/auth', authRouter);
+app.use('/api/v1/admin', adminRouter);
+app.use('/api/v1/work', workRouter);
+app.use('/api/v1/booking', bookingrouter);
+app.use('/api/v1/payment', paymentRouter);
+app.use('/api/v1/admin/business', businessRouter);
+app.use('/api/v1/customer', customerRouter);
 
 app.post('*', (req, res) => {
     res.status(404).json({

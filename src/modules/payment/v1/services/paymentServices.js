@@ -75,13 +75,11 @@ const paymentUpdate = async (bookingData, res) => {
             attributes: ['workSlotId', 'entityId'],
             where: { orderId },
         })
-        console.log("timeSlot>>>>", timeSlot)
         let registration_id = await tokenModel.findAll({
             where: { userId: timeSlot.entityId },
             attributes: ['token'],
         });
 
-        console.log("registration_id>>>>", registration_id)
         const registration_ids = registration_id.map((token) => token.token)
         console.log({ registration_ids: registration_ids })
 
@@ -100,7 +98,6 @@ const paymentUpdate = async (bookingData, res) => {
         let timeData = await weeklyTimeSlotsModel.findOne({
             where: { time_slot_id: timeSlot.workSlotId },
         });
-        console.log("timeData>>>>", timeData)
         // admin.initializeApp({
         //     credential: admin.credential.cert(serviceAccount),
         // })

@@ -13,7 +13,8 @@ import { generateUuid } from '../../../../utils/generateUuid.js'
 import userModel from '../../../../models/userModel.js'
 import doctorModel from '../../../../models/doctorModel.js'
 import tokenModel from '../../../../models/tokenModel.js'
-import { hashPassword, comparePasswords } from '../../../../utils/password.js'
+import { hashPassword, comparePasswords } from '../../../../utils/password.js';
+import { decrypt } from '../../../../utils/token.js';
 
 const register = async (userData, res) => {
     try {
@@ -260,9 +261,13 @@ const getProfile = async (req, res) => {
     }
 }
 
-const getProfileForCustomer = async ({ phone }, res) => {
+// const getProfileForCustomer = async ({ phone }, res) => {
+const getProfileForCustomer = async ({ encryptedPhone }, res) => {
+
     try {
-        let getUser = await authenticationModel.findOne({ where: { phone } })
+        const decryptedPhone = await decrypt(encryptedPhone, process.env.CRYPTO_SECRET);
+        const phone = decryptedPhone;
+        let getUser = await authenticationModel.findOne({ where: { phone } });
         let userProfile = await profileModel.findOne({
             where: { entity_id: getUser.entity_id },
         })
