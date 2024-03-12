@@ -216,6 +216,9 @@ const entityList = async (requestData, res) => {
             attributes: ['entity_name', 'entity_id', 'status'],
             where: {
                 status: 1,
+                entity_name: {
+                    [Sequelize.Op.ne]: null, // Include only rows where entity_name is not null
+                },
             },
             limit: pageSize,
             offset: offset,
@@ -413,7 +416,6 @@ const transactionHistory = async (requestData, res) => {
                 : null
         })
 
-        console.log("transactions1111111111", transactions )
         let message, data
 
         if (!transactions) {
