@@ -7,6 +7,14 @@ const pincodeModel = sequelize.define('pincode', {
         primaryKey: true,
         autoIncrement: true,
     },
+    stateId: {
+        type: DataTypes.INTEGER,
+        allowNull: false,
+    },
+    districtId: {
+        type: DataTypes.INTEGER,
+        allowNull: false,
+    },
     pincodeValue: {
         type: DataTypes.STRING,
         allowNull: false,

@@ -7,6 +7,10 @@ const districtModel = sequelize.define('district', {
         primaryKey: true,
         autoIncrement: true,
       },
+    stateId: {
+      type: DataTypes.INTEGER,
+      allowNull: false,
+    },
     districtName: {
         type: DataTypes.STRING,
         allowNull: false,

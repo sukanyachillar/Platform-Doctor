@@ -4,7 +4,7 @@ import doctorModel from './doctorModel.js';
 
 const entityModel = sequelize.define('entity', {
     entity_id: {
-        type: DataTypes.INTEGER,
+        type: DataTypes.INTEGER, 
         primaryKey: true,
         autoIncrement: true,
         allowNull: false,

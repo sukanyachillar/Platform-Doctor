@@ -11,6 +11,6 @@ router.post('/list-doctors', adminController.listDoctors)
 router.post('/list-entity', adminController.listEntity)
 router.post('/transaction-history', adminController.transactionHistory)
 router.post('/customer-listing', adminController.listAllCustomers);
-router.post('/addEntity',  adminController.addEntity);
+router.post('/add-entity',  adminController.addEntity);
 
 export default router
