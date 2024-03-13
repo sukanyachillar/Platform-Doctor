@@ -303,8 +303,6 @@ const transactionHistory = async (requestData, res) => {
             offset: offset,
         });
 
-        console.log("bookings===>", bookings)
-        
         // Extracting bookingIds from the result for the next query
         const bookingIds = bookings.map((booking) => booking.orderId);
         
@@ -323,8 +321,7 @@ const transactionHistory = async (requestData, res) => {
                 paymentStatus: 1,
             },
         });
-        console.log("payments===>", payments)
-        
+      
 
         // Merging booking and payment information based on the orderId
         let transactions = bookings.map((booking) => {
@@ -379,7 +376,6 @@ const transactionHistory = async (requestData, res) => {
         doctors.forEach((doctor) => {
             doctorNameMap[doctor.doctor_id] = doctor.doctor_name
         })
-       console.log("transactions====", transactions)
         // Update transactions with doctorName, customerName, and customerPhone
         transactions = transactions.map((transaction) => ({
             ...transaction,
@@ -423,6 +419,31 @@ const transactionHistory = async (requestData, res) => {
         } else {
             message = 'Successfully fetched transaction details.'
         }
+        
+        if(searchQuery) {
+                    
+                const filteredTransactions =  transactions.filter(transaction => {
+                    const { customerPhone, customerName, doctorName, orderId, 
+                        paymentTransactionId, paymentDate } = transaction;
+
+                    const year = paymentDate.getFullYear().toString().slice(2);
+                    const month = (paymentDate.getMonth() + 1).toString().padStart(2, '0');
+                    const day = paymentDate.getDate().toString().padStart(2, '0');
+                    const searchDate  = `${day}/${month}/${year}`;
+            
+                    const normalizedSearchQuery = searchQuery.toLowerCase();
+                    return (
+                        (customerPhone === searchQuery) ||
+                        (customerName.toLowerCase().includes(normalizedSearchQuery) && customerName.length >= 2) ||
+                        (doctorName && doctorName.toLowerCase().includes(normalizedSearchQuery) && doctorName.length >= 3) ||
+                        (orderId === searchQuery) ||
+                        (paymentTransactionId === searchQuery) ||
+                        (searchDate && searchDate.includes(searchQuery))
+                    );
+                });
+                transactions = filteredTransactions;
+        };
+        
         return handleResponse({
             res,
             statusCode: 200,
@@ -443,6 +464,7 @@ const transactionHistory = async (requestData, res) => {
         })
     }
 }
+
 
 const addProfile = async (docData, res) => {
     try {
