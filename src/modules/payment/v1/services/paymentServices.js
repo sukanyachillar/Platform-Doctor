@@ -122,10 +122,12 @@ const paymentUpdate = async (bookingData, res) => {
         //         console.log('Error sending message:', error)
         //     })
 
-        admin.initializeApp({
-            credential: admin.credential.cert(serviceAccount),
-        })
-
+        if (!admin.apps.length) {
+            // Initialize the Firebase app
+            admin.initializeApp({
+                credential: admin.credential.cert(serviceAccount),
+            });
+        }
         const messaging = admin.messaging()
 
         const message = {
