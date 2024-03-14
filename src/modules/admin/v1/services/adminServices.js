@@ -246,10 +246,25 @@ const entityList = async (requestData, res) => {
 
 const transactionHistory = async (requestData, res) => {
     try {
+
+        console.log("requestData>>>>>>>>>>>", requestData)
         const page = parseInt(requestData.page) || 1
         const pageSize = parseInt(requestData.limit) || 10
         const searchQuery = requestData.searchQuery || ''
         const offset = (page - 1) * pageSize
+        const dateFilter = requestData.dateFilter; 
+
+        let dateFilterInput
+
+        console.log("dateFilter", dateFilter)
+
+        if (dateFilter) {
+            const year = new Date(dateFilter).getFullYear().toString().slice(2);
+            const month = (new Date(dateFilter).getMonth() + 1).toString().padStart(2, '0');
+            const day = new Date(dateFilter).getDate().toString().padStart(2, '0');
+            dateFilterInput  = `${day}/${month}/${year}`;
+            console.log("dateFilterInput>>>>", dateFilterInput)
+        }
 
         // let { count, rows: transactions } = await bookingModel.findAndCountAll({
         //     where: {
@@ -420,8 +435,7 @@ const transactionHistory = async (requestData, res) => {
             message = 'Successfully fetched transaction details.'
         }
         
-        if(searchQuery) {
-                    
+        if(searchQuery || dateFilter ) {
                 const filteredTransactions =  transactions.filter(transaction => {
                     const { customerPhone, customerName, doctorName, orderId, 
                         paymentTransactionId, paymentDate } = transaction;
@@ -429,7 +443,8 @@ const transactionHistory = async (requestData, res) => {
                     const year = paymentDate.getFullYear().toString().slice(2);
                     const month = (paymentDate.getMonth() + 1).toString().padStart(2, '0');
                     const day = paymentDate.getDate().toString().padStart(2, '0');
-                    const searchDate  = `${day}/${month}/${year}`;
+                    const dateTobeFilterd  = `${day}/${month}/${year}`;
+                    console.log("dateTobeFilterd", dateTobeFilterd)
             
                     const normalizedSearchQuery = searchQuery.toLowerCase();
                     return (
@@ -438,7 +453,7 @@ const transactionHistory = async (requestData, res) => {
                         (doctorName && doctorName.toLowerCase().includes(normalizedSearchQuery) && doctorName.length >= 3) ||
                         (orderId === searchQuery) ||
                         (paymentTransactionId === searchQuery) ||
-                        (searchDate && searchDate.includes(searchQuery))
+                        (dateTobeFilterd && dateTobeFilterd.includes(dateFilterInput))
                     );
                 });
                 transactions = filteredTransactions;
