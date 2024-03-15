@@ -102,6 +102,15 @@ const listAllCustomers = async (req, res) => {
     }
   }
 
+  const addStaff = async (req, res)=> {
+    try {
+        const data = await adminServices.addStaff(req, res);
+        return data;
+    } catch (error) {
+        
+    }
+  }
+
 export default {
     adminRegister,
     adminLogin,
@@ -114,4 +123,5 @@ export default {
     addBankDetails,
     customerHistory,
     addEntity,
+    addStaff,
 }

@@ -978,6 +978,43 @@ const customerHistory = async (req, res) => {
       }
 }
 
+const addStaff = async (req, res) => {
+    try {
+
+        
+        let entityData = await entityModel.findOne({
+            where: { entity_id: entityId },
+        })
+        let newData, message, statusCode
+        if (!entityData) {
+            message = 'Sorry no entity data available with this ID.'
+            statusCode = 404
+        } else {
+            entityData.account_no = account_no
+            entityData.ifsc_code = ifsc_code
+            entityData.bank_name = bank_name
+            entityData.account_holder_name = account_holder_name
+            entityData.UPI_ID = UPI_ID
+            message = 'Successfully added bank details'
+            statusCode = 200
+            newData = await entityData.save()
+        }
+        return handleResponse({
+            res,
+            statusCode,
+            message,
+            data: { newData },
+        })
+    } catch (error) {
+        console.log({ error })
+        return handleResponse({
+            res,
+            message: 'Sorry try after sometime.',
+            statusCode: 404,
+        })
+    }
+}
+
 export default {
     adminLogin,
     adminRegister,
@@ -990,4 +1027,5 @@ export default {
     addBankDetails,
     customerHistory,
     addEntity,
+    addStaff,
 }

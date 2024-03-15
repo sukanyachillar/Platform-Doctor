@@ -26,10 +26,21 @@ const listDoctorsForCustomers = async (requestData, res) => {
                 'department_id',
                 'entity_id',
             ],
+            // where: {
+            //     [Op.or]: [
+            //         { doctor_name: { [Op.like]: `%${searchQuery}%` } },
+            //         { doctor_phone: { [Op.like]: `%${searchQuery}%` } },
+            //     ],
+            // },
             where: {
-                [Op.or]: [
-                    { doctor_name: { [Op.like]: `%${searchQuery}%` } },
-                    { doctor_phone: { [Op.like]: `%${searchQuery}%` } },
+                [Op.and]: [
+                    { doctor_name: { [Op.not]: null } }, // Ensuring doctor_name is not null
+                    {
+                        [Op.or]: [
+                            { doctor_name: { [Op.like]: `%${searchQuery}%` } },
+                            { doctor_phone: { [Op.like]: `%${searchQuery}%` } },
+                        ],
+                    },
                 ],
             },
             limit: pageSize,

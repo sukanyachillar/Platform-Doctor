@@ -16,5 +16,6 @@ router.post('/add-bank',adminController.addBankDetails)
 router.post('/customer-history', adminController.customerHistory)
 router.post('/customer-listing', adminController.listAllCustomers);
 router.post('/add-entity',  adminController.addEntity);
+router.post('/add-staff',  adminController.addEntity);
 
 export default router
