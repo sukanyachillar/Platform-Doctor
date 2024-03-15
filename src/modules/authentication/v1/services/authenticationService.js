@@ -261,12 +261,12 @@ const getProfile = async (req, res) => {
     }
 }
 
-// const getProfileForCustomer = async ({ phone }, res) => {
-const getProfileForCustomer = async ({ encryptedPhone }, res) => {
+const getProfileForCustomer = async ({ phone }, res) => {
+// const getProfileForCustomer = async ({ encryptedPhone }, res) => {
 
     try {
-        const decryptedPhone = await decrypt(encryptedPhone, process.env.CRYPTO_SECRET);
-        const phone = decryptedPhone;
+        // const decryptedPhone = await decrypt(encryptedPhone, process.env.CRYPTO_SECRET);
+        // const phone = decryptedPhone;
         let getUser = await authenticationModel.findOne({ where: { phone } });
         let userProfile = await profileModel.findOne({
             where: { entity_id: getUser.entity_id },
