@@ -82,17 +82,17 @@ const adminLogin = async (credentials, res) => {
 const addDept = async (deptData, userData, res) => {
     try {
         let { department_name } = deptData
-        let { entity_id } = userData
+        // let { entity_id } = userData
         let status = 1
         let dept, message, statusCode
         dept = await departmentModel.findOne({
-            where: { entity_id, department_name },
+            where: { department_name }, // entity_id
         })
         message = 'Department already exist.'
         statusCode = 422
         if (!dept) {
             let newDept = new departmentModel({
-                entity_id,
+                // entity_id,
                 department_name,
                 status,
             })
@@ -106,7 +106,7 @@ const addDept = async (deptData, userData, res) => {
             message,
             data: {
                 department_id: dept.department_id,
-                entity_id: dept.entity_id,
+                // entity_id: dept.entity_id,
                 status: dept.status,
                 department_name: dept.department_name,
             },
