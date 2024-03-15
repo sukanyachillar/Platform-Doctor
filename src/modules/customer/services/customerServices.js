@@ -108,6 +108,12 @@ const listDoctorsForCustomers = async (requestData, res) => {
         });
     } catch (error) {
         console.error({ error });
+        return handleResponse({
+            res,
+            statusCode: 500,
+            message: 'Something went wrong',
+            data: {},
+        })
     }
 };
 
