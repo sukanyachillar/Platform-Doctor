@@ -99,6 +99,7 @@ const listDoctorsForCustomers = async (requestData, res) => {
         return handleResponse({
             res,
             statusCode: '200',
+            message : 'Dr list fetched succesfully',
             data: {
                 response: response.records,
                 currentPage: page,
