@@ -6,6 +6,7 @@ import paymentModel from '../../../../models/paymentModel.js';
 import bookingModel from '../../../../models/bookingModel.js';
 import weeklyTimeSlotsModel from '../../../../models/weeklyTimeSlotsModel.js';
 import entityAddressModel from '../../../../models/entityAddressModel.js';
+import businessModel from '../../../../models/businessModel.js';
 import { hashPassword, comparePasswords } from '../../../../utils/password.js';
 import { generateAdminTokens } from '../../../../utils/token.js';
 import { generateUuid } from '../../../../utils/generateUuid.js';
@@ -209,17 +210,25 @@ const doctorsList = async (requestData, res) => {
 
 const entityList = async (requestData, res) => {
     try {
-        const page = parseInt(requestData.page) || 1
-        const pageSize = parseInt(requestData.limit) || 10
+        const page = parseInt(requestData.page) || 1;
+        const pageSize = parseInt(requestData.limit) || 10;
+        const businessType = parseInt(requestData.businessType) || 0;
+        console.log("businessTypeFilter", businessType);
         const offset = (page - 1) * pageSize
+
+        let whereCondition = {
+            status: 1,
+            entity_name: {
+                [Sequelize.Op.ne]: null,
+            }
+        };
+        
+        if (businessType !== 0) {
+            whereCondition.entity_type = businessType;
+        }
         const { count, rows: data } = await entityModel.findAndCountAll({
             attributes: ['entity_name', 'entity_id', 'status'],
-            where: {
-                status: 1,
-                entity_name: {
-                    [Sequelize.Op.ne]: null, // Include only rows where entity_name is not null
-                },
-            },
+            where: whereCondition,
             limit: pageSize,
             offset: offset,
         })
@@ -247,7 +256,6 @@ const entityList = async (requestData, res) => {
 const transactionHistory = async (requestData, res) => {
     try {
 
-        console.log("requestData>>>>>>>>>>>", requestData)
         const page = parseInt(requestData.page) || 1
         const pageSize = parseInt(requestData.limit) || 10
         const searchQuery = requestData.searchQuery || ''
@@ -523,20 +531,28 @@ const individualProfile = async ({
     consultation_charge,
     department_id,
     description,
+    businessType,
     // business_type_id,
 }) => {
     try {
+       let businessTypeId
+        if(businessType === 'individual') {
+            businessTypeId == 0
+        } else {
+            businessTypeId == 1
+        }
         let entityData = await entityModel.findOne({
             where: { phone: doctor_phone },
         })
-       let business_type_id = await businessModel.findOne({where:{businessName:'Clinic'},attributes:['businessId']})
-
+       let business_type_id = await businessModel.findOne({where:{businessName: businessType},attributes:['businessId']})
+       console.log("jdsfsdfds",business_type_id)
         let docData, newEntity, newDocData
         if (!entityData) {
             entityData = await new entityModel({
                 phone: doctor_phone,
                 entity_name: doctor_name,
-                business_type_id:business_type_id.businessId,
+                business_type_id: businessTypeId,
+                entity_type : business_type_id.businessId
             })
             newEntity = await entityData.save()
             docData = await new doctorModel({
