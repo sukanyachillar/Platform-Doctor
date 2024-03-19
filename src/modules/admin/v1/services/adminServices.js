@@ -968,7 +968,7 @@ const customerHistory = async (req, res) => {
           phone,
           location,
           imageUrl,
-          description: entityDescription,
+          description,
          });
 
    
