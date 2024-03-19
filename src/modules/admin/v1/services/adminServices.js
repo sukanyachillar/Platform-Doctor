@@ -923,8 +923,8 @@ const customerHistory = async (req, res) => {
           stateId,
           districtId,
           pincodeId,
-          imgeUrl,
-          desc,
+          imageUrl,
+          description,
         } = req.body;
     
         let existingEntity = await entityModel.findOne({where: { phone }});
@@ -937,6 +937,8 @@ const customerHistory = async (req, res) => {
             entity_name: entityName,
             phone,
             location,
+            imageUrl,
+            description,
         });
     
           // Update the entity address
@@ -965,6 +967,8 @@ const customerHistory = async (req, res) => {
           entity_name: entityName,
           phone,
           location,
+          imageUrl,
+          description: entityDescription,
          });
 
    

@@ -9,7 +9,7 @@ const entityModel = sequelize.define('entity', {
         autoIncrement: true,
         allowNull: false,
     },
-    entity_type: {  //refering business model // actually businessId
+    entity_type: {  //refering business model // actually businessId // clinic/saloon
         type: DataTypes.INTEGER,
         allowNull: true,
         unique: false,
@@ -76,6 +76,14 @@ const entityModel = sequelize.define('entity', {
         type: DataTypes.INTEGER, //1: completed
         allowNull: true,
         defaultValue: 0,
+    },
+    imageUrl: {
+        type: DataTypes.STRING,
+        allowNull: true,
+    },
+    description: {
+        type: DataTypes.TEXT,
+        allowNull: true,
     },
     created_date_time: {
         type: DataTypes.DATE,
