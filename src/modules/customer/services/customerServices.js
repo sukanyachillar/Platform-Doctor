@@ -8,10 +8,28 @@ import { encrypt } from '../../../utils/token.js';
 
 const listDoctorsForCustomers = async (requestData, res) => {
     try {
-        const page = parseInt(requestData.page) || 1;
-        const pageSize = parseInt(requestData.limit) || 10;
+
+        const page = requestData.page|| 1;
+        const pageSize = requestData.limit || 10;
         const searchQuery = requestData.searchQuery || '';
         const offset = (page - 1) * pageSize;
+        const entityId = requestData.entityId || null;
+
+        const whereClause = {
+            [Op.and]: [
+                { doctor_name: { [Op.not]: null } }, 
+                {
+                    [Op.or]: [
+                        { doctor_name: { [Op.like]: `%${searchQuery}%` } },
+                        { doctor_phone: { [Op.like]: `%${searchQuery}%` } },
+                    ],
+                },
+            ],
+        };
+
+        if (entityId) {
+            whereClause.entity_id = entityId;
+        }
 
         const { count, rows: records } = await doctorModel.findAndCountAll({
             attributes: [
@@ -32,20 +50,22 @@ const listDoctorsForCustomers = async (requestData, res) => {
             //         { doctor_phone: { [Op.like]: `%${searchQuery}%` } },
             //     ],
             // },
-            where: {
-                [Op.and]: [
-                    { doctor_name: { [Op.not]: null } }, // Ensuring doctor_name is not null
-                    {
-                        [Op.or]: [
-                            { doctor_name: { [Op.like]: `%${searchQuery}%` } },
-                            { doctor_phone: { [Op.like]: `%${searchQuery}%` } },
-                        ],
-                    },
-                ],
-            },
+            // where: {
+            //     [Op.and]: [
+            //         { doctor_name: { [Op.not]: null } }, // Ensuring doctor_name is not null
+            //         {
+            //             [Op.or]: [
+            //                 { doctor_name: { [Op.like]: `%${searchQuery}%` } },
+            //                 { doctor_phone: { [Op.like]: `%${searchQuery}%` } },
+            //             ],
+            //         },
+            //     ],
+            // },
+            where: whereClause,
             limit: pageSize,
             offset: offset,
         });
+
 
         const totalPages = Math.ceil(count / pageSize);
 

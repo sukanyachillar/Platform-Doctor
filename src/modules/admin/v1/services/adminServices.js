@@ -545,7 +545,6 @@ const individualProfile = async ({
             where: { phone: doctor_phone },
         })
        let business_type_id = await businessModel.findOne({where:{businessName: businessType},attributes:['businessId']})
-       console.log("jdsfsdfds",business_type_id)
         let docData, newEntity, newDocData
         if (!entityData) {
             entityData = await new entityModel({
@@ -601,8 +600,8 @@ const individualProfile = async ({
 }
 
 const staffProfile = async ({
-    doctorName,
-    doctorPhone,
+    doctor_name,
+    doctor_phone,
     qualification,
     email,
     consultationTime,
@@ -611,15 +610,16 @@ const staffProfile = async ({
     description,
     entity_id,
 }) => {
+   
     try {
         let docData, newDocData
         docData = await doctorModel.findOne({
-            where: { doctorPhone, entity_id },
+            where: { doctor_name, entity_id },
         })
         if (!docData) {
             docData = await new doctorModel({
-                doctorName,
-                doctorPhone,
+                doctor_name,
+                doctor_phone,
                 qualification,
                 email,
                 consultationTime,
@@ -629,8 +629,8 @@ const staffProfile = async ({
                 entity_id,
             })
         } else {
-            docData.doctorName = doctorName
-            docData.doctorPhone = doctorPhone
+            docData.doctorName = doctor_name
+            docData.doctorPhone = doctor_phone
             docData.qualification = qualification
             ;(docData.email = email),
                 (docData.consultationTime = consultationTime)
@@ -923,6 +923,8 @@ const customerHistory = async (req, res) => {
           stateId,
           districtId,
           pincodeId,
+          imgeUrl,
+          desc,
         } = req.body;
     
         let existingEntity = await entityModel.findOne({where: { phone }});
@@ -994,42 +996,42 @@ const customerHistory = async (req, res) => {
       }
 }
 
-const addStaff = async (req, res) => {
-    try {
+// const addStaff = async (req, res) => {
+//     try {
 
         
-        let entityData = await entityModel.findOne({
-            where: { entity_id: entityId },
-        })
-        let newData, message, statusCode
-        if (!entityData) {
-            message = 'Sorry no entity data available with this ID.'
-            statusCode = 404
-        } else {
-            entityData.account_no = account_no
-            entityData.ifsc_code = ifsc_code
-            entityData.bank_name = bank_name
-            entityData.account_holder_name = account_holder_name
-            entityData.UPI_ID = UPI_ID
-            message = 'Successfully added bank details'
-            statusCode = 200
-            newData = await entityData.save()
-        }
-        return handleResponse({
-            res,
-            statusCode,
-            message,
-            data: { newData },
-        })
-    } catch (error) {
-        console.log({ error })
-        return handleResponse({
-            res,
-            message: 'Sorry try after sometime.',
-            statusCode: 404,
-        })
-    }
-}
+//         let entityData = await entityModel.findOne({
+//             where: { entity_id: entityId },
+//         })
+//         let newData, message, statusCode
+//         if (!entityData) {
+//             message = 'Sorry no entity data available with this ID.'
+//             statusCode = 404
+//         } else {
+//             entityData.account_no = account_no
+//             entityData.ifsc_code = ifsc_code
+//             entityData.bank_name = bank_name
+//             entityData.account_holder_name = account_holder_name
+//             entityData.UPI_ID = UPI_ID
+//             message = 'Successfully added bank details'
+//             statusCode = 200
+//             newData = await entityData.save()
+//         }
+//         return handleResponse({
+//             res,
+//             statusCode,
+//             message,
+//             data: { newData },
+//         })
+//     } catch (error) {
+//         console.log({ error })
+//         return handleResponse({
+//             res,
+//             message: 'Sorry try after sometime.',
+//             statusCode: 404,
+//         })
+//     }
+// }
 
 export default {
     adminLogin,
@@ -1043,5 +1045,5 @@ export default {
     addBankDetails,
     customerHistory,
     addEntity,
-    addStaff,
+    // addStaff,
 }
