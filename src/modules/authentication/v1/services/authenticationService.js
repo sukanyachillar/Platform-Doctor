@@ -123,7 +123,6 @@ const addProfile = async (userData, user, image, res) => {
         let userProfile = await profileModel.findOne({
             where: { doctor_phone },
         })
-        console.log("userProfile>>>>>>>>>>>>", userProfile)
         const getDepartment = await departmentModel.findOne({
             where: { department_id },
         })
@@ -279,6 +278,7 @@ const getProfileForCustomer = async ({ phone, encryptedPhone }, res) => {
         let userProfile = await profileModel.findOne({
             where: { entity_id: getUser.entity_id },
         })
+        console.log("userProfile>>>", userProfile)
         let statusCode, message, getDepartment
         if (!userProfile) {
             ;(message =
