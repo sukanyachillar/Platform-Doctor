@@ -273,7 +273,7 @@ const getProfileForCustomer = async ({ phone, encryptedPhone }, res) => {
         }else{
             phoneNo = phone
         }
-       
+        console.log("phoneNo", phoneNo)
         let getUser = await authenticationModel.findOne({ where: { phone: phoneNo } });
         console.log("getUser>>>", getUser)
         let userProfile = await profileModel.findOne({
