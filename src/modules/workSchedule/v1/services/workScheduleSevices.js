@@ -4,6 +4,7 @@ import weeklyTimeSlots from '../../../../models/weeklyTimeSlotsModel.js'
 import workScheduleModel from '../../../../models/workScheduleModel.js'
 import { handleResponse } from '../../../../utils/handlers.js';
 import { Sequelize } from 'sequelize';
+import { decrypt } from '../../../../utils/token.js';
 
 const addWorkSchedule = async (data, userData, res) => {
     try {
@@ -289,14 +290,22 @@ const getWorkSchedule = async (data, user, res) => {
 
 const getSingleWorkSchedule = async (req, res) => {
     try {
-        let { date, phone } = req.body
+        let { date, phone, encryptedPhone } = req.body
         date = new Date(date)
         const year = date.getFullYear()
         const month = String(date.getMonth() + 1).padStart(2, '0')
         const slotDate = String(date.getDate()).padStart(2, '0')
         const formattedDate = `${year}-${month}-${slotDate}`
+        let phoneNo;
+        let decryptedPhone;
+        if(encryptedPhone) {
+            decryptedPhone = await decrypt(encryptedPhone, process.env.CRYPTO_SECRET);
+            phoneNo = decryptedPhone;
+        }else{
+            phoneNo = phone
+        }
         let doctorData = await doctorModel.findOne({
-            where: { doctor_phone:phone },
+            where: { doctor_phone: phoneNo },
             attributes: ['doctor_id', 'entity_id'],
         })
         let getEntity = await entityModel.findOne({
