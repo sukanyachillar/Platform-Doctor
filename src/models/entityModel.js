@@ -37,7 +37,7 @@ const entityModel = sequelize.define('entity', {
             isEmail: true,
         },
     },
-    business_type_id: { // event_type
+    business_type_id: { // entity_type
         type: DataTypes.INTEGER, // individual = 0, group =1
         allowNull: true,
         unique: false,

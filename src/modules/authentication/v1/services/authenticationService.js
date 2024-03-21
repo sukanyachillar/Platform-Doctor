@@ -266,6 +266,7 @@ const getProfileForCustomer = async ({ phone, encryptedPhone }, res) => {
 
     try {
         let decryptedPhone
+        let userProfile 
         let phoneNo
         if(encryptedPhone) {
             decryptedPhone = await decrypt(encryptedPhone, process.env.CRYPTO_SECRET);
@@ -273,13 +274,17 @@ const getProfileForCustomer = async ({ phone, encryptedPhone }, res) => {
         }else{
             phoneNo = phone
         }
-        console.log("phoneNo", phoneNo)
-        let getUser = await authenticationModel.findOne({ where: { phone: phoneNo } });
-        console.log("getUser>>>", getUser)
-        let userProfile = await profileModel.findOne({
-            where: { entity_id: getUser.entity_id },
-        })
-        console.log("userProfile>>>", userProfile)
+        let getUser = await authenticationModel.findOne({ where: { phone: phoneNo } }); //entityModel
+        if(getUser){
+             userProfile = await profileModel.findOne({  //doctorModel
+                where: { entity_id: getUser.entity_id },
+            })
+        } else {
+            userProfile = await profileModel.findOne({  //doctorModel
+                where: { doctor_phone: phoneNo },
+            })
+        }
+
         let statusCode, message, getDepartment
         if (!userProfile) {
             ;(message =
@@ -287,7 +292,7 @@ const getProfileForCustomer = async ({ phone, encryptedPhone }, res) => {
                 (statusCode = 404)
         }
         let availableSlots = await workScheduleModel.findAll({
-            where: { entity_id: getUser.entity_id, status: 1 },
+            where: { entity_id: userProfile.entity_id, status: 1 },
             attributes: ['Day'],
         })
         if (!availableSlots) {

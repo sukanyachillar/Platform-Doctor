@@ -531,27 +531,22 @@ const individualProfile = async ({
     consultation_charge,
     department_id,
     description,
-    businessType,
+    // businessType,
     // business_type_id,
 }) => {
     try {
-       let businessTypeId
-        if(businessType === 'individual') {
-            businessTypeId == 0
-        } else {
-            businessTypeId == 1
-        }
+  
         let entityData = await entityModel.findOne({
             where: { phone: doctor_phone },
         })
-       let business_type_id = await businessModel.findOne({where:{businessName: businessType},attributes:['businessId']})
+        let businessData = await businessModel.findOne({ where:{ businessName: 'individual' },attributes:['businessId']})
         let docData, newEntity, newDocData
         if (!entityData) {
             entityData = await new entityModel({
                 phone: doctor_phone,
                 entity_name: doctor_name,
-                business_type_id: businessTypeId,
-                entity_type : business_type_id.businessId
+                business_type_id: 0,
+                entity_type : businessData.businessId
             })
             newEntity = await entityData.save()
             docData = await new doctorModel({
@@ -604,14 +599,30 @@ const staffProfile = async ({
     doctor_phone,
     qualification,
     email,
-    consultationTime,
-    consultationCharge,
+    consultation_time,
+    consultation_charge,
     department_id,
     description,
     entity_id,
 }) => {
    
     try {
+        // let newEntity
+        // const businessData = await businessModel.findOne({ where:{ businessName: 'clinic' },attributes:['businessId']})
+        // let entityData = await entityModel.findOne({
+        //     where: { entity_id: entity_id },
+        // })
+
+        // if(!entityData) {
+        //     entityData = await new entityModel({
+        //         phone: doctor_phone,
+        //         entity_name: doctor_name,
+        //         business_type_id: 1,
+        //         entity_type : businessData.businessId
+        //     })
+        //     // newEntity = await entityData.save()  // no need of enity add in case of doctor under an entity
+        // }
+
         let docData, newDocData
         docData = await doctorModel.findOne({
             where: { doctor_name, entity_id },
@@ -622,8 +633,8 @@ const staffProfile = async ({
                 doctor_phone,
                 qualification,
                 email,
-                consultationTime,
-                consultationCharge,
+                consultation_time,
+                consultation_charge,
                 department_id,
                 description,
                 entity_id,
@@ -633,8 +644,8 @@ const staffProfile = async ({
             docData.doctorPhone = doctor_phone
             docData.qualification = qualification
             ;(docData.email = email),
-                (docData.consultationTime = consultationTime)
-            docData.consultationCharge = consultationCharge
+                (docData.consultation_time = consultation_time)
+            docData.consultation_charge = consultation_charge
             docData.department_id = department_id
             docData.department_id = department_id
             docData.entity_id = entity_id
