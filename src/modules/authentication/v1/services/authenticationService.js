@@ -270,8 +270,10 @@ const getProfileForCustomer = async ({ phone, encryptedPhone }, res) => {
         if(encryptedPhone) {
             decryptedPhone = await decrypt(encryptedPhone, process.env.CRYPTO_SECRET);
             phoneNo = decryptedPhone;
+        }else{
+            phoneNo = phone
         }
-        phoneNo = phone
+       
         let getUser = await authenticationModel.findOne({ where: { phone: phoneNo } });
         let userProfile = await profileModel.findOne({
             where: { entity_id: getUser.entity_id },
