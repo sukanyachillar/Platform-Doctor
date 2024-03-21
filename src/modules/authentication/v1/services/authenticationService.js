@@ -5,7 +5,8 @@ import { handleResponse } from '../../../../utils/handlers.js'
 import { generateTokens, generateAdminTokens } from '../../../../utils/token.js'
 import { Op } from 'sequelize'
 // import upload from '../../../../middlewares/multerConfig.js';
-import awsUtils from '../../../../utils/aws.js'
+import awsUtils from '../../../../utils/aws.js';
+import doutils from '../../../../utils/DOFileUpload.js';
 import entityModel from '../../../../models/entityModel.js'
 import departmentModel from '../../../../models/departmentModel.js'
 import workScheduleModel from '../../../../models/workScheduleModel.js'
@@ -105,7 +106,11 @@ const addProfile = async (userData, user, image, res) => {
             where: { phone: user.phone },
         })
 
+        console.log("image>>", image)
+
         // let imageUrl = await awsUtils.uploadToS3(image);
+           let imageUrl = await doutils.uploadObject (image);    
+           console.log("imageurl======>>, ", imageUrl)   
         getUser.entity_name = entity_name
         getUser.business_type_id = business_type == 'individual' ? 1 : 0
         getUser.email = email
