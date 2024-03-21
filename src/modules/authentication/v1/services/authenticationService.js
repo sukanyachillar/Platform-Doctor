@@ -275,6 +275,7 @@ const getProfileForCustomer = async ({ phone, encryptedPhone }, res) => {
         }
        
         let getUser = await authenticationModel.findOne({ where: { phone: phoneNo } });
+        console.log("getUser>>>", getUser)
         let userProfile = await profileModel.findOne({
             where: { entity_id: getUser.entity_id },
         })
