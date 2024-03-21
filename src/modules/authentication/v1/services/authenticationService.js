@@ -123,6 +123,7 @@ const addProfile = async (userData, user, image, res) => {
         let userProfile = await profileModel.findOne({
             where: { doctor_phone },
         })
+        console.log("userProfile>>>>>>>>>>>>", userProfile)
         const getDepartment = await departmentModel.findOne({
             where: { department_id },
         })
