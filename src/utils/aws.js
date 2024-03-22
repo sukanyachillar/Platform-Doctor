@@ -36,7 +36,7 @@ const getPresignUrlPromiseFunction = async (Key) => {
                 Key,
             }
             console.log({ s3 })
-            await s3.getSignedUrl('getObject', s3Params, function (err, data) {
+             s3.getSignedUrl('getObject', s3Params, function (err, data) {
                 if (err) {
                     return reject(err)
                 }
