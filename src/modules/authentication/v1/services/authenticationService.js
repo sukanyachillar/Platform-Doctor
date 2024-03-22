@@ -85,9 +85,9 @@ const addProfile = async (userData, user, image, res) => {
     try {
         let {
             entity_name,
-            entity_type,
+            entity_type,  // clinic/saloon id
             email,
-            business_type,
+            business_type,  //individual or
             account_no,
             ifsc_code,
             bank_name,
@@ -101,16 +101,14 @@ const addProfile = async (userData, user, image, res) => {
             description,
             doctor_phone,
         } = userData
-        console.log({ entity_type })
+
         let getUser = await authenticationModel.findOne({
             where: { phone: user.phone },
         })
 
-        console.log("image>>", image)
-
         // let imageUrl = await awsUtils.uploadToS3(image);
-           let imageUrl = await doutils.uploadObject (image);    
-           console.log("imageurl======>>, ", imageUrl)   
+        let imageUrl = await doutils.uploadObject (image); 
+
         getUser.entity_name = entity_name
         getUser.business_type_id = business_type == 'individual' ? 1 : 0
         getUser.email = email
@@ -140,14 +138,15 @@ const addProfile = async (userData, user, image, res) => {
                 consultation_time,
                 entity_id,
                 profile_completed,
-                doctor_phone,
+                // doctor_phone,
                 department_id,
                 description,
                 // profileImageUrl: imageUrl.Key ? imageUrl.Key : "",
+                profileImageUrl: imageUrl? imageUrl: "",
             })
         } else {
             userProfile.doctor_name = doctor_name
-            userProfile.doctor_phone = doctor_phone
+            // userProfile.doctor_phone = doctor_phone
             userProfile.qualification = qualification
                 ? qualification.trim()
                 : ''
@@ -158,17 +157,23 @@ const addProfile = async (userData, user, image, res) => {
             userProfile.department_id = department_id
             userProfile.description = description ? description.trim() : ''
             //  userProfile.profileImageUrl = imageUrl.Key ? imageUrl.Key : "";
+             userProfile.profileImageUrl = imageUrl ? imageUrl : "";
+
         }
-        let profile = await userProfile.save()
-        const randomUUID = await generateUuid()
+        let profile = await userProfile.save();
+        const randomUUID = await generateUuid();
+
+        let alreadyUser = await userModel.findOne({
+            where: { phone: doctor_phone },
+        })
         let data = await new userModel({
             uuid: randomUUID,
             userType: 2,
             name: doctor_name,
             phone: doctor_phone,
         })
-        await data.save()
-
+        if(!alreadyUser) await data.save();
+        
         return handleResponse({
             res,
             statusCode: 200,
@@ -235,8 +240,8 @@ const getProfile = async (req, res) => {
                 where: { department_id: userProfile.department_id },
             })
         }
-        //  let key = userProfile?.profileImageUrl;
-        //  const url = await awsUtils.getPresignUrlPromiseFunction(key);
+         let key = userProfile?.profileImageUrl;
+         const url = await awsUtils.getPresignUrlPromiseFunction(key);
 
         return handleResponse({
             res,
@@ -250,9 +255,9 @@ const getProfile = async (req, res) => {
                 consultation_time: userProfile?.consultation_time,
                 consultation_charge: userProfile?.consultation_charge,
                 doctor_id: userProfile?.doctor_id,
-                //  profileImageUrl: url,
+                 profileImageUrl: url,
                 description: userProfile?.description,
-                // uniqueDays,
+                // uniqueDays, 
                 designation: getDepartment?.department_name,
             },
         })
@@ -311,8 +316,8 @@ const getProfileForCustomer = async ({ phone }, res) => {
                 where: { department_id: userProfile.department_id },
             })
         }
-        let key = userProfile?.profileImageUrl
-        //  const url = await awsUtils.getPresignUrlPromiseFunction(key);
+         let key = userProfile?.profileImageUrl
+         const url = await awsUtils.getPresignUrlPromiseFunction(key);
 
         return handleResponse({
             res,
@@ -326,7 +331,7 @@ const getProfileForCustomer = async ({ phone }, res) => {
                 consultation_time: userProfile?.consultation_time,
                 consultation_charge: userProfile?.consultation_charge,
                 doctor_id: userProfile?.doctor_id,
-                //  profileImageUrl: url,
+                 profileImageUrl: url,
                 description: userProfile?.description,
                 uniqueDays,
                 designation: getDepartment?.department_name,
