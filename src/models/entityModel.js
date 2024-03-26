@@ -1,6 +1,6 @@
 import { DataTypes } from 'sequelize'
 import sequelize from '../dbConnect.js'
-import doctorModel from './doctorModel.js';
+import entityAddressModel from './entityAddressModel.js';
 
 const entityModel = sequelize.define('entity', {
     entity_id: {
@@ -98,5 +98,5 @@ const entityModel = sequelize.define('entity', {
     },
 })
 
-
+entityModel.hasOne(entityAddressModel, { foreignKey: 'entityId' });
 export default entityModel

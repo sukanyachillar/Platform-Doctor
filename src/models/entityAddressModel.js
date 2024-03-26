@@ -1,6 +1,8 @@
 import { DataTypes } from 'sequelize'
 import sequelize from '../dbConnect.js';
-
+import stateModel from './stateModel.js';
+import districtModel from './districtModel.js';
+import pincodeModel from './pincodeModel.js';
 
 const entityAddressModel = sequelize.define('entityAddress', {
     entityAddressId: {
@@ -43,6 +45,10 @@ const entityAddressModel = sequelize.define('entityAddress', {
         defaultValue: DataTypes.NOW,
         allowNull: false,
     },
-})
+});
+
+entityAddressModel.belongsTo(stateModel, { foreignKey: 'stateId' });
+entityAddressModel.belongsTo(districtModel, { foreignKey: 'districtId' });
+entityAddressModel.belongsTo(pincodeModel, { foreignKey: 'pincodeId' });
 
 export default entityAddressModel;

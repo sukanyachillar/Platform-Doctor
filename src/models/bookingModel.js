@@ -25,16 +25,7 @@ const bookingModel = sequelize.define('booking', {
     allowNull: true,
     unique: false,
   },
-  // customerName: {
-  //   type: DataTypes.STRING,
-  //   allowNull: true,
-  //   unique: false,
-  // },
-  // customerPhone: {
-  //   type: DataTypes.STRING,
-  //   allowNull: true,
-  //   unique: false,
-  // },
+
   entityId: {
     type: DataTypes.INTEGER,
     allowNull: true,

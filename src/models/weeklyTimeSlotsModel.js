@@ -21,7 +21,7 @@ const weeklyTimeSlotsModel = sequelize.define('weeklyTimeSlots', {
         type: DataTypes.STRING,
         allowNull: false,
     },
-    doctor_id: {
+    doctor_id: { // and entityid
         type: DataTypes.INTEGER,
         allowNull: false,
     },

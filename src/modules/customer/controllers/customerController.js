@@ -10,5 +10,16 @@ const listDoctorsForCustomers = async (req, res) => {
     }
 }
 
-export default { listDoctorsForCustomers };
+
+const getOneEntityDetails = async (req, res)=> {
+    try {
+        const data = await customerServices.getOneEntityDetails(req, res );
+        return data;
+    } catch (error) {
+        
+    }
+  }
+
+
+export default { listDoctorsForCustomers, getOneEntityDetails };
     

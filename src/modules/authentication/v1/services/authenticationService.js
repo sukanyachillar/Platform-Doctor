@@ -6,7 +6,7 @@ import { generateTokens, generateAdminTokens } from '../../../../utils/token.js'
 import { Op } from 'sequelize'
 // import upload from '../../../../middlewares/multerConfig.js';
 import awsUtils from '../../../../utils/aws.js';
-import doutils from '../../../../utils/DOFileUpload.js';
+import DigitalOceanUtils from '../../../../utils/DOFileUpload.js';
 import entityModel from '../../../../models/entityModel.js'
 import departmentModel from '../../../../models/departmentModel.js'
 import workScheduleModel from '../../../../models/workScheduleModel.js'
@@ -43,7 +43,7 @@ const register = async (userData, res) => {
                     refresh_token: tokens.refreshToken,
                     profile_completed: getUser.profile_completed,
                     status: getUser.status,
-                    entity_type: getUser.entity_type ? getUser.entity_type : '',
+                    entity_type: getUser.entity_type ?  getUser.entity_type : '',
                 },
             })
         }
@@ -107,7 +107,7 @@ const addProfile = async (userData, user, image, res) => {
         })
 
         // let imageUrl = await awsUtils.uploadToS3(image);
-        let imageUrl = await doutils.uploadObject (image); 
+        let imageUrl = await DigitalOceanUtils.uploadObject (image); 
 
         getUser.entity_name = entity_name
         getUser.business_type_id = business_type == 'individual' ? 1 : 0

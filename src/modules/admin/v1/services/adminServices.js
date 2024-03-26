@@ -12,6 +12,7 @@ import { generateAdminTokens } from '../../../../utils/token.js';
 import { generateUuid } from '../../../../utils/generateUuid.js';
 import { handleResponse } from '../../../../utils/handlers.js';
 import { Op, Sequelize } from 'sequelize';
+import DigitalOceanUtils from '../../../../utils/DOFileUpload.js';
 
 const adminRegister = async (credentials, res) => {
     try {
@@ -846,7 +847,6 @@ const addBankDetails = async (
 
 const customerHistory = async (req, res) => {
     try {
-
         const { customerId, filter={} } = req.body;
         let userDetails = await userModel.findOne({ where: { userId: customerId } })
 
@@ -921,7 +921,8 @@ const customerHistory = async (req, res) => {
     }
 }
 
-  const addEntity = async (req, res) => {
+  const addEntity = async (entityData, image, res) => { 
+
     try {
         const {
           businessId,
@@ -934,11 +935,17 @@ const customerHistory = async (req, res) => {
           stateId,
           districtId,
           pincodeId,
-          imageUrl,
           description,
-        } = req.body;
+          email,
+        } = entityData;
+
+        console.log("entityData", entityData)
+        let imageUrl;
     
-        let existingEntity = await entityModel.findOne({where: { phone }});
+         if (image) {
+            imageUrl = await DigitalOceanUtils.uploadObject (image); 
+          }
+         let existingEntity = await entityModel.findOne({ where: { phone } });
     
         if (existingEntity) {
           // If the entity already exists, update its details
@@ -950,6 +957,7 @@ const customerHistory = async (req, res) => {
             location,
             imageUrl,
             description,
+            email,
         });
     
           // Update the entity address
@@ -980,6 +988,7 @@ const customerHistory = async (req, res) => {
           location,
           imageUrl,
           description,
+          email
          });
 
    
@@ -1011,43 +1020,6 @@ const customerHistory = async (req, res) => {
       }
 }
 
-// const addStaff = async (req, res) => {
-//     try {
-
-        
-//         let entityData = await entityModel.findOne({
-//             where: { entity_id: entityId },
-//         })
-//         let newData, message, statusCode
-//         if (!entityData) {
-//             message = 'Sorry no entity data available with this ID.'
-//             statusCode = 404
-//         } else {
-//             entityData.account_no = account_no
-//             entityData.ifsc_code = ifsc_code
-//             entityData.bank_name = bank_name
-//             entityData.account_holder_name = account_holder_name
-//             entityData.UPI_ID = UPI_ID
-//             message = 'Successfully added bank details'
-//             statusCode = 200
-//             newData = await entityData.save()
-//         }
-//         return handleResponse({
-//             res,
-//             statusCode,
-//             message,
-//             data: { newData },
-//         })
-//     } catch (error) {
-//         console.log({ error })
-//         return handleResponse({
-//             res,
-//             message: 'Sorry try after sometime.',
-//             statusCode: 404,
-//         })
-//     }
-// }
-
 export default {
     adminLogin,
     adminRegister,
@@ -1060,5 +1032,4 @@ export default {
     addBankDetails,
     customerHistory,
     addEntity,
-    // addStaff,
 }

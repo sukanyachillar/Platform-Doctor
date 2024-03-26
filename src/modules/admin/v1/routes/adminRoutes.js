@@ -1,6 +1,16 @@
 import express from 'express'
 import adminController from '../controllers/adminController.js'
-import { verifyAdminToken } from '../../../../utils/token.js'
+import { verifyAdminToken } from '../../../../utils/token.js';
+
+import multer from 'multer'
+
+const upload = multer({
+    storage: multer.memoryStorage(),
+    limits: {
+        fileSize: 5 * 1024 * 1024, // limit file size to 5MB
+    },
+})
+
 
 const router = express.Router()
 
@@ -15,7 +25,6 @@ router.post('/customer-listing', adminController.listAllCustomers)
 router.post('/add-bank',adminController.addBankDetails)
 router.post('/customer-history', adminController.customerHistory)
 router.post('/customer-listing', adminController.listAllCustomers);
-router.post('/add-entity',  adminController.addEntity);
-router.post('/add-staff',  adminController.addEntity);
+router.post('/add-entity',  upload.single('file'), adminController.addEntity);
 
 export default router

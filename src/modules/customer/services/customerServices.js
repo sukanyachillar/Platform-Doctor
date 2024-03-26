@@ -5,6 +5,11 @@ import departmentModel from '../../../models/departmentModel.js'
 import { handleResponse } from '../../../utils/handlers.js'
 import { Op, Sequelize } from 'sequelize';
 import { encrypt } from '../../../utils/token.js';
+import stateModel from '../../../models/stateModel.js';
+import districtModel from '../../../models/districtModel.js';
+import pincodeModel from '../../../models/pincodeModel.js';
+import entityAddressModel from '../../../models/entityAddressModel.js';
+
 
 const listDoctorsForCustomers = async (requestData, res) => {
     try {
@@ -139,4 +144,53 @@ const listDoctorsForCustomers = async (requestData, res) => {
 };
 
 
-export default { listDoctorsForCustomers }
+const getOneEntityDetails = async (req, res) => {
+
+    try {
+        const { entityId } = req.body;
+
+        const entityDetails = await entityModel.findOne({
+            where: { entity_id: entityId },
+            include: [{
+                model: entityAddressModel,
+                include: [{
+                    model: stateModel,
+                }, {
+                    model: districtModel,
+                }, {
+                    model: pincodeModel,
+                }],
+            }],
+        });
+        console.log("entityDetails", entityDetails)
+        if (!entityDetails) {
+            return res.status(404).json({ message: 'Entity not found' });
+        }
+
+        const { entity_name, phone, email, entityAddress, imageUrl, description } = entityDetails;
+        const { streetName, cityName, state, district, pincode } = entityAddress;
+
+        const entityResponse = {
+            entityName: entity_name,
+            phone,
+            email,
+            entityImage: imageUrl? imageUrl: "",
+            description,
+            // address: `${streetName}, ${cityName}, ${district.districtName}, ${state.stateName}`,
+            streetName,
+            cityName,
+            district: district && district.districtName? district.districtName: "",
+            state: state && state.stateName? state.stateName: "",
+            pincode: pincode.pincodeValue,
+        };
+
+        res.status(200).json(entityResponse);
+    } catch (error) {
+        console.log(error)
+    }
+
+}
+
+export default { listDoctorsForCustomers,
+                  getOneEntityDetails
+                }
