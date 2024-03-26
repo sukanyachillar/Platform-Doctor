@@ -6,6 +6,7 @@ import paymentModel from '../../../../models/paymentModel.js';
 import bookingModel from '../../../../models/bookingModel.js';
 import weeklyTimeSlotsModel from '../../../../models/weeklyTimeSlotsModel.js';
 import entityAddressModel from '../../../../models/entityAddressModel.js';
+import doctorEntityModel from '../../../../models/doctorEntityModel.js';
 import businessModel from '../../../../models/businessModel.js';
 import { hashPassword, comparePasswords } from '../../../../utils/password.js';
 import { generateAdminTokens } from '../../../../utils/token.js';
@@ -549,7 +550,7 @@ const individualProfile = async ({
                 business_type_id: 0,
                 entity_type : businessData.businessId
             })
-            newEntity = await entityData.save()
+            newEntity = await entityData.save();
             docData = await new doctorModel({
                 doctor_name,
                 doctor_phone,
@@ -587,7 +588,22 @@ const individualProfile = async ({
                 docData.entity_id = entityData.entity_id
             }
         }
-        newDocData = await docData.save()
+        newDocData = await docData.save();
+       console.log("newDocData", newDocData)
+        const existingDoctorEntity = await doctorEntityModel.findOne({
+            where: { 
+                doctorId: newDocData.id,
+                entityId: newDocData.entity_id
+            }
+        });
+        if(!existingDoctorEntity) {
+            await doctorEntityModel.create({
+                doctorId: newDocData.id,
+                entityId: newDocData.entity_id,
+            });
+    
+        }
+      
         return { entityId: newDocData.entity_id }
     } catch (error) {
         console.log({ error })
@@ -626,8 +642,9 @@ const staffProfile = async ({
 
         let docData, newDocData
         docData = await doctorModel.findOne({
-            where: { doctor_name, entity_id },
+            where: { doctor_phone } //, entity_id },
         })
+        console.log("existing docData", docData)
         if (!docData) {
             docData = await new doctorModel({
                 doctor_name,
@@ -651,7 +668,21 @@ const staffProfile = async ({
             docData.department_id = department_id
             docData.entity_id = entity_id
         }
-        newDocData = await docData.save()
+        newDocData = await docData.save();
+        console.log("newDocData", newDocData)
+        const existingDoctorEntity = await doctorEntityModel.findOne({
+            where: { 
+                doctorId: newDocData.doctor_id,
+                entityId: newDocData.entity_id
+            }
+        });
+        if(!existingDoctorEntity) {
+            await doctorEntityModel.create({
+                doctorId: newDocData.doctor_id,
+                entityId: newDocData.entity_id,
+            });
+    
+        }
         return { entityId: newDocData.entity_id }
     } catch (error) {
         console.log({ error })

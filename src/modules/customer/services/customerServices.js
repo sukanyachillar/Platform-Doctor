@@ -162,31 +162,60 @@ const getOneEntityDetails = async (req, res) => {
                 }],
             }],
         });
-        console.log("entityDetails", entityDetails)
+        
         if (!entityDetails) {
-            return res.status(404).json({ message: 'Entity not found' });
+            return handleResponse({
+                res,
+                statusCode: 400,
+                message: 'Not found',
+                data: {},
+            })
         }
 
         const { entity_name, phone, email, entityAddress, imageUrl, description } = entityDetails;
-        const { streetName, cityName, state, district, pincode } = entityAddress;
 
+        let streetName, cityName, districtName, stateName, pincodeValue;
+        if (entityAddress) {
+            streetName = entityAddress.streetName;
+            cityName = entityAddress.cityName;
+            const district = entityAddress.district;
+            districtName = district && district.districtName ? district.districtName : "";
+            const state = entityAddress.state;
+            stateName = state && state.stateName ? state.stateName : "";
+            const pincode = entityAddress.pincode;
+            pincodeValue = pincode ? pincode.pincodeValue : "";
+        }
+        
         const entityResponse = {
-            entityName: entity_name,
-            phone,
-            email,
-            entityImage: imageUrl? imageUrl: "",
-            description,
-            // address: `${streetName}, ${cityName}, ${district.districtName}, ${state.stateName}`,
-            streetName,
-            cityName,
-            district: district && district.districtName? district.districtName: "",
-            state: state && state.stateName? state.stateName: "",
-            pincode: pincode.pincodeValue,
+            entityName: entity_name ? entity_name : "",
+            phone: phone ? phone : "",
+            email: email ? email : "",
+            entityImage: imageUrl ? imageUrl : "",
+            description: description ? description : "",
+            streetName: streetName ? streetName : "",
+            cityName: cityName ? cityName : "",
+            district: districtName ? districtName : "",
+            state: stateName ? stateName : "",
+            pincode: pincodeValue ? pincodeValue : "",
         };
 
-        res.status(200).json(entityResponse);
+        return handleResponse({
+            res,
+            statusCode: 200,
+            message: 'Entity details fetched successfully',
+            data: {
+                entityResponse
+            },
+        })
     } catch (error) {
-        console.log(error)
+        return handleResponse({
+            res,
+            statusCode: 500,
+            message: 'Something went wrong',
+            data: {
+                
+            },
+        })
     }
 
 }
