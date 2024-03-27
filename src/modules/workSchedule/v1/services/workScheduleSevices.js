@@ -62,21 +62,27 @@ const addWorkSchedule = async (data, userData, res) => {
             const date = String(currentDate.getDate()).padStart(2, '0')
             const formattedDate = `${year}-${month}-${date}`
              
-            const doctorEntityData = await doctorEntityModel.findOne({
+            let doctorEntityData = await doctorEntityModel.findOne({
                 where: { 
                     doctorId: doctor_id,
                     entityId,
                 }
             });
             if(!doctorEntityData) {
-                return handleResponse({
-                    res,
-                    message: "Doctor is not registered with this entity",
-                    statusCode: 400,
-                    data: {
+                // return handleResponse({
+                //     res,
+                //     message: "Doctor is not registered with this entity",
+                //     statusCode: 400,
+                //     data: {
                        
-                    },
-                })
+                //     },
+                // })
+                 doctorEntityData = await doctorEntityModel.create({
+                    where: { 
+                        doctorId: doctor_id,
+                        entityId,
+                    }
+                });
             }
             time_slots.map(async (ele) => {
                 let newTimeSlot = new weeklyTimeSlots({
