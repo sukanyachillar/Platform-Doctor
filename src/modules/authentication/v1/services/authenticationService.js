@@ -19,8 +19,15 @@ import { decrypt } from '../../../../utils/token.js';
 
 const register = async (userData, res) => {
     try {
-        const { phone, token } = userData
-        const getUser = await authenticationModel.findOne({ where: { phone } })
+        let { phone, token } = userData;
+        let doctorExists
+        const getUser = await authenticationModel.findOne({ where: { phone } });
+        if(!getUser) {
+            doctorExists =  await profileModel.findOne({ where: { doctor_phone: phone } });
+            if (doctorExists) {
+               phone = doctorExists.doctor_phone;
+            } 
+        }
         let tokens = await generateTokens(phone)
         let userId, newToken
         if (getUser) {
@@ -44,6 +51,30 @@ const register = async (userData, res) => {
                     profile_completed: getUser.profile_completed,
                     status: getUser.status,
                     entity_type: getUser.entity_type ?  getUser.entity_type : '',
+                },
+            })
+        }
+        if (doctorExists) {
+            userId = doctorExists.entity_id
+            newToken = await new tokenModel({
+                userId,
+                token,
+                createdAt: new Date(),
+                updatedAt: new Date(),
+            })
+            await newToken.save();
+            return handleResponse({
+                res,
+                statusCode: '200',
+                message: 'Succusfully loggedIn',
+                data: {
+                    // entity_id: doctorExists.entity_id,
+                    // phone: getUser.phone,
+                    access_token: tokens.accessToken,
+                    refresh_token: tokens.refreshToken,
+                    // profile_completed: getUser.profile_completed,
+                    // status: getUser.status,
+                    // entity_type: getUser.entity_type ?  getUser.entity_type : '',
                 },
             })
         }

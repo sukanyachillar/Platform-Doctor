@@ -30,6 +30,10 @@ const weeklyTimeSlotsModel = sequelize.define('weeklyTimeSlots', {
         allowNull: false,
         defaultValue: 0,
     },
+    doctorEntityId: { 
+        type: DataTypes.INTEGER,
+        allowNull: true,
+    },
 })
 
 

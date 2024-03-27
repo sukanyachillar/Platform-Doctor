@@ -9,7 +9,8 @@ import doctorModel from '../../../../models/doctorModel.js'
 import paymentModel from '../../../../models/paymentModel.js'
 import userModel from '../../../../models/userModel.js'
 import { generateUuid } from '../../../../utils/generateUuid.js'
-import Sequelize from 'sequelize'
+import Sequelize from 'sequelize';
+import doctorEntityModel from '../../../../models/doctorEntityModel.js';
 
 const bookAppointment = async (req, res) => {
     try {
@@ -21,14 +22,15 @@ const bookAppointment = async (req, res) => {
             customerPhone,
             amount,
             paymentMethod,
+            entityId,
         } = req.body
 
         const doctorProfile = await doctorProfileModel.findOne({
             where: { doctor_id: doctorId },
         })
         const getEntity = await entityModel.findOne({
-            where: { entity_id: doctorProfile.entity_id },
-        })
+            where: { entity_id: entityId }, // doctorProfile.entity_id
+        });
         const existingTimeslot = await weeklyTimeSlotsModel.findOne({
             where: {
                 time_slot: timeSlot,
@@ -83,6 +85,13 @@ const bookAppointment = async (req, res) => {
                 statusCode: 400,
             })
         }
+
+        const doctorEntityData = await doctorEntityModel.findOne({
+            where: { 
+                doctorId: doctorId,
+                entityId,
+            }
+        });
         // existingTimeslot.booking_status= 1;
         if (existingTimeslot) {
             await weeklyTimeSlotsModel.update(
@@ -94,6 +103,7 @@ const bookAppointment = async (req, res) => {
                         time_slot: timeSlot,
                         doctor_id: doctorId,
                         date: appointmentDate,
+                        doctorEntityId: doctorEntityData.doctorEntityId,
                     },
                 }
             )

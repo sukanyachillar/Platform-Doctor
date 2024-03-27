@@ -10,7 +10,6 @@ import districtModel from '../../../models/districtModel.js';
 import pincodeModel from '../../../models/pincodeModel.js';
 import entityAddressModel from '../../../models/entityAddressModel.js';
 
-
 const listDoctorsForCustomers = async (requestData, res) => {
     try {
 

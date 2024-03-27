@@ -5,11 +5,13 @@ import workScheduleModel from '../../../../models/workScheduleModel.js'
 import { handleResponse } from '../../../../utils/handlers.js';
 import { Sequelize } from 'sequelize';
 import { decrypt } from '../../../../utils/token.js';
+import doctorEntityModel from '../../../../models/doctorEntityModel.js';
 
 const addWorkSchedule = async (data, userData, res) => {
     try {
-        let { entity_id } = userData
-        let { day, startTime, endTime, doctor_id, session } = data
+        let { entity_id } = userData;
+        let { day, startTime, endTime, doctor_id, session, entityId } = data
+        let doctorEntityData;
         let daysArray = [
             'monday',
             'tuesday',
@@ -33,14 +35,15 @@ const addWorkSchedule = async (data, userData, res) => {
         let message
         let workData
         let time_slots
+
         workData = await workScheduleModel.findOne({
-            where: { entity_id, day, doctor_id, startTime, endTime },
+            where: { entity_id: entityId, day, doctor_id, startTime, endTime }, //entity_id
         })
         let doctorData = await doctorModel.findOne({
             where: { status: 1, doctor_id },
             attributes: ['consultation_time'],
         })
-        let entity = await entityModel.findOne({ where: { entity_id } })
+        let entity = await entityModel.findOne({ where: { entity_id: entityId } }) //entity_id
         if (!doctorData) {
             return handleResponse({
                 res,
@@ -58,18 +61,36 @@ const addWorkSchedule = async (data, userData, res) => {
             const month = String(currentDate.getMonth() + 1).padStart(2, '0') // Adding 1 to month as it's zero-based
             const date = String(currentDate.getDate()).padStart(2, '0')
             const formattedDate = `${year}-${month}-${date}`
+             
+            const doctorEntityData = await doctorEntityModel.findOne({
+                where: { 
+                    doctorId: doctor_id,
+                    entityId,
+                }
+            });
+            if(!doctorEntityData) {
+                return handleResponse({
+                    res,
+                    message: "Doctor is not registered with this entity",
+                    statusCode: 400,
+                    data: {
+                       
+                    },
+                })
+            }
             time_slots.map(async (ele) => {
                 let newTimeSlot = new weeklyTimeSlots({
                     date: formattedDate,
                     day,
                     time_slot: ele,
                     doctor_id,
+                    doctorEntityId: doctorEntityData? doctorEntityData.doctorEntityId: null,
                 })
                 let data = await newTimeSlot.save()
             })
             if (!workData) {
                 workData = new workScheduleModel({
-                    entity_id,
+                    entity_id: entityId,
                     day,
                     session,
                     endTime,
@@ -92,7 +113,7 @@ const addWorkSchedule = async (data, userData, res) => {
         if (entity.account_no) {
             await entityModel.update(
                 { profile_completed: 1 },
-                { where: { entity_id } }
+                { where: { entity_id: entityId } }
             )
         } 
         return handleResponse({
@@ -290,7 +311,7 @@ const getWorkSchedule = async (data, user, res) => {
 
 const getSingleWorkSchedule = async (req, res) => {
     try {
-        let { date, phone, encryptedPhone } = req.body
+        let { date, phone, encryptedPhone, entityId } = req.body
         date = new Date(date)
         const year = date.getFullYear()
         const month = String(date.getMonth() + 1).padStart(2, '0')
@@ -309,7 +330,7 @@ const getSingleWorkSchedule = async (req, res) => {
             attributes: ['doctor_id', 'entity_id'],
         })
         let getEntity = await entityModel.findOne({
-            where: { entity_id: doctorData.entity_id, status: 0 },
+            where: { entity_id: entityId, status: 0 },
         })
         if (getEntity) {
             return handleResponse({
@@ -318,8 +339,18 @@ const getSingleWorkSchedule = async (req, res) => {
                 statusCode: 404,
             })
         }
+
+        const doctorEntityData = await doctorEntityModel.findOne({
+            where: { 
+                doctorId: doctorData.doctor_id,
+                entityId,
+            }
+        });
         let data = await weeklyTimeSlots.findAll({
-            where: { date: formattedDate, doctor_id: doctorData.doctor_id },
+            where: { date: formattedDate, 
+                     doctor_id: doctorData.doctor_id, 
+                     doctorEntityId: doctorEntityData.doctorEntityId 
+                   },
             // order: [
             //     [Sequelize.fn('TIME_TO_SEC', Sequelize.fn('STR_TO_DATE', Sequelize.literal("CONCAT(date, ' ', time_slot)"), '%Y-%m-%d %h:%i %p')), 'ASC']
             // ],
