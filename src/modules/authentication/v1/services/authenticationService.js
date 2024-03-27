@@ -362,7 +362,7 @@ const getProfileForCustomer = async ({ phone, encryptedPhone }, res) => {
             })
         }
          let key = userProfile?.profileImageUrl
-         const url = await DigitalOceanUtils.getPresignUrlPromiseFunction(key);
+         const url = await DigitalOceanUtils.getPresignedUrl(key);
 
         return handleResponse({
             res,
