@@ -1,4 +1,5 @@
 import { PutObjectCommand, S3Client, GetObjectCommand } from '@aws-sdk/client-s3';
+import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 
 const uploadObject = async (file) => {
   try {
@@ -77,8 +78,12 @@ const getPresignedUrl = async (objectKey, expirationInSeconds) => {
     };
 
     const command = new GetObjectCommand(params);
-    const url = await s3Client.getSignedUrl(command);
-    console.log("url", url)
+    const url = await getSignedUrl(s3Client, command, { expiresIn: expirationInSeconds });
+   
+
+    // const command = new GetObjectCommand(params);
+    // const url = await s3Client.getSignedUrl(command);
+    // console.log("url", url)
     return url;
   } catch (err) {
     console.error("Error generating pre-signed URL:", err);
