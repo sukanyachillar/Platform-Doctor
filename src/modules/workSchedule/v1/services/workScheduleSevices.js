@@ -85,7 +85,8 @@ const addWorkSchedule = async (data, userData, res) => {
                         entityId,
                     }
                 });
-            }
+
+             }
             time_slots.map(async (ele) => {
                 let newTimeSlot = new weeklyTimeSlots({
                     date: formattedDate,
