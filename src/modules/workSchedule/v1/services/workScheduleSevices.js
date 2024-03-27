@@ -333,6 +333,7 @@ const getSingleWorkSchedule = async (req, res) => {
         }else{
             phoneNo = phone
         }
+        console.log("phoneNo", phoneNo)
         let doctorData = await doctorModel.findOne({
             where: { doctor_phone: phoneNo },
             attributes: ['doctor_id', 'entity_id'],
