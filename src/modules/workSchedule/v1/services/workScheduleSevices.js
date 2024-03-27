@@ -328,8 +328,10 @@ const getSingleWorkSchedule = async (req, res) => {
         let phoneNo;
         let decryptedPhone;
         if(encryptedPhone) {
+            console.log("encrpteddddd")
             decryptedPhone = await decrypt(encryptedPhone, process.env.CRYPTO_SECRET);
             phoneNo = decryptedPhone;
+            console.log("phoneNo", phoneNo, decryptedPhone)
         }else{
             phoneNo = phone
         }
