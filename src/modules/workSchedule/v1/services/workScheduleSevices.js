@@ -79,11 +79,10 @@ const addWorkSchedule = async (data, userData, res) => {
                 // })
                 console.log("doctor_id", doctor_id)
                 console.log("entityId", entityId)
-                 doctorEntityData = await doctorEntityModel.create({
-                    where: { 
-                        doctorId: doctor_id,
-                        entityId,
-                    }
+             
+                const doctorEntityData = await doctorEntityModel.create({
+                    doctorId: doctor_id,
+                    entityId: entityId,
                 });
 
              }
