@@ -20,11 +20,11 @@ router.post('/add-dept', verifyAdminToken, adminController.addDepart)
 router.post('/list-doctors', adminController.listDoctors)
 router.post('/list-entity', adminController.listEntity) // meant list buisness
 router.post('/transaction-history', adminController.transactionHistory)
-router.post('/add-profile', adminController.addProfile)
+router.post('/add-profile', upload.single('file'), adminController.addProfile)
 router.post('/customer-listing', adminController.listAllCustomers)
-router.post('/add-bank',adminController.addBankDetails)
+router.post('/add-bank', adminController.addBankDetails)
 router.post('/customer-history', adminController.customerHistory)
 router.post('/customer-listing', adminController.listAllCustomers);
-router.post('/add-entity',  upload.single('file'), adminController.addEntity);
+router.post('/add-entity', upload.single('file'), adminController.addEntity);
 
 export default router

@@ -204,8 +204,6 @@ const listBooking = async ({ doctorId, date }, res) => {
         for (const weeklyTimeSlot of weeklyTimeSlots) {
             const bookingInfo = await bookingModel.findOne({
                 attributes: [
-                    // "customerName",
-                    // "customerPhone",
                     'bookingStatus',
                     'bookingId',
                     'customerId',
@@ -273,20 +271,13 @@ const getBookingReport = async (req, res) => {
             departmentId: doctorId,
             appointmentDate: { [Op.eq]: new Date(date) }, // Filter appointments on or after the specified date
         }
-        // const bookingReport = await bookingModel.findAll({
-        //     where: queryPart,
-        //     attributes: ['customerName', 'orderId', 'amount', 'bookingStatus'], // Select specific attributes
-        // })
-
+     
         const bookingList = await bookingModel.findAll({
             where: queryPart,
             attributes: ['orderId', 'amount', 'bookingStatus', 'customerId'], // Include customerId for later use
         });
         
-        // Extract customerIds from the booking report
         const customerIds = bookingList.map((booking) => booking.customerId);
-        console.log("customerIds",customerIds)
-        // Fetch user details based on customerIds
         const userRecords = await userModel.findAll({
             where: {
                 userId: {
@@ -295,13 +286,11 @@ const getBookingReport = async (req, res) => {
             },
             attributes: ['userId', 'name'],
         });
-        console.log("userRecords=============", userRecords)
         // Create a map of userId to customerName
         const customerNameMap = {};
         userRecords.forEach((user) => {
             customerNameMap[user.userId] = user.name;
         });
-        console.log('customerNameMap>>>>>', customerNameMap)
         // Update bookingReport with customerName
         const bookingReport = bookingList.map((booking) => ({
             ...booking.toJSON(),
