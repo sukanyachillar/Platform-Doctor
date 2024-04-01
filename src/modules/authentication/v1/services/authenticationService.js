@@ -18,6 +18,7 @@ import tokenModel from '../../../../models/tokenModel.js'
 import { hashPassword, comparePasswords } from '../../../../utils/password.js';
 import { decrypt } from '../../../../utils/token.js';
 
+
 const register = async (userData, res) => {
     try {
         let { phone, token } = userData;
@@ -247,20 +248,25 @@ const getProfile = async (req, res) => {
     try {
         const phone = req.user.phone
         let getUser = await authenticationModel.findOne({ where: { phone } });
+        let entityId, userProfile
 
         if(getUser){
             userProfile = await profileModel.findOne({  //doctorModel
                where: { entity_id: getUser.entity_id },
-           })
+            });
+            entityId = getUser.entity_id;
        } else {
            userProfile = await profileModel.findOne({  //doctorModel
-               where: { doctor_phone: phoneNo },
-           })
+               where: { doctor_phone: phone },
+           });
+           entityId = userProfile.entity_id;
        }
 
-        let userProfile = await profileModel.findOne({
-            where: { entity_id: getUser.entity_id },
-        })
+       console.log("entityId>>>>>>>>>>>",entityId)
+
+        // let userProfile = await profileModel.findOne({
+        //     where: { entity_id: getUser.entity_id },
+        // })
         let statusCode, message, getDepartment
         if (!userProfile) { 
             ;(message =
@@ -268,9 +274,9 @@ const getProfile = async (req, res) => {
                 (statusCode = 404)
         }
         let availableSlots = await workScheduleModel.findAll({
-            where: { entity_id: getUser.entity_id, status: 1 },
+            where: { entity_id: entityId, status: 1 },
             attributes: ['Day'],
-        })
+        });
         if (!availableSlots) {
             ;(message =
                 'Sorry! Unable to fetch available slots associated with this phone.'),
@@ -296,22 +302,22 @@ const getProfile = async (req, res) => {
                 where: { department_id: userProfile.department_id },
             })
         }
-        //  let key = userProfile?.profileImageUrl;
-        //  const url = await awsUtils.getPresignUrlPromiseFunction(key);
+         let key = userProfile?.profileImageUrl;
+         const url = await DigitalOceanUtils.getPresignedUrl(key);
 
         return handleResponse({
             res,
             statusCode,
             message,
             data: {
-                entity_id: getUser?.entity_id,
-                phone: getUser?.phone,
+                entity_id: entityId, //getUser?.entity_id,
+                phone: phone, //getUser?.phone,
                 doctor_name: userProfile?.doctor_name,
                 qualification: userProfile?.qualification,
                 consultation_time: userProfile?.consultation_time,
                 consultation_charge: userProfile?.consultation_charge,
                 doctor_id: userProfile?.doctor_id,
-                //  profileImageUrl: url,
+                profileImageUrl: url,
                 description: userProfile?.description,
                 // uniqueDays, 
                 designation: getDepartment?.department_name,

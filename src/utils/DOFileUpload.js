@@ -47,14 +47,16 @@ const getPresignedUrl = async (objectKey, expirationInSeconds) => {
       }
     });
 
-    // Construct the GetObjectCommand to retrieve the uploaded object
     const command = new GetObjectCommand({
       Bucket: process.env.DO_SPACES_NAME,
       Key: objectKey,
     });
-
-    // Generate the pre-signed URL for the GetObjectCommand
-    const url = await getSignedUrl(s3Client, command, { expiresIn: 3600 });
+    let url;
+    if(objectKey) {
+      url = await getSignedUrl(s3Client, command, { expiresIn: 3600 });
+    } else {
+      url = ""
+    }
 
     // console.log("url===============>", url)
 
