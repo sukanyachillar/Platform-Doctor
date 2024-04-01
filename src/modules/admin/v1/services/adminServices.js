@@ -215,7 +215,6 @@ const entityList = async (requestData, res) => {
         const page = parseInt(requestData.page) || 1;
         const pageSize = parseInt(requestData.limit) || 10;
         const businessType = parseInt(requestData.businessType) || 0;
-        console.log("businessTypeFilter", businessType);
         const offset = (page - 1) * pageSize
 
         let whereCondition = {
@@ -229,11 +228,17 @@ const entityList = async (requestData, res) => {
             whereCondition.entity_type = businessType;
         }
         const { count, rows: data } = await entityModel.findAndCountAll({
-            attributes: ['entity_name', 'entity_id', 'status'],
+            attributes: ['entity_name', 'entity_id', 'status', 'imageUrl'],
             where: whereCondition,
             limit: pageSize,
             offset: offset,
         })
+
+        const preSignedUrls = await Promise.all(data.map(async (entity) => {
+            const preSignedUrl = await DigitalOceanUtils.getPresignedUrl(entity.imageUrl); 
+            return { ...entity.toJSON(), preSignedUrl };
+        }));
+
         const totalPages = Math.ceil(count / pageSize)
         let message
         if (data) message = 'Sucessfully fetched data'
@@ -243,10 +248,10 @@ const entityList = async (requestData, res) => {
             message,
             statusCode: 200,
             data: {
-                data,
+                data: preSignedUrls,
                 currentPage: page,
                 totalCount: count,
-                data,
+                // data,
                 totalPages,
             },
         })
@@ -491,14 +496,18 @@ const transactionHistory = async (requestData, res) => {
 }
 
 
-const addProfile = async (docData, res) => {
+const addProfile = async (docData, image, res) => {
     try {
-        let redirection, addValue, message, statusCode
+        let redirection, addValue, message, statusCode, imageUrl ;
+        if (image) {
+            imageUrl = await DigitalOceanUtils.uploadObject (image); 
+            console.log("imageUrl>>>>>>>>===>>>>>>", imageUrl)
+        }
         if (docData.businessType == 'individual') {
-            addValue = await individualProfile(docData)
+            addValue = await individualProfile(docData, imageUrl);
             redirection = true
         } else {
-            addValue = await staffProfile(docData)
+            addValue = await staffProfile(docData, imageUrl);
             redirection = false
         }
         message = addValue
@@ -533,15 +542,15 @@ const individualProfile = async ({
     consultation_charge,
     department_id,
     description,
-    // businessType,
-    // business_type_id,
-}) => {
+}, imageUrl) => {
     try {
   
         let entityData = await entityModel.findOne({
             where: { phone: doctor_phone },
         })
-        let businessData = await businessModel.findOne({ where:{ businessName: 'individual' },attributes:['businessId']})
+        let businessData = await businessModel.findOne({ 
+            where:{ businessName: 'individual' },attributes:['businessId']
+        })
         let docData, newEntity, newDocData
         if (!entityData) {
             entityData = await new entityModel({
@@ -561,6 +570,7 @@ const individualProfile = async ({
                 consultation_charge,
                 department_id,
                 entity_id: newEntity.entity_id,
+                profileImageUrl: imageUrl,
             })
         } else {
             docData = await doctorModel.findOne({ where: { doctor_phone } })
@@ -575,8 +585,9 @@ const individualProfile = async ({
                     consultation_charge,
                     department_id,
                     entity_id: entityData.entity_id,
+                    profileImageUrl: imageUrl,
                 })
-                console.log({ docData })
+                // console.log({ docData })
             } else {
                 docData.doctor_name = doctor_name
                 docData.qualification = qualification
@@ -586,10 +597,11 @@ const individualProfile = async ({
                 docData.department_id = department_id
                 docData.description = description
                 docData.entity_id = entityData.entity_id
+                docData.profileImageUrl= imageUrl
             }
         }
         newDocData = await docData.save();
-       console.log("newDocData", newDocData)
+        // console.log("newDocData", newDocData)
         const existingDoctorEntity = await doctorEntityModel.findOne({
             where: { 
                 doctorId: newDocData.id,
@@ -621,9 +633,12 @@ const staffProfile = async ({
     department_id,
     description,
     entity_id,
-}) => {
+}, imageUrl) => {
    
     try {
+
+        console.log("inside staff add");
+        console.log("imageUrl>>>>>>>>>>>>>>>>>", imageUrl)
         // let newEntity
         // const businessData = await businessModel.findOne({ where:{ businessName: 'clinic' },attributes:['businessId']})
         // let entityData = await entityModel.findOne({
@@ -644,7 +659,6 @@ const staffProfile = async ({
         docData = await doctorModel.findOne({
             where: { doctor_phone } //, entity_id },
         })
-        console.log("existing docData", docData)
         if (!docData) {
             docData = await new doctorModel({
                 doctor_name,
@@ -656,6 +670,7 @@ const staffProfile = async ({
                 department_id,
                 description,
                 entity_id,
+                profileImageUrl: imageUrl
             })
         } else {
             docData.doctorName = doctor_name
@@ -667,9 +682,11 @@ const staffProfile = async ({
             docData.department_id = department_id
             docData.department_id = department_id
             docData.entity_id = entity_id
+            docData.profileImageUrl = imageUrl
+
         }
         newDocData = await docData.save();
-        console.log("newDocData", newDocData)
+        // console.log("newDocData", newDocData)
         const existingDoctorEntity = await doctorEntityModel.findOne({
             where: { 
                 doctorId: newDocData.doctor_id,
@@ -970,12 +987,11 @@ const customerHistory = async (req, res) => {
           email,
         } = entityData;
 
-        console.log("entityData", entityData)
         let imageUrl;
     
          if (image) {
             imageUrl = await DigitalOceanUtils.uploadObject (image); 
-          }
+        }
          let existingEntity = await entityModel.findOne({ where: { phone } });
     
         if (existingEntity) {

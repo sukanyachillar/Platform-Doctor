@@ -10,7 +10,7 @@ const sequelize = new Sequelize('platform_doctor', process.env.MYSQL_USER, '', {
     password: process.env.MYSQL_PASSWORD,
     // database: currentConfig.MYSQL_DATABASE,
     logging: false, // Set to true to log SQL queries (optional)
-})
+});
 
 // const sequelize = new Sequelize('platform_doctor', 'root', '', {
 //   host: 'localhost',

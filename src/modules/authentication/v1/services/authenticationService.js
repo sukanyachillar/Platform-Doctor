@@ -7,10 +7,11 @@ import { Op } from 'sequelize'
 // import upload from '../../../../middlewares/multerConfig.js';
 import awsUtils from '../../../../utils/aws.js';
 import DigitalOceanUtils from '../../../../utils/DOFileUpload.js';
-import entityModel from '../../../../models/entityModel.js'
-import departmentModel from '../../../../models/departmentModel.js'
-import workScheduleModel from '../../../../models/workScheduleModel.js'
-import { generateUuid } from '../../../../utils/generateUuid.js'
+import entityModel from '../../../../models/entityModel.js';
+import departmentModel from '../../../../models/departmentModel.js';
+import workScheduleModel from '../../../../models/workScheduleModel.js';
+import { generateUuid } from '../../../../utils/generateUuid.js';
+import doctorEntityModel from '../../../../models/doctorEntityModel.js';
 import userModel from '../../../../models/userModel.js'
 import doctorModel from '../../../../models/doctorModel.js'
 import tokenModel from '../../../../models/tokenModel.js'
@@ -55,7 +56,20 @@ const register = async (userData, res) => {
             })
         }
         if (doctorExists) {
-            userId = doctorExists.entity_id
+            const existingDoctorEntity = await doctorEntityModel.findOne({
+                where: { 
+                    doctorId: doctorExists.doctor_id,
+                }
+            });
+            if(existingDoctorEntity) {
+                userId = existingDoctorEntity.entityId;
+
+            } else{
+                userId = doctorExists.entity_id
+            }
+
+            const getEntity = await authenticationModel.findOne({ where: { entity_id: userId } });
+
             newToken = await new tokenModel({
                 userId,
                 token,
@@ -68,13 +82,13 @@ const register = async (userData, res) => {
                 statusCode: '200',
                 message: 'Succusfully loggedIn',
                 data: {
-                    // entity_id: doctorExists.entity_id,
-                    // phone: getUser.phone,
+                    entity_id: userId, // doctorExists.entity_id,
+                    phone: doctorExists.doctor_phone,
                     access_token: tokens.accessToken,
                     refresh_token: tokens.refreshToken,
-                    // profile_completed: getUser.profile_completed,
-                    // status: getUser.status,
-                    // entity_type: getUser.entity_type ?  getUser.entity_type : '',
+                    profile_completed: 1, // getUser.profile_completed,
+                    status: getEntity.status,
+                    entity_type: getEntity.entity_type ?  getEntity.entity_type : '',
                 },
             })
         }
@@ -232,12 +246,23 @@ const addProfile = async (userData, user, image, res) => {
 const getProfile = async (req, res) => {
     try {
         const phone = req.user.phone
-        let getUser = await authenticationModel.findOne({ where: { phone } })
+        let getUser = await authenticationModel.findOne({ where: { phone } });
+
+        if(getUser){
+            userProfile = await profileModel.findOne({  //doctorModel
+               where: { entity_id: getUser.entity_id },
+           })
+       } else {
+           userProfile = await profileModel.findOne({  //doctorModel
+               where: { doctor_phone: phoneNo },
+           })
+       }
+
         let userProfile = await profileModel.findOne({
             where: { entity_id: getUser.entity_id },
         })
         let statusCode, message, getDepartment
-        if (!userProfile) {
+        if (!userProfile) { 
             ;(message =
                 'Sorry! Unable to fetch user profile associated with this phone.'),
                 (statusCode = 404)
@@ -325,7 +350,7 @@ const getProfileForCustomer = async ({ phone, encryptedPhone }, res) => {
                 where: { doctor_phone: phoneNo },
             })
         }
-
+        console.log("userProfile", userProfile )
         let statusCode, message, getDepartment
         if (!userProfile) {
             ;(message =
@@ -369,14 +394,14 @@ const getProfileForCustomer = async ({ phone, encryptedPhone }, res) => {
             statusCode,
             message,
             data: {
-                entity_id: getUser?.entity_id,
+                entity_id: getUser? getUser.entity_id: userProfile.entity_id,
                 phone: getUser?.phone,
                 doctor_name: userProfile?.doctor_name,
                 qualification: userProfile?.qualification,
                 consultation_time: userProfile?.consultation_time,
                 consultation_charge: userProfile?.consultation_charge,
                 doctor_id: userProfile?.doctor_id,
-                 profileImageUrl: url,
+                profileImageUrl: url,
                 description: userProfile?.description,
                 uniqueDays,
                 designation: getDepartment?.department_name,

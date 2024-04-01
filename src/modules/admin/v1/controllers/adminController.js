@@ -56,7 +56,11 @@ const transactionHistory = async (req, res) => {
 
 const addProfile = async (req, res) => {
     try {
-        let data = await adminServices.addProfile(req.body, res)
+        let data = await adminServices.addProfile( 
+            req.body,
+            req.file,
+            res,
+            )
         return data
     } catch (error) {
         console.log({ error })

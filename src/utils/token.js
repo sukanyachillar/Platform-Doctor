@@ -31,7 +31,9 @@ export const verifyToken = async (req, res, next) => {
   try {
     let authHeader = req.headers.authorization;
     let accessToken = authHeader.split(" ")[1];
+    console.log("accesToken", accessToken);
     let verify = jwt.verify(accessToken, accessTokenSecret);
+    console.log("verify", verify)
     if (verify) {
       let phone = await decrypt(verify.phone, process.env.CRYPTO_SECRET);
       verify.phone = phone;
@@ -39,15 +41,18 @@ export const verifyToken = async (req, res, next) => {
         where: { phone },
         attributes: ["entity_id"],
       });
-      let dataValues = entity.get();
-      verify.entity_id = dataValues.entity_id;
+      if(entity) {
+        let dataValues = entity.get();
+        verify.entity_id = dataValues.entity_id;
+      }
+      
       req.user = verify;
       next();
     }
   } catch (err) {
     console.log({ err });
 
-    return res.status(403).json({ statusCode: 403, message: "Token expired" });
+    return res.status(403).json({ statusCode: 403, message: "Token expired1" });
   }
 };
 
@@ -71,7 +76,7 @@ export const verifyRefreshToken = async (req, res) => {
     }
   } catch (err) {
     console.log({ err });
-    return res.status(403).json({ statusCode: 403, message: "Token expired" });
+    return res.status(403).json({ statusCode: 403, message: "Token expired2" });
   }
 };
 
@@ -124,7 +129,7 @@ export const verifyAdminToken = async (req, res, next) => {
   } catch (err) {
     console.log({ err });
 
-    return res.status(403).json({ statusCode: 403, message: "Token expired" });
+    return res.status(403).json({ statusCode: 403, message: "Token expired3" });
   }
 };
 
@@ -146,6 +151,6 @@ export const verifyAdminRefreshToken = async (req, res) => {
     });
   } catch (err) {
     console.log({ err });
-    return res.status(403).json({ statusCode: 403, message: "Token expired" });
+    return res.status(403).json({ statusCode: 403, message: "Token expired4" });
   }
 };

@@ -9,6 +9,8 @@ import stateModel from '../../../models/stateModel.js';
 import districtModel from '../../../models/districtModel.js';
 import pincodeModel from '../../../models/pincodeModel.js';
 import entityAddressModel from '../../../models/entityAddressModel.js';
+import DigitalOceanUtils from '../../../utils/DOFileUpload.js';
+
 
 const listDoctorsForCustomers = async (requestData, res) => {
     try {
@@ -47,6 +49,7 @@ const listDoctorsForCustomers = async (requestData, res) => {
                 'description',
                 'department_id',
                 'entity_id',
+                'profileImageUrl',
             ],
             // where: {
             //     [Op.or]: [
