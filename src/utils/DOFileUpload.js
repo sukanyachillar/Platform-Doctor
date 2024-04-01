@@ -56,7 +56,7 @@ const getPresignedUrl = async (objectKey, expirationInSeconds) => {
     // Generate the pre-signed URL for the GetObjectCommand
     const url = await getSignedUrl(s3Client, command, { expiresIn: 3600 });
 
-    console.log("url===============>", url)
+    // console.log("url===============>", url)
 
     return url;
   } catch (err) {

@@ -72,12 +72,15 @@ const listDoctorsForCustomers = async (requestData, res) => {
             limit: pageSize,
             offset: offset,
         });
-
+        const dataWithSignedUrls = await Promise.all(records.map(async (record) => {
+            const preSignedUrl = await DigitalOceanUtils.getPresignedUrl(record.profileImageUrl);
+            return { ...record.toJSON(), profileImagePreSignedUrl: preSignedUrl };
+        }));
 
         const totalPages = Math.ceil(count / pageSize);
 
-        const departmentIds = records.map((record) => record.department_id);
-        const entityIds = records.map((record) => record.entity_id);
+        const departmentIds = dataWithSignedUrls.map((record) => record.department_id);
+        const entityIds = dataWithSignedUrls.map((record) => record.entity_id);
         const departments = await departmentModel.findAll({
             where: {
                 department_id: departmentIds,
@@ -102,27 +105,23 @@ const listDoctorsForCustomers = async (requestData, res) => {
             entityMap[entity.entity_id] = entity.entity_name;
         });
 
-        // Encrypt doctor_phone for each record
-        const encryptedRecords = await Promise.all(records.map(async (record) => {
+        const encryptedRecords = await Promise.all(dataWithSignedUrls.map(async (record) => {
+
             const encryptedPhone = await encrypt(record.doctor_phone, process.env.CRYPTO_SECRET);
-
-            // Update the record with the encrypted phone
             record.doctor_phone_encrypted = encryptedPhone;
-
             return record;
         }));
 
         // Merging department_name, entity_name, and encrypted phone into doctor records
         const response = {
             records: encryptedRecords.map((record) => ({
-                ...record.dataValues,
+                ...record,
                 department_name: departmentMap[record.department_id],
                 entity_name: entityMap[record.entity_id],
                 encryptedPhone: record.doctor_phone_encrypted,
             })),
         };
 
-        // Return the response
         return handleResponse({
             res,
             statusCode: '200',
