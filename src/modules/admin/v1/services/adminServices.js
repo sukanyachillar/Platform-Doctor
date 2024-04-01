@@ -14,6 +14,7 @@ import { generateUuid } from '../../../../utils/generateUuid.js';
 import { handleResponse } from '../../../../utils/handlers.js';
 import { Op, Sequelize } from 'sequelize';
 import DigitalOceanUtils from '../../../../utils/DOFileUpload.js';
+import { encrypt } from '../../../../utils/token.js';
 
 const adminRegister = async (credentials, res) => {
     try {
@@ -243,12 +244,17 @@ const entityList = async (requestData, res) => {
         let message
         if (data) message = 'Sucessfully fetched data'
         else message = 'No data found'
+
+        const encryptedEntities = await Promise.all(preSignedUrls.map(async (entity) => {
+            const encryptedEntityId = await encrypt(entity.entity_id.toString(), process.env.CRYPTO_SECRET);
+            return { ...entity, encryptedEntityId };
+        }));
         return handleResponse({
             res,
             message,
             statusCode: 200,
             data: {
-                data: preSignedUrls,
+                data: encryptedEntities,
                 currentPage: page,
                 totalCount: count,
                 // data,
