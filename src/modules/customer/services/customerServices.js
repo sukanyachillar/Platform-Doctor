@@ -74,7 +74,7 @@ const listDoctorsForCustomers = async (requestData, res) => {
         });
         const dataWithSignedUrls = await Promise.all(records.map(async (record) => {
             const preSignedUrl = await DigitalOceanUtils.getPresignedUrl(record.profileImageUrl);
-            return { ...record.toJSON(), profileImagePreSignedUrl: preSignedUrl };
+            return { ...record.toJSON() };
         }));
 
         const totalPages = Math.ceil(count / pageSize);

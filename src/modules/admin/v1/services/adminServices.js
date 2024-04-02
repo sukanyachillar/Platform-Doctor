@@ -237,7 +237,7 @@ const entityList = async (requestData, res) => {
 
         const preSignedUrls = await Promise.all(data.map(async (entity) => {
             const preSignedUrl = await DigitalOceanUtils.getPresignedUrl(entity.imageUrl); 
-            return { ...entity.toJSON(), preSignedUrl };
+            return { ...entity.toJSON() };
         }));
 
         const totalPages = Math.ceil(count / pageSize)

@@ -2,7 +2,6 @@ import { PutObjectCommand, S3Client, GetObjectCommand } from '@aws-sdk/client-s3
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 
 const uploadObject = async (file) => {
-  console.log("inside upload object", file)
   try {
     const filename = file?.originalname;
     console.log("filename", filename)
@@ -23,7 +22,7 @@ const uploadObject = async (file) => {
     };
 
     const data = await s3Client.send(new PutObjectCommand(params));
-    const objectUrl = `${process.env.DO_SPACES_ENDPOINT}${process.env.DO_SPACES_NAME}/${filename}`;
+    const objectUrl = `${process.env.DO_SPACES_ENDPOINT}/${process.env.DO_SPACES_NAME}/${filename}`;
     
     console.log("Successfully uploaded object:", params.Bucket + "/" + params.Key);
     return objectUrl;

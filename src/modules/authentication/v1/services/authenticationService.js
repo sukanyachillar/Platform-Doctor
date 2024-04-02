@@ -303,7 +303,7 @@ const getProfile = async (req, res) => {
             })
         }
          let key = userProfile?.profileImageUrl;
-         const url = await DigitalOceanUtils.getPresignedUrl(key);
+        //  const url = await DigitalOceanUtils.getPresignedUrl(key);
 
         return handleResponse({
             res,
@@ -317,7 +317,7 @@ const getProfile = async (req, res) => {
                 consultation_time: userProfile?.consultation_time,
                 consultation_charge: userProfile?.consultation_charge,
                 doctor_id: userProfile?.doctor_id,
-                profileImageUrl: url,
+                profileImageUrl: key,
                 description: userProfile?.description,
                 // uniqueDays, 
                 designation: getDepartment?.department_name,
@@ -393,7 +393,7 @@ const getProfileForCustomer = async ({ phone, encryptedPhone }, res) => {
             })
         }
          let key = userProfile?.profileImageUrl
-         const url = await DigitalOceanUtils.getPresignedUrl(key);
+        //  const url = await DigitalOceanUtils.getPresignedUrl(key);
 
         return handleResponse({
             res,
@@ -407,7 +407,7 @@ const getProfileForCustomer = async ({ phone, encryptedPhone }, res) => {
                 consultation_time: userProfile?.consultation_time,
                 consultation_charge: userProfile?.consultation_charge,
                 doctor_id: userProfile?.doctor_id,
-                profileImageUrl: url,
+                profileImageUrl: key,
                 description: userProfile?.description,
                 uniqueDays,
                 designation: getDepartment?.department_name,
