@@ -184,7 +184,7 @@ const addProfile = async (userData, user, image, res) => {
                 consultation_time,
                 entity_id,
                 profile_completed,
-                // doctor_phone,
+                doctor_phone,
                 department_id,
                 description,
                 // profileImageUrl: imageUrl.Key ? imageUrl.Key : "",
@@ -425,11 +425,31 @@ const getProfileForCustomer = async ({ phone, encryptedPhone }, res) => {
 
 const getGeneralSettings = async (req, res) => {
     try {
-        const phone = req.user.phone
-        let getEntity = await authenticationModel.findOne({ where: { phone } }) // entitymodel
+        const phone = req.user.phone;
+        console.log("phone===>>", phone)
+        let entityId, doctorEntity ;
+        let getEntity = await authenticationModel.findOne({ where: { phone } }) // entitymodel single enity
+        if (!getEntity) {
+            const isDoctorUnderTheClinic = await doctorModel.findOne({ doctor_phone: phone});
+            if (isDoctorUnderTheClinic) {
+                const getDoctorEntity = await doctorEntityModel.findOne({ doctorId: isDoctorUnderTheClinic.doctor_id});
+                entityId = getDoctorEntity.entityId;
+                doctorEntity = await authenticationModel.findOne({ entity_id: entityId});
+            }
+        } else {
+            entityId = getEntity.entity_id;
+        }
+        if(!entityId) {
+            return handleResponse({
+                res,
+                message: 'Something went wrong with entity',
+                statusCode: 422,
+            })
+        }
         let doctorProfile = await profileModel.findOne({
-            where: { entity_id: getEntity.entity_id },
-        })
+            where: { doctor_phone: phone },
+        });
+        
         return handleResponse({
             res,
             statusCode: 200,
@@ -439,19 +459,19 @@ const getGeneralSettings = async (req, res) => {
                 phone: doctorProfile.phone,
                 bookingLinkStatus: doctorProfile.status,
                 consultationDuration: doctorProfile.consultation_time,
-                addStaff: getEntity.add_staff,
-                addService: getEntity.add_service,
-                entityStatus: getEntity.status,
-                profile_completed: getEntity.profile_completed,
+                addStaff: getEntity? getEntity.add_staff: doctorEntity? doctorEntity.add_staff: "",
+                addService: getEntity? getEntity.add_service: doctorEntity? doctorEntity.add_service: "",
+                entityStatus: getEntity? getEntity.status: doctorEntity? doctorEntity.status: "",
+                profile_completed: getEntity? getEntity.profile_completed: doctorEntity? doctorEntity.profile_completed: "",
             },
-        })
+        });
     } catch (error) {
         console.log({ error })
         return handleResponse({
             res,
             message: 'Error while fetching.',
             statusCode: 422,
-        })
+        });
     }
 }
 
