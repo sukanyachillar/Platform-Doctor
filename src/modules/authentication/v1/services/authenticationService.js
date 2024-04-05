@@ -457,6 +457,7 @@ const getGeneralSettings = async (req, res) => {
 
 const getBankDetails = async (userData, res) => {
     try {
+        console.log("userData", userData)
         let { entity_id } = userData
         let message, statusCode
         let bankdata = await entityModel.findOne({
@@ -468,7 +469,7 @@ const getBankDetails = async (userData, res) => {
                 'account_holder_name',
                 'UPI_ID',
             ],
-        })
+        });
         if (!handleResponse) {
             statusCode = 422
             message = 'Sorry unable to fetch.'

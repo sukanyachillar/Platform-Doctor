@@ -4,6 +4,8 @@ import CryptoJS from "crypto-js";
 import { handleResponse } from "./handlers.js";
 import entityModel from "../models/entityModel.js";
 import userModel from "../models/userModel.js";
+import doctorModel from "../models/doctorModel.js";
+import doctorEntityModel from "../models/doctorEntityModel.js";
 
 let accessTokenSecret = config.JWT_SECRET;
 let accessExpiry = config.JWT_REFRESH_EXPIRATION;
@@ -31,9 +33,7 @@ export const verifyToken = async (req, res, next) => {
   try {
     let authHeader = req.headers.authorization;
     let accessToken = authHeader.split(" ")[1];
-    console.log("accesToken", accessToken);
     let verify = jwt.verify(accessToken, accessTokenSecret);
-    console.log("verify", verify)
     if (verify) {
       let phone = await decrypt(verify.phone, process.env.CRYPTO_SECRET);
       verify.phone = phone;
@@ -41,11 +41,17 @@ export const verifyToken = async (req, res, next) => {
         where: { phone },
         attributes: ["entity_id"],
       });
-      if(entity) {
+      if (entity) {
         let dataValues = entity.get();
         verify.entity_id = dataValues.entity_id;
+      } else {
+        const doctorData = await doctorModel.findOne({
+          where: { doctor_phone: phone },
+          attributes: ["entity_id"],
+        });
+        const entityId = await doctorEntityModel.findOne({doctorId: doctorData.doctor_id});
+        verify.entity_id = entityId ? entityId: null;
       }
-      
       req.user = verify;
       next();
     }
