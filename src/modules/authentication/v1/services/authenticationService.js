@@ -154,7 +154,7 @@ const addProfile = async (userData, user, image, res) => {
 
         // let imageUrl = await awsUtils.uploadToS3(image);
         let imageUrl = await DigitalOceanUtils.uploadObject (image); 
-
+        console.log("entity_name>>>>", entity_name)
         getUser.entity_name = entity_name
         getUser.business_type_id = business_type == 'individual' ? 1 : 0
         getUser.email = email
@@ -426,7 +426,6 @@ const getProfileForCustomer = async ({ phone, encryptedPhone }, res) => {
 const getGeneralSettings = async (req, res) => {
     try {
         const phone = req.user.phone;
-        console.log("phone===>>", phone)
         let entityId, doctorEntity ;
         let getEntity = await authenticationModel.findOne({ where: { phone } }) // entitymodel single enity
         if (!getEntity) {
