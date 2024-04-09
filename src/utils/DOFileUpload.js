@@ -23,7 +23,7 @@ const uploadObject = async (file) => {
 
     const data = await s3Client.send(new PutObjectCommand(params));
     const objectUrl = `${process.env.DO_SPACES_ENDPOINT}/${process.env.DO_SPACES_NAME}/${filename}`;
-    
+
     console.log("Successfully uploaded object:", params.Bucket + "/" + params.Key);
     return objectUrl;
   } catch (err) {
