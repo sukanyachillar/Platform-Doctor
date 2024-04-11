@@ -343,20 +343,24 @@ const getProfileForCustomer = async ({ phone, encryptedPhone }, res) => {
         if(encryptedPhone) {
             decryptedPhone = await decrypt(encryptedPhone, process.env.CRYPTO_SECRET);
             phoneNo = decryptedPhone;
-        }else{
+        } else {
             phoneNo = phone
         }
+        console.log("phoneNo>>>>>", phoneNo);
         let getUser = await authenticationModel.findOne({ where: { phone: phoneNo } }); //entityModel
         if(getUser){
+            console.log("inside getUser")
              userProfile = await profileModel.findOne({  //doctorModel
                 where: { entity_id: getUser.entity_id },
-            })
+            });
+            console.log("userProfile>>>>>>>>.", userProfile)
         } else {
             userProfile = await profileModel.findOne({  //doctorModel
                 where: { doctor_phone: phoneNo },
-            })
+            });
+            console.log("userProfile>>>>2", userProfile)
         }
-        console.log("userProfile", userProfile )
+        console.log("userProfile outside", userProfile )
         let statusCode, message, getDepartment
         if (!userProfile) {
             ;(message =
