@@ -94,7 +94,7 @@ const register = async (userData, res) => {
             })
         }
         const newUser = new authenticationModel(userData)
-        const addedUser = await newUser.save()
+        const addedUser = await newUser.save();
         newToken = await new tokenModel({
             userId: addedUser.entity_id,
             token,

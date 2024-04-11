@@ -507,7 +507,6 @@ const addProfile = async (docData, image, res) => {
         let redirection, addValue, message, statusCode, imageUrl ;
         if (image) {
             imageUrl = await DigitalOceanUtils.uploadObject (image); 
-            console.log("imageUrl>>>>>>>>===>>>>>>", imageUrl)
         }
         if (docData.businessType == 'individual') {
             addValue = await individualProfile(docData, imageUrl);
@@ -643,8 +642,6 @@ const staffProfile = async ({
    
     try {
 
-        console.log("inside staff add");
-        console.log("imageUrl>>>>>>>>>>>>>>>>>", imageUrl)
         // let newEntity
         // const businessData = await businessModel.findOne({ where:{ businessName: 'clinic' },attributes:['businessId']})
         // let entityData = await entityModel.findOne({

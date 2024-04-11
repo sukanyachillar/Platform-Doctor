@@ -11,7 +11,7 @@ const addWorkSchedule = async (data, userData, res) => {
     try {
         let { entity_id } = userData;
         let { day, startTime, endTime, doctor_id, session, entityId } = data
-        let doctorEntityData;
+        let doctorEntityData, errorMessages = [] ;
         let daysArray = [
             'monday',
             'tuesday',
@@ -62,7 +62,7 @@ const addWorkSchedule = async (data, userData, res) => {
             const date = String(currentDate.getDate()).padStart(2, '0')
             const formattedDate = `${year}-${month}-${date}`
              
-            let doctorEntityData = await doctorEntityModel.findOne({
+            doctorEntityData = await doctorEntityModel.findOne({
                 where: { 
                     doctorId: doctor_id,
                     entityId,
@@ -77,25 +77,49 @@ const addWorkSchedule = async (data, userData, res) => {
                        
                 //     },
                 // })
-                console.log("doctor_id", doctor_id)
-                console.log("entityId", entityId)
-             
-                const doctorEntityData = await doctorEntityModel.create({
+                        
+                doctorEntityData = await doctorEntityModel.create({
                     doctorId: doctor_id,
                     entityId: entityId,
                 });
 
              }
-            time_slots.map(async (ele) => {
-                let newTimeSlot = new weeklyTimeSlots({
-                    date: formattedDate,
-                    day,
-                    time_slot: ele,
-                    doctor_id,
-                    doctorEntityId: doctorEntityData? doctorEntityData.doctorEntityId: null,
-                })
-                let data = await newTimeSlot.save()
-            })
+
+             await Promise.all(time_slots.map(async (ele) => {
+
+                let existingTimeSlot = await weeklyTimeSlots.findOne({
+                    where: {
+                        date: formattedDate,
+                        day: day,
+                        time_slot: ele,
+                        doctor_id: doctor_id,
+                        // doctorEntityId: doctorEntityData ? doctorEntityData.doctorEntityId : null
+                    }
+                });
+
+                if (existingTimeSlot) {
+                    errorMessages.push("This time slot already exists for this doctor");
+                } else {
+                    let newTimeSlot = new weeklyTimeSlots({
+                        date: formattedDate,
+                        day,
+                        time_slot: ele,
+                        doctor_id,
+                        doctorEntityId: doctorEntityData? doctorEntityData.doctorEntityId: null,
+    
+                   });
+                   let data = await newTimeSlot.save();
+                }
+             }));
+
+             if (errorMessages.length > 0) {
+                return handleResponse({
+                    res,
+                    message: "This time slot already exists for this doctor",
+                    statusCode: 422,
+                    data: {}
+                });
+            };
             if (!workData) {
                 workData = new workScheduleModel({
                     entity_id: entityId,
@@ -135,7 +159,7 @@ const addWorkSchedule = async (data, userData, res) => {
                 endTime: workSchedule.endTime,
                 doctor_id: workSchedule.doctor_id,
             },
-        })
+        });
     } catch (error) {
         console.log({ error })
         return handleResponse({
