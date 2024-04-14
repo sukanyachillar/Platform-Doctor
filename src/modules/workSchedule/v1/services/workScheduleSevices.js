@@ -355,7 +355,7 @@ const getSingleWorkSchedule = async (req, res) => {
             decryptedPhone = await decrypt(encryptedPhone, process.env.CRYPTO_SECRET);
             phoneNo = decryptedPhone;
             console.log("phoneNo", phoneNo, decryptedPhone)
-        }else{
+        } else {
             phoneNo = phone
         }
         console.log("phoneNo", phoneNo)
@@ -380,15 +380,22 @@ const getSingleWorkSchedule = async (req, res) => {
                 entityId,
             }
         });
+
+        let doctorEntityId 
+        if (doctorEntityData) {
+            doctorEntityId = doctorEntityData.doctorEntityId;
+        } else {
+            doctorEntityId = null
+        }
         let data = await weeklyTimeSlots.findAll({
             where: { date: formattedDate, 
                      doctor_id: doctorData.doctor_id, 
-                     doctorEntityId: doctorEntityData.doctorEntityId 
+                     doctorEntityId: doctorEntityId 
                    },
             // order: [
             //     [Sequelize.fn('TIME_TO_SEC', Sequelize.fn('STR_TO_DATE', Sequelize.literal("CONCAT(date, ' ', time_slot)"), '%Y-%m-%d %h:%i %p')), 'ASC']
             // ],
-        })
+        });
         console.log({formattedDate})
         let availableWorkSlots = await weeklyTimeSlots.findAll({
             where: {
