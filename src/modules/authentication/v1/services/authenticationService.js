@@ -437,11 +437,11 @@ const getGeneralSettings = async (req, res) => {
         let entityId, doctorEntity ;
         let getEntity = await authenticationModel.findOne({ where: { phone } }) // entitymodel single enity
         if (!getEntity) {
-            const isDoctorUnderTheClinic = await doctorModel.findOne({ doctor_phone: phone});
+            const isDoctorUnderTheClinic = await doctorModel.findOne({ where: { doctor_phone: phone } });
             if (isDoctorUnderTheClinic) {
-                const getDoctorEntity = await doctorEntityModel.findOne({ doctorId: isDoctorUnderTheClinic.doctor_id});
+                const getDoctorEntity = await doctorEntityModel.findOne({ where: { doctorId: isDoctorUnderTheClinic.doctor_id } });
                 entityId = getDoctorEntity.entityId;
-                doctorEntity = await authenticationModel.findOne({ entity_id: entityId});
+                doctorEntity = await authenticationModel.findOne({ where: { entity_id: entityId } });
             }
         } else {
             entityId = getEntity.entity_id;

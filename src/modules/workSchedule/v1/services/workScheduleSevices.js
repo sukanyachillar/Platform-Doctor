@@ -42,7 +42,7 @@ const addWorkSchedule = async (data, userData, res) => {
         let doctorData = await doctorModel.findOne({
             where: { status: 1, doctor_id },
             attributes: ['consultation_time'],
-        })
+        });
         let entity = await entityModel.findOne({ where: { entity_id: entityId } }) //entity_id
         if (!doctorData) {
             return handleResponse({
@@ -56,8 +56,9 @@ const addWorkSchedule = async (data, userData, res) => {
                 endTime,
                 doctorData.consultation_time
             )
-            const currentDate = new Date(datefromDay)
-            const year = currentDate.getFullYear()
+
+            const currentDate = new Date(datefromDay);
+            const year = currentDate.getFullYear();
             const month = String(currentDate.getMonth() + 1).padStart(2, '0') // Adding 1 to month as it's zero-based
             const date = String(currentDate.getDate()).padStart(2, '0')
             const formattedDate = `${year}-${month}-${date}`
@@ -82,7 +83,6 @@ const addWorkSchedule = async (data, userData, res) => {
                     doctorId: doctor_id,
                     entityId: entityId,
                 });
-
              }
 
              await Promise.all(time_slots.map(async (ele) => {
@@ -96,6 +96,7 @@ const addWorkSchedule = async (data, userData, res) => {
                         // doctorEntityId: doctorEntityData ? doctorEntityData.doctorEntityId : null
                     }
                 });
+
 
                 if (existingTimeSlot) {
                     errorMessages.push("This time slot already exists for this doctor");
@@ -463,11 +464,11 @@ const generateTimeSlots = async (startTime, endTime, consultationTime) => {
             const formattedTime = current.toLocaleTimeString([], {
                 hour: '2-digit',
                 minute: '2-digit',
-            })
+            });
             timeSlots.push(formattedTime)
             current.setMinutes(current.getMinutes() + consultationTime)
         }
-        return timeSlots
+        return timeSlots;
     } catch (error) {
         console.log({ error })
     }

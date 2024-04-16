@@ -38,7 +38,7 @@ Sequelize.sync().then(() => {
 cron.schedule('5 0 * * *', async () => {
     cronJobs.timeSlotCron();
 });
-
+// cronJobs.timeSlotCron();
 
 app.get('/api', (req, res) => {
     res.status(200).json({

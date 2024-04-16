@@ -1,5 +1,6 @@
 // consolidatedScript.js
 
+import doctorEntityModel from '../models/doctorEntityModel.js';
 import doctorModel from '../models/doctorModel.js';
 import weeklyTimeSlotsModel from '../models/weeklyTimeSlotsModel.js';
 import workScheduleModel from '../models/workScheduleModel.js';
@@ -28,7 +29,7 @@ const generateTimeslots = (startTime, endTime, consultationTime) => {
       timeSlots.push(formattedTime);
       currentSlot.setMinutes(currentSlot.getMinutes() + consultationTime);
     }
-    console.log("timeSlots", timeSlots)
+    // console.log("timeSlots", timeSlots)
     return timeSlots;
   };
 
@@ -57,7 +58,7 @@ async function getPreviousDayName() {
 }
 
 const timeSlotCron = async() => {
-    console.log("inside crone")
+    console.log("Inside crone");
     const previousDateDay = await getPreviousDayName();
 
     let previousDateData = await workScheduleModel.findAll({
@@ -88,16 +89,23 @@ const timeSlotCron = async() => {
 
       let index = await getDayOfWeekIndex(record.day)
       const nextWeekDate = await dateFromDay(index);
-      console.log("nextWeekDate", nextWeekDate )
+      // console.log("nextWeekDate", nextWeekDate )
       const currentDate = new Date(nextWeekDate)
-            const year = currentDate.getFullYear()
-            const month = String(currentDate.getMonth() + 1).padStart(2, '0') // Adding 1 to month as it's zero-based
-            const date = String(currentDate.getDate()).padStart(2, '0')
-            const formattedDate = `${year}-${month}-${date}`
-    //   const nextWeekDate = getNextWeekDate(date);
-      console.log("formattedDate", formattedDate)
+      const year = currentDate.getFullYear()
+      const month = String(currentDate.getMonth() + 1).padStart(2, '0') // Adding 1 to month as it's zero-based
+      const date = String(currentDate.getDate()).padStart(2, '0')
+      const formattedDate = `${year}-${month}-${date}`
 
-    //   console.log("record", record)
+      // console.log("formattedDate", formattedDate)
+
+      let doctorEntityData = await doctorEntityModel.findOne({
+        where: {
+          entityId: record.entity_id,
+          doctorId: record.doctor_id,
+        }
+      });
+
+      // console.log("doctorEntityData", doctorEntityData.doctorEntityId)
 
       for (const ele of timeslots) {
 
@@ -115,7 +123,8 @@ const timeSlotCron = async() => {
                   time_slot: ele,
                   doctor_id: record.doctor_id,
                   booking_status: 0, // Default value for availability
-                });
+                  doctorEntityId: doctorEntityData? doctorEntityData.doctorEntityId: null,
+              });
           }
         
         }
