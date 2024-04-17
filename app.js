@@ -7,6 +7,8 @@ import paymentRouter from './src/modules/payment/v1/routes/paymentRoutes.js';
 import businessRouter from './src/modules/business/v1/routes/businessRoutes.js';
 import adminRouter from './src/modules/admin/v1/routes/adminRoutes.js';
 import customerRouter from './src/modules/customer/routes/customerRoutes.js';
+import clinicRouter from './src/modules/clinic/routes/clinicRoutes.js';
+
 import cors from 'cors';
 import cron from 'node-cron';
 import currentConfig from './config.js'
@@ -54,6 +56,7 @@ app.use('/api/v1/booking', bookingrouter);
 app.use('/api/v1/payment', paymentRouter);
 app.use('/api/v1/admin/business', businessRouter);
 app.use('/api/v1/customer', customerRouter);
+app.use('/api/v1/clinic', clinicRouter);
 
 app.post('*', (req, res) => {
     res.status(404).json({
