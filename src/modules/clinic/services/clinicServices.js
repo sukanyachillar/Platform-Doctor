@@ -233,18 +233,20 @@ const clinicLogin = async (payload, res) => {
 //     }
 // };
 
-const listAllBooking = async ({ date, page = 1, limit = 10 }, res) => { //for all doctors
+const listAllBooking = async (requestData, res) => { //for all doctors
     try {
-        // Calculate offset based on page and limit
-        const offset = (page - 1) * limit;
-
+        const page = parseInt(requestData.page) || 1
+        const pageSize = parseInt(requestData.limit) || 10
+        const date = requestData.date.toString()
+        const offset = (page - 1) * pageSize
         // Fetch weekly time slots for the given date with pagination
         const weeklyTimeSlots = await weeklyTimeSlotsModel.findAll({
             attributes: ['time_slot', 'time_slot_id'],
             where: { date },
             offset,
-            limit,
+            pageSize,
         });
+
 
         const appointments = [];
         let totalAppointments = 0;
@@ -266,6 +268,7 @@ const listAllBooking = async ({ date, page = 1, limit = 10 }, res) => { //for al
                     attributes: ['name', 'phone'],
                     where: { userId: bookingInfo.customerId },
                 });
+
 
                 appointments.push({
                     bookingId: bookingInfo.bookingId,
@@ -294,7 +297,7 @@ const listAllBooking = async ({ date, page = 1, limit = 10 }, res) => { //for al
                 completedAppointments,
                 pendingAppointments,
                 appointmentDate: date,
-                totalPages: Math.ceil(totalAppointments / limit), // Calculate total pages based on total appointments and limit
+                totalPages: Math.ceil(totalAppointments / pageSize), // Calculate total pages based on total appointments and limit
                 currentPage: page,
             },
         });

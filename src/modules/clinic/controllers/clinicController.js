@@ -29,7 +29,7 @@ const clinicLogin = async (req, res) => {
 
 const listAllBooking = async (req, res) => {
     try {
-        let data = await clinicServices.listAllBooking(req.body, res)
+        let data = await clinicServices.listAllBooking(req.query, res)
         return data
     } catch (error) {
         console.log({ error })
