@@ -6,27 +6,27 @@ import { Op, Sequelize } from 'sequelize';
 // import { encrypt } from '../../../../utils/token.js';
 import entityModel from '../../../models/entityModel.js';
 
-// import twilio from ('twilio');
+import twilio from 'twilio';
 
-// const twilioClient = twilio('YOUR_TWILIO_ACCOUNT_SID', 'YOUR_TWILIO_AUTH_TOKEN');
+const twilioClient = twilio('ACb8a516afd78f5bddb21af73111d530bc', 'f1082247936ec3a814ea85a397a6b591');
 
 const getOTP = () => {
     return Math.floor(100000 + Math.random() * 900000).toString();
 }
 
 const sendOTPSMS = async (phone, otp) => {
-    // try {
-    //     await twilioClient.messages.create({
-    //         to: phone,
-    //         from: 'YOUR_TWILIO_PHONE_NUMBER', 
-    //         body: `Your OTP for Clinic Login is: ${otp}`
-    //     });
+    try {
+        await twilioClient.messages.create({
+            to: '+919747505122',
+            from: '+16562204100', // Your Twilio phone number
+            body: `Your OTP for Clinic Login is: ${otp}`
+        });
 
-    //     console.log('OTP sent successfully to phone:', phone);
-    // } catch (error) {
-    //     console.error('Error sending OTP via SMS:', error);
-    //     throw error; 
-    // }
+        console.log('OTP sent successfully to phone:', phone);
+    } catch (error) {
+        console.error('Error sending OTP via SMS:', error);
+        throw error; // Rethrow the error for handling in the calling function
+    }
 }
 
 const generateOTP = async ({ phone }, res) => {
@@ -66,8 +66,9 @@ const clinicLogin = async (payload, res) => {
     try {
         let { phone, otp } = payload;
 
-        // const otpVerification = await verifyOTPTextbelt(phone, otp);
-        // if (!otpVerification.success) {
+        // const otpVerification = await verifyOTPWithTwilio(phone, otp);
+        // console.log('otpVerification', otpVerification)
+        // if (!otpVerification.status === "approved") {
         //     return handleResponse({
         //         res,
         //         message: 'Invalid OTP',
@@ -75,16 +76,14 @@ const clinicLogin = async (payload, res) => {
         //     });
         // }
 
-        if(!otp === "123456") {
+        if (otp !== "111111") {
             return handleResponse({
                 res,
                 message: 'Invalid OTP',
                 statusCode: 400,
             });
         }
-
-        // const otpVerification = await verifyOTPTextbelt(phone, otp);
-
+       
         let getClinic = await entityModel.findOne({
             where: { phone },
         });
@@ -116,6 +115,20 @@ const clinicLogin = async (payload, res) => {
             message: 'Sorry! Unable to login',
             statusCode: 500,
         });
+    }
+}
+
+const verifyOTPWithTwilio = async (phoneNumber, otpProvided) => {
+    try {
+        const verificationCheck = await twilioClient.verify.v2.services('VA1b1414f057699529cb4703712c2e0e38')  //TWILIO_VERIFY_SERVICE_SID
+            .verificationChecks
+            .create({ to: '+919747505122', code: otpProvided });
+
+        // If the verification check status is 'approved', the OTP is valid
+        return verificationCheck.status === 'approved';
+    } catch (error) {
+        console.error('Error verifying OTP with Twilio:', error);
+        throw error;
     }
 }
 
