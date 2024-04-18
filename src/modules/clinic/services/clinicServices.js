@@ -5,83 +5,125 @@ import { handleResponse } from '../../../utils/handlers.js';
 import { Op, Sequelize } from 'sequelize';
 // import { encrypt } from '../../../../utils/token.js';
 import entityModel from '../../../models/entityModel.js';
-import userModel from '../../../models/userModel.js';
 
+// import twilio from ('twilio');
 
-// const adminRegister = async (credentials, res) => {
-//     try {
-//         let { email, phone, password, name } = credentials
-//         let data = await userModel.findOne({ where: { phone } })
-//         if (data) {
-//             return handleResponse({
-//                 res,
-//                 statusCode: 404,
-//                 message: 'Admin registeration not possible',
-//             })
-//         }
-//         let uuid = await generateUuid()
-//         let hashedPassword = await hashPassword(password)
+// const twilioClient = twilio('YOUR_TWILIO_ACCOUNT_SID', 'YOUR_TWILIO_AUTH_TOKEN');
 
-//         let newData = await new userModel({
-//             phone,
-//             name,
-//             uuid,
-//             userType: 0,
-//             email,
-//             password: hashedPassword,
-//         })
-//         await newData.save()
-//         return handleResponse({
-//             res,
-//             message: 'Successfully registered user',
-//             statusCode: 200,
-//         })
-//     } catch (err) {
-//         console.log({ err })
-//     }
-// }
+const getOTP = () => {
+    return Math.floor(100000 + Math.random() * 900000).toString();
+}
 
-const clinicLogin = async (credentials, res) => {
+const sendOTPSMS = async (phone, otp) => {
+    // try {
+    //     await twilioClient.messages.create({
+    //         to: phone,
+    //         from: 'YOUR_TWILIO_PHONE_NUMBER', 
+    //         body: `Your OTP for Clinic Login is: ${otp}`
+    //     });
+
+    //     console.log('OTP sent successfully to phone:', phone);
+    // } catch (error) {
+    //     console.error('Error sending OTP via SMS:', error);
+    //     throw error; 
+    // }
+}
+
+const generateOTP = async ({ phone }, res) => {
+
+    console.log("phone", phone)
     try {
-        let { email, password } = credentials;
-        let userData = await userModel.findOne({
-            where: { email },
-            attributes: ['password', 'userType'],
-        });
-        let passwordCheck = await comparePasswords(password, userData.password)
-        if (!passwordCheck)
+        const clinic = await entityModel.findOne({ where: { phone }, attributes: ['entity_id'], });
+        if (!clinic) {
             return handleResponse({
                 res,
-                message: 'Please check the credentials',
+                message: 'Clinic not found',
                 statusCode: 404,
             });
-        let tokens = await generateAdminTokens(email);
-        const getClinic = await entityModel.findOne({ where : { email }, attributes: ['entity_id'], });
+        }
+
+        const otp = getOTP();
+
+        sendOTPSMS(phone, otp); // Send OTP via SMS to the provided phone number
+
+        return handleResponse({
+            res,
+            statusCode: 200,
+            message: 'OTP has been sent to clinic\'s phone number',
+            data: { phone },
+        });
+    } catch (err) {
+        console.error(err);
+        return handleResponse({
+            res,
+            message: 'Sorry! Unable to process the request',
+            statusCode: 500,
+        });
+    }
+}
+
+const clinicLogin = async (payload, res) => {
+    try {
+        let { phone, otp } = payload;
+
+        // const otpVerification = await verifyOTPTextbelt(phone, otp);
+        // if (!otpVerification.success) {
+        //     return handleResponse({
+        //         res,
+        //         message: 'Invalid OTP',
+        //         statusCode: 400,
+        //     });
+        // }
+
+        if(!otp === "123456") {
+            return handleResponse({
+                res,
+                message: 'Invalid OTP',
+                statusCode: 400,
+            });
+        }
+
+        // const otpVerification = await verifyOTPTextbelt(phone, otp);
+
+        let getClinic = await entityModel.findOne({
+            where: { phone },
+        });
+        
+        if (!getClinic) {
+            return handleResponse({
+                res,
+                message: 'User not found',
+                statusCode: 404,
+            });
+        }
+
+        let tokens = await generateAdminTokens(phone);
+
         return handleResponse({
             res,
             statusCode: 200,
             message: 'Successfully signed in.',
             data: {
-                accessToken: tokens.accessToken,
                 refreshToken: tokens.refreshToken,
-                clinicId: getClinic.entity_id,
-                userType: userData.userType,
+                accessToken: tokens.accessToken,
+                clinicId: getClinic.entity_id
             },
-        })
+        });
     } catch (err) {
-        console.log({ err })
+        console.error({ err });
         return handleResponse({
             res,
             message: 'Sorry! Unable to login',
-            statusCode: 404,
-        })
+            statusCode: 500,
+        });
     }
 }
 
 
 
+
 export default {
-    clinicLogin,
-    // adminRegister,
+    generateOTP,
+    clinicLogin
    
 }

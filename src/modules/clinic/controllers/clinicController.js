@@ -9,6 +9,15 @@ import clinicServices from '../services/clinicServices.js'
 //     }
 // }
 
+const generateOTP = async (req, res) => {
+    try {
+        let data = await clinicServices.generateOTP(req.body, res)
+        return data
+    } catch (error) {
+        console.log({ error })
+    }
+}
+
 const clinicLogin = async (req, res) => {
     try {
         let data = await clinicServices.clinicLogin(req.body, res)
@@ -18,8 +27,7 @@ const clinicLogin = async (req, res) => {
     }
 }
 
-
 export default {
-    // adminRegister,
-    clinicLogin,   
+    generateOTP,  
+    clinicLogin 
 }

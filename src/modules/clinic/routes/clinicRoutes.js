@@ -4,7 +4,8 @@ import clinicController from '../controllers/clinicController.js';
 
 const router = express.Router();
 
-// router.post('/admin-register', adminController.adminRegister)
+router.post('/generate-otp', clinicController.generateOTP);
 router.post('/clinic-login', clinicController.clinicLogin);
+
 
 export default router;
