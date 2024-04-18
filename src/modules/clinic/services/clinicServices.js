@@ -8,7 +8,6 @@ import entityModel from '../../../models/entityModel.js';
 
 import twilio from 'twilio';
 
-const twilioClient = twilio('ACb8a516afd78f5bddb21af73111d530bc', 'f1082247936ec3a814ea85a397a6b591');
 
 const getOTP = () => {
     return Math.floor(100000 + Math.random() * 900000).toString();
@@ -118,19 +117,19 @@ const clinicLogin = async (payload, res) => {
     }
 }
 
-const verifyOTPWithTwilio = async (phoneNumber, otpProvided) => {
-    try {
-        const verificationCheck = await twilioClient.verify.v2.services('VA1b1414f057699529cb4703712c2e0e38')  //TWILIO_VERIFY_SERVICE_SID
-            .verificationChecks
-            .create({ to: '+919747505122', code: otpProvided });
+// const verifyOTPWithTwilio = async (phoneNumber, otpProvided) => {
+//     try {
+//         const verificationCheck = await twilioClient.verify.v2.services('TWILIO_VERIFY_SERVICE_SID')  //
+//             .verificationChecks
+//             .create({ to: '+919747505122', code: otpProvided });
 
-        // If the verification check status is 'approved', the OTP is valid
-        return verificationCheck.status === 'approved';
-    } catch (error) {
-        console.error('Error verifying OTP with Twilio:', error);
-        throw error;
-    }
-}
+//         // If the verification check status is 'approved', the OTP is valid
+//         return verificationCheck.status === 'approved';
+//     } catch (error) {
+//         console.error('Error verifying OTP with Twilio:', error);
+//         throw error;
+//     }
+// }
 
 
 
