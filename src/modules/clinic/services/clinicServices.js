@@ -5,7 +5,10 @@ import { handleResponse } from '../../../utils/handlers.js';
 import { Op, Sequelize } from 'sequelize';
 // import { encrypt } from '../../../../utils/token.js';
 import entityModel from '../../../models/entityModel.js';
-
+import doctorModel from '../../../models/doctorModel.js';
+import weeklyTimeSlotsModel from '../../../models/weeklyTimeSlotsModel.js';
+import bookingModel from '../../../models/bookingModel.js';
+import userModel from '../../../models/userModel.js';
 // import twilio from 'twilio';
 
 const getOTP = () => {
@@ -130,11 +133,110 @@ const clinicLogin = async (payload, res) => {
 //     }
 // }
 
+const listAllBooking = async ({ date }, res) => { //for all doctors
+    try {
+        let totalAppointments = 0;
+        let completedAppointments = 0;
+        let pendingAppointments = 0;
+
+        const doctors = await doctorModel.findAll({
+            attributes: ['doctor_id', 'doctor_name'],
+        });
+
+        const allAppointments = [];
+
+        for (const doctor of doctors) {
+            const doctorId = doctor.doctor_id;
+            const doctorName = doctor.doctor_name;
+
+            const weeklyTimeSlots = await weeklyTimeSlotsModel.findAll({
+                attributes: ['time_slot', 'time_slot_id'],
+                where: {
+                    doctor_id: doctorId,
+                    date,
+                },
+            });
+
+            // Loop through each weekly time slot and fetch booking information
+            const appointmentList = [];
+            for (const weeklyTimeSlot of weeklyTimeSlots) {
+                const bookingInfo = await bookingModel.findOne({
+                    attributes: [
+                        'bookingStatus',
+                        'bookingId',
+                        'customerId',
+                    ],
+                    where: {
+                        workSlotId: weeklyTimeSlot.time_slot_id,
+                        bookingStatus: {
+                            [Op.not]: 3,
+                        },
+                    },
+                });
+
+                if (bookingInfo) {
+                    const customerInfo = await userModel.findOne({
+                        attributes: ['name', 'phone'],
+                        where: {
+                            userId: bookingInfo.customerId,
+                        },
+                    });
+
+                    appointmentList.push({
+                        bookingId: bookingInfo.bookingId,
+                        timeSlot: weeklyTimeSlot.time_slot,
+                        customerName: customerInfo ? customerInfo.name : '',
+                        customerPhone: customerInfo ? customerInfo.phone : '',
+                        bookingStatus: bookingInfo.bookingStatus,
+                    });
+
+                    totalAppointments++;
+                    if (bookingInfo.bookingStatus === 1) {
+                        completedAppointments++;
+                    } else {
+                        pendingAppointments++;
+                    }
+                }
+            }
+
+            // Add appointment listings for the current doctor to the overall appointments list
+            if (appointmentList.length > 0) {
+                allAppointments.push({
+                    doctorId,
+                    doctorName,
+                    appointmentList,
+                });
+            }
+
+
+        }
+
+        return handleResponse({
+            res,
+            statusCode: 200,
+            message: 'Appointment listings fetched successfully',
+            data: {
+                allAppointments,
+                totalAppointments,
+                completedAppointments,
+                pendingAppointments,
+                appointmentDate: date,
+            },
+        });
+    } catch (error) {
+        console.error({ error });
+        return handleResponse({
+            res,
+            message: 'Error fetching appointment listings',
+            statusCode: 500,
+        });
+    }
+};
 
 
 
 export default {
     generateOTP,
-    clinicLogin
-   
+    clinicLogin,
+    listAllBooking,
 }

@@ -27,7 +27,17 @@ const clinicLogin = async (req, res) => {
     }
 }
 
+const listAllBooking = async (req, res) => {
+    try {
+        let data = await clinicServices.listAllBooking(req.body, res)
+        return data
+    } catch (error) {
+        console.log({ error })
+    }
+}
+
 export default {
     generateOTP,  
-    clinicLogin 
+    clinicLogin,
+    listAllBooking,
 }

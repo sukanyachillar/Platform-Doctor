@@ -175,11 +175,11 @@ const bookAppointment = async (req, res) => {
     }
 }
 
-const listBooking = async ({ doctorId, date }, res) => {
+const listBooking = async ({ doctorId, date }, res) => { // for single doctors
     try {
-        let totalAppointments = 0
-        let completedAppointments = 0
-        let pendingAppointments = 0
+        let totalAppointments = 0;
+        let completedAppointments = 0;
+        let pendingAppointments = 0;
 
         const weeklyTimeSlots = await weeklyTimeSlotsModel.findAll({
             attributes: ['time_slot', 'time_slot_id'],
