@@ -133,82 +133,155 @@ const clinicLogin = async (payload, res) => {
 //     }
 // }
 
-const listAllBooking = async ({ date }, res) => { //for all doctors
+// const listAllBooking = async ({ date }, res) => { //for all doctors
+//     try {
+//         let totalAppointments = 0;
+//         let completedAppointments = 0;
+//         let pendingAppointments = 0;
+
+//         const doctors = await doctorModel.findAll({
+//             attributes: ['doctor_id', 'doctor_name'],
+//         });
+
+//         const allAppointments = [];
+
+//         for (const doctor of doctors) {
+//             const doctorId = doctor.doctor_id;
+//             const doctorName = doctor.doctor_name;
+
+//             const weeklyTimeSlots = await weeklyTimeSlotsModel.findAll({
+//                 attributes: ['time_slot', 'time_slot_id'],
+//                 where: {
+//                     doctor_id: doctorId,
+//                     date,
+//                 },
+//             });
+
+//             // Loop through each weekly time slot and fetch booking information
+//             const appointmentList = [];
+//             for (const weeklyTimeSlot of weeklyTimeSlots) {
+//                 const bookingInfo = await bookingModel.findOne({
+//                     attributes: [
+//                         'bookingStatus',
+//                         'bookingId',
+//                         'customerId',
+//                     ],
+//                     where: {
+//                         workSlotId: weeklyTimeSlot.time_slot_id,
+//                         bookingStatus: {
+//                             [Op.not]: 3,
+//                         },
+//                     },
+//                 });
+
+//                 if (bookingInfo) {
+//                     const customerInfo = await userModel.findOne({
+//                         attributes: ['name', 'phone'],
+//                         where: {
+//                             userId: bookingInfo.customerId,
+//                         },
+//                     });
+
+//                     appointmentList.push({
+//                         bookingId: bookingInfo.bookingId,
+//                         timeSlot: weeklyTimeSlot.time_slot,
+//                         customerName: customerInfo ? customerInfo.name : '',
+//                         customerPhone: customerInfo ? customerInfo.phone : '',
+//                         bookingStatus: bookingInfo.bookingStatus,
+//                     });
+
+//                     totalAppointments++;
+//                     if (bookingInfo.bookingStatus === 1) {
+//                         completedAppointments++;
+//                     } else {
+//                         pendingAppointments++;
+//                     }
+//                 }
+//             }
+
+//             // Add appointment listings for the current doctor to the overall appointments list
+//             if (appointmentList.length > 0) {
+//                 allAppointments.push({
+//                     doctorId,
+//                     doctorName,
+//                     appointmentList,
+//                 });
+//             }
+
+
+//         }
+
+//         return handleResponse({
+//             res,
+//             statusCode: 200,
+//             message: 'Appointment listings fetched successfully',
+//             data: {
+//                 allAppointments,
+//                 totalAppointments,
+//                 completedAppointments,
+//                 pendingAppointments,
+//                 appointmentDate: date,
+//             },
+//         });
+//     } catch (error) {
+//         console.error({ error });
+//         return handleResponse({
+//             res,
+//             message: 'Error fetching appointment listings',
+//             statusCode: 500,
+//         });
+//     }
+// };
+
+const listAllBooking = async ({ date, page = 1, limit = 10 }, res) => { //for all doctors
     try {
+        // Calculate offset based on page and limit
+        const offset = (page - 1) * limit;
+
+        // Fetch weekly time slots for the given date with pagination
+        const weeklyTimeSlots = await weeklyTimeSlotsModel.findAll({
+            attributes: ['time_slot', 'time_slot_id'],
+            where: { date },
+            offset,
+            limit,
+        });
+
+        const appointments = [];
         let totalAppointments = 0;
         let completedAppointments = 0;
         let pendingAppointments = 0;
 
-        const doctors = await doctorModel.findAll({
-            attributes: ['doctor_id', 'doctor_name'],
-        });
-
-        const allAppointments = [];
-
-        for (const doctor of doctors) {
-            const doctorId = doctor.doctor_id;
-            const doctorName = doctor.doctor_name;
-
-            const weeklyTimeSlots = await weeklyTimeSlotsModel.findAll({
-                attributes: ['time_slot', 'time_slot_id'],
+        // Loop through fetched time slots
+        for (const weeklyTimeSlot of weeklyTimeSlots) {
+            const bookingInfo = await bookingModel.findOne({
+                attributes: ['bookingStatus', 'bookingId', 'customerId'],
                 where: {
-                    doctor_id: doctorId,
-                    date,
+                    workSlotId: weeklyTimeSlot.time_slot_id,
+                    bookingStatus: { [Op.not]: 3 },
                 },
             });
 
-            // Loop through each weekly time slot and fetch booking information
-            const appointmentList = [];
-            for (const weeklyTimeSlot of weeklyTimeSlots) {
-                const bookingInfo = await bookingModel.findOne({
-                    attributes: [
-                        'bookingStatus',
-                        'bookingId',
-                        'customerId',
-                    ],
-                    where: {
-                        workSlotId: weeklyTimeSlot.time_slot_id,
-                        bookingStatus: {
-                            [Op.not]: 3,
-                        },
-                    },
+            if (bookingInfo) {
+                const customerInfo = await userModel.findOne({
+                    attributes: ['name', 'phone'],
+                    where: { userId: bookingInfo.customerId },
                 });
 
-                if (bookingInfo) {
-                    const customerInfo = await userModel.findOne({
-                        attributes: ['name', 'phone'],
-                        where: {
-                            userId: bookingInfo.customerId,
-                        },
-                    });
+                appointments.push({
+                    bookingId: bookingInfo.bookingId,
+                    timeSlot: weeklyTimeSlot.time_slot,
+                    customerName: customerInfo ? customerInfo.name : '',
+                    customerPhone: customerInfo ? customerInfo.phone : '',
+                    bookingStatus: bookingInfo.bookingStatus,
+                });
 
-                    appointmentList.push({
-                        bookingId: bookingInfo.bookingId,
-                        timeSlot: weeklyTimeSlot.time_slot,
-                        customerName: customerInfo ? customerInfo.name : '',
-                        customerPhone: customerInfo ? customerInfo.phone : '',
-                        bookingStatus: bookingInfo.bookingStatus,
-                    });
-
-                    totalAppointments++;
-                    if (bookingInfo.bookingStatus === 1) {
-                        completedAppointments++;
-                    } else {
-                        pendingAppointments++;
-                    }
+                totalAppointments++;
+                if (bookingInfo.bookingStatus === 1) {
+                    completedAppointments++;
+                } else {
+                    pendingAppointments++;
                 }
             }
-
-            // Add appointment listings for the current doctor to the overall appointments list
-            if (appointmentList.length > 0) {
-                allAppointments.push({
-                    doctorId,
-                    doctorName,
-                    appointmentList,
-                });
-            }
-
-
         }
 
         return handleResponse({
@@ -216,11 +289,13 @@ const listAllBooking = async ({ date }, res) => { //for all doctors
             statusCode: 200,
             message: 'Appointment listings fetched successfully',
             data: {
-                allAppointments,
+                appointments,
                 totalAppointments,
                 completedAppointments,
                 pendingAppointments,
                 appointmentDate: date,
+                totalPages: Math.ceil(totalAppointments / limit), // Calculate total pages based on total appointments and limit
+                currentPage: page,
             },
         });
     } catch (error) {
@@ -232,6 +307,7 @@ const listAllBooking = async ({ date }, res) => { //for all doctors
         });
     }
 };
+
 
 
 
