@@ -99,7 +99,7 @@ const clinicLogin = async (payload, res) => {
         return handleResponse({
             res,
             statusCode: 200,
-            message: 'Successfully signed in.',
+            message: 'Successfully signed In',
             data: {
                 refreshToken: tokens.refreshToken,
                 accessToken: tokens.accessToken,
