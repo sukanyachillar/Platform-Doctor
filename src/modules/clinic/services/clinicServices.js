@@ -6,8 +6,7 @@ import { Op, Sequelize } from 'sequelize';
 // import { encrypt } from '../../../../utils/token.js';
 import entityModel from '../../../models/entityModel.js';
 
-import twilio from 'twilio';
-
+// import twilio from 'twilio';
 
 const getOTP = () => {
     return Math.floor(100000 + Math.random() * 900000).toString();
