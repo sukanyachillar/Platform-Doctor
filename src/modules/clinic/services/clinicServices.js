@@ -42,7 +42,7 @@ const generateOTP = async ({ phone }, res) => {
 
         const otp = getOTP();
 
-        sendOTPSMS(phone, otp); // Send OTP via SMS to the provided phone number
+         // sendOTPSMS(phone, otp); // Send OTP via SMS to the provided phone number
 
         return handleResponse({
             res,
