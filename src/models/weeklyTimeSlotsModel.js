@@ -1,5 +1,6 @@
 import { DataTypes } from 'sequelize'
 import sequelize from '../dbConnect.js'
+import doctorModel from './doctorModel.js';
 // import bookingModel from './bookingModel.js'
 
 const weeklyTimeSlotsModel = sequelize.define('weeklyTimeSlots', {
@@ -34,7 +35,7 @@ const weeklyTimeSlotsModel = sequelize.define('weeklyTimeSlots', {
         type: DataTypes.INTEGER,
         allowNull: true,
     },
-})
+});
 
-
+weeklyTimeSlotsModel.belongsTo(doctorModel, { foreignKey: 'doctor_id' });
 export default weeklyTimeSlotsModel

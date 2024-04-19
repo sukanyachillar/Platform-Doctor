@@ -2,7 +2,7 @@ import { hashPassword, comparePasswords } from '../../../utils/password.js';
 import { generateAdminTokens } from '../../../utils/token.js';
 import { generateUuid } from '../../../utils/generateUuid.js';
 import { handleResponse } from '../../../utils/handlers.js';
-import { Op, Sequelize } from 'sequelize';
+import { Op, fn, Sequelize } from 'sequelize';
 // import { encrypt } from '../../../../utils/token.js';
 import entityModel from '../../../models/entityModel.js';
 import doctorModel from '../../../models/doctorModel.js';
@@ -106,7 +106,8 @@ const clinicLogin = async (payload, res) => {
             data: {
                 refreshToken: tokens.refreshToken,
                 accessToken: tokens.accessToken,
-                clinicId: getClinic.entity_id
+                clinicId: getClinic.entity_id,
+                userType: 3
             },
         });
     } catch (err) {
@@ -235,55 +236,65 @@ const clinicLogin = async (payload, res) => {
 
 const listAllBooking = async (requestData, res) => { //for all doctors
     try {
-        const page = parseInt(requestData.page) || 1
-        const pageSize = parseInt(requestData.limit) || 10
-        const date = requestData.date.toString()
-        const offset = (page - 1) * pageSize
-        // Fetch weekly time slots for the given date with pagination
-        const weeklyTimeSlots = await weeklyTimeSlotsModel.findAll({
-            attributes: ['time_slot', 'time_slot_id'],
-            where: { date },
+        const page = parseInt(requestData.page) || 1;
+        const pageSize = parseInt(requestData.limit) || 10;
+        let date = requestData.date;
+        const offset = (page - 1) * pageSize;
+
+        console.log("date", date)
+        // Fetch bookings for the given date with pagination
+        const { count, rows: bookingInfos } = await bookingModel.findAndCountAll({
+            attributes: ['bookingStatus', 'bookingId', 'customerId', 'workSlotId'],
+            where: {
+                [Op.and]: [
+                    Sequelize.where(Sequelize.fn('DATE', Sequelize.col('appointmentDate')), '=', date),
+                    { bookingStatus: { [Op.not]: 3 } }
+                ]
+            },
             offset,
-            pageSize,
+            limit: pageSize,
         });
 
-
         const appointments = [];
-        let totalAppointments = 0;
         let completedAppointments = 0;
         let pendingAppointments = 0;
 
-        // Loop through fetched time slots
-        for (const weeklyTimeSlot of weeklyTimeSlots) {
-            const bookingInfo = await bookingModel.findOne({
-                attributes: ['bookingStatus', 'bookingId', 'customerId'],
-                where: {
-                    workSlotId: weeklyTimeSlot.time_slot_id,
-                    bookingStatus: { [Op.not]: 3 },
-                },
+        for (const bookingInfo of bookingInfos) {
+            // const { doctorName } = await weeklyTimeSlotsModel.findOne({
+            //     attributes: [],
+            //     include: [{
+            //         model: doctorModel,
+            //         attributes: ['doctor_name'],
+            //     }],
+            //     where: { time_slot_id: bookingInfo.workSlotId },
+            // });
+            const doctorData = await weeklyTimeSlotsModel.findOne({
+                attributes: [],
+                include: [{
+                    model: doctorModel,
+                    attributes: ['doctor_name'],
+                }],
+                where: { time_slot_id: bookingInfo.workSlotId },
             });
 
-            if (bookingInfo) {
-                const customerInfo = await userModel.findOne({
-                    attributes: ['name', 'phone'],
-                    where: { userId: bookingInfo.customerId },
-                });
+            const customerInfo = await userModel.findOne({
+                attributes: ['name', 'phone'],
+                where: { userId: bookingInfo.customerId },
+            });
 
+            appointments.push({
+                bookingId: bookingInfo.bookingId,
+                timeSlot: bookingInfo.time_slot, // Assuming there's a time_slot attribute in bookingInfo
+                customerName: customerInfo ? customerInfo.name : '',
+                customerPhone: customerInfo ? customerInfo.phone : '',
+                bookingStatus: bookingInfo.bookingStatus,
+                doctorName: doctorData?.doctor?.dataValues?.doctor_name ?? '', // Include doctor's name in the appointment
+            });
 
-                appointments.push({
-                    bookingId: bookingInfo.bookingId,
-                    timeSlot: weeklyTimeSlot.time_slot,
-                    customerName: customerInfo ? customerInfo.name : '',
-                    customerPhone: customerInfo ? customerInfo.phone : '',
-                    bookingStatus: bookingInfo.bookingStatus,
-                });
-
-                totalAppointments++;
-                if (bookingInfo.bookingStatus === 1) {
-                    completedAppointments++;
-                } else {
-                    pendingAppointments++;
-                }
+            if (bookingInfo.bookingStatus === 1) {
+                completedAppointments++;
+            } else {
+                pendingAppointments++;
             }
         }
 
@@ -293,11 +304,11 @@ const listAllBooking = async (requestData, res) => { //for all doctors
             message: 'Appointment listings fetched successfully',
             data: {
                 appointments,
-                totalAppointments,
+                totalAppointments: count,
                 completedAppointments,
                 pendingAppointments,
                 appointmentDate: date,
-                totalPages: Math.ceil(totalAppointments / pageSize), // Calculate total pages based on total appointments and limit
+                totalPages: Math.ceil(count / pageSize), // Calculate total pages based on total appointments and limit
                 currentPage: page,
             },
         });
@@ -310,6 +321,7 @@ const listAllBooking = async (requestData, res) => { //for all doctors
         });
     }
 };
+
 
 
 
