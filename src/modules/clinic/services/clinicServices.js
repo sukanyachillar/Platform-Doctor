@@ -316,9 +316,9 @@ const listAllBooking = async (requestData, res) => {
         return handleResponse({
             res,
             statusCode: 200,
-            message: 'Successfully fetched booking report.',
+            message: 'Successfully fetched booking list.',
             data: {
-                bookingReport: appointments,
+                bookingList: appointments,
                 totalCount: totalCount,
                 totalPages: totalPages,
                 currentPage: page,
