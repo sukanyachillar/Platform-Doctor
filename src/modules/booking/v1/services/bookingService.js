@@ -389,12 +389,16 @@ const bookingConfirmationData = async (bookingData, res) => {
     }
 }
 
-const updateBookingStatus = async (bookingData, res) => {
+const updateBookingStatus = async (req, res) => {
     try {
-        let { bookingId } = bookingData
+        let { bookingId } = req.body;
+        let { userType } = req.user;
+       
         let updateData = await bookingModel.update(
             {
                 bookingStatus: 1,
+                statusUpdatedBy: userType? userType : '',
+                updatedAt: new Date(),
             },
             {
                 where: {

@@ -77,6 +77,10 @@ const bookingModel = sequelize.define('booking', {
     allowNull: true,
     unique: false,
   },
+  statusUpdatedBy: {
+    type: DataTypes.STRING, 
+    allowNull: true,
+  },
   createdAt: {
     type: DataTypes.DATE,
     defaultValue: DataTypes.NOW,

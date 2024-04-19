@@ -33,27 +33,27 @@ export const verifyToken = async (req, res, next) => {
   try {
     let authHeader = req.headers.authorization;
     let accessToken = authHeader.split(" ")[1];
+
     let verify = jwt.verify(accessToken, accessTokenSecret);
     if (verify) {
-      let phone = await decrypt(verify.phone, process.env.CRYPTO_SECRET);
-      verify.phone = phone;
-      let entity = await entityModel.findOne({
-        where: { phone },
-        attributes: ["entity_id"],
-      });
-      if (entity) {
-        let dataValues = entity.get();
-        verify.entity_id = dataValues.entity_id;
-      } else {
-        const doctorData = await doctorModel.findOne({
-          where: { doctor_phone: phone },
-          attributes: ["entity_id"],
-        });
-        const entityId = await doctorEntityModel.findOne({doctorId: doctorData.doctor_id});
-        verify.entity_id = entityId ? entityId: null;
-      }
-      req.user = verify;
-      next();
+            let phone = await decrypt(verify.phone, process.env.CRYPTO_SECRET);
+            verify.phone = phone;
+            let entity = await entityModel.findOne({ where: { phone }, attributes: ["entity_id"]});
+ 
+            if (entity) {
+               let dataValues = entity.get();
+               verify.entity_id = dataValues.entity_id;
+               verify.userType = 'clinic';
+
+            } else {
+                   const doctorData = await doctorModel.findOne({ where: { doctor_phone: phone }, attributes: ["entity_id"]});
+                   const doctorEntityData = await doctorEntityModel.findOne({doctorId: doctorData.doctor_id});
+                   verify.entity_id = doctorEntityData ? doctorEntityData.entityId: null;
+                   verify.userType = 'doctor';
+            }
+
+            req.user = verify;
+            next();
     }
   } catch (err) {
     console.log({ err });
