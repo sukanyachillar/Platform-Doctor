@@ -1,4 +1,5 @@
 export const handleResponse = async (responseObj) => {
+    
     const { res, statusCode, message, data } = responseObj
     try {
         return res.status(200).json({ statusCode, message, data })

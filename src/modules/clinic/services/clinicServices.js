@@ -453,8 +453,9 @@ const AllBookingReport = async (requestData, res) => {
         const offset = (page - 1) * pageSize;
         const doctorId = requestData.doctorId;
 
-        // Fetch bookings based on doctorId if provided
-        const whereCondition = doctorId ? { doctor_id: doctorId } : {};
+        let whereCondition = { date };
+
+         whereCondition = doctorId ? { doctor_id: doctorId } : whereCondition;
 
         const weeklyTimeSlots = await weeklyTimeSlotsModel.findAll({
             where: whereCondition,
@@ -482,23 +483,27 @@ const AllBookingReport = async (requestData, res) => {
 
         const modifiedBookingReport = await Promise.all(bookingReport.map(async (booking) => {
             let doctorName = '';
+            let doctorId 
 
             if (doctorId) {
                 const associatedDoctor = await doctorModel.findOne({
                     where: { doctor_id: doctorId },
-                    attributes: ['doctor_name'],
+                    attributes: ['doctor_name', 'doctor_id'],
                 });
 
                 doctorName = associatedDoctor?.doctor_name || '';
+                doctorId = associatedDoctor?.doctor_id || '';
+
             } else {
                 const weeklyTimeSlot = weeklyTimeSlots.find(slot => slot.time_slot_id === booking.workSlotId);
                 if (weeklyTimeSlot) {
                     const associatedDoctor = await doctorModel.findOne({
                         where: { doctor_id: weeklyTimeSlot.doctor_id },
-                        attributes: ['doctor_name'],
+                        attributes: ['doctor_name', 'doctor_id'],
                     });
 
                     doctorName = associatedDoctor?.doctor_name || '';
+                    doctorId = associatedDoctor?.doctor_id || '';
                 }
             }
 
@@ -515,6 +520,7 @@ const AllBookingReport = async (requestData, res) => {
                 bookingStatus: booking.bookingStatus,
                 appointmentDate: booking.appointmentDate,
                 doctorName: doctorName,
+                doctorId,
                 orderId: orderId,
                 customer: {
                     name: user?.name || '',
@@ -527,10 +533,14 @@ const AllBookingReport = async (requestData, res) => {
             res,
             statusCode: 200,
             message: 'Successfully fetched booking report.',
-            data: { bookingReport: modifiedBookingReport },
-            totalCount: totalCount,
-            totalPages: totalPages,
-            currentPage: page,
+            data: { 
+                    bookingReport: modifiedBookingReport,
+                    totalCount: totalCount,
+                    totalPages: totalPages,
+                    currentPage: page,
+                
+                },
+           
         });
     } catch (error) {
         console.log({ error });
