@@ -322,12 +322,231 @@ const listAllBooking = async (requestData, res) => { //for all doctors
     }
 };
 
+// const AllBookingReport = async (req, res) => {
+//     try {
+//         const { date, doctorId } = req.body;
+
+//         const whereCondition = {
+//             appointmentDate: { [Op.eq]: new Date(date) }, 
+//         };
+
+//         // Include doctorModel only if doctorId is provided
+//         const includeDoctor = doctorId ? [
+//             {
+//                 model: weeklyTimeSlotsModel,
+//                 include: [
+//                     {
+//                         model: doctorModel,
+//                         where: { doctor_id: doctorId }, 
+//                         attributes: ['doctor_name'], 
+//                     },
+//                 ],
+//                 attributes: [], // We only need to include the associated doctor
+//             }
+//         ] : [];
+
+//         const bookingReport = await bookingModel.findAll({
+//             where: whereCondition,
+//             include: [
+//                 {
+//                     model: userModel,
+//                     attributes: ['name', 'phone'], 
+//                 },
+//                 ...includeDoctor, 
+//             ],
+//             attributes: ['bookingId', 'amount', 'bookingStatus', 'appointmentDate'], 
+//         });
+
+//         return handleResponse({
+//             res,
+//             statusCode: 200,
+//             message: 'Successfully fetched booking report.',
+//             data: { bookingReport },
+//         });
+//     } catch (error) {
+//         console.log({ error });
+//         return handleResponse({
+//             res,
+//             statusCode: 500,
+//             message: 'Something went wrong',
+//             data: {},
+//         });
+//     }
+// };
+
+// const AllBookingReport = async (req, res) => {
+//     try {
+//         const { date, doctorId } = req.body;
+
+//         const whereCondition = {
+//             appointmentDate: { [Op.eq]: new Date(date) }, 
+//         };
+
+//         // Include doctorModel only if doctorId is provided
+//         const includeDoctor = doctorId ? [
+//             {
+//                 model: weeklyTimeSlotsModel,
+//                 include: [
+//                     {
+//                         model: doctorModel,
+//                         where: { doctor_id: doctorId }, 
+//                         attributes: ['doctor_name'], 
+//                     },
+//                 ],
+//                 attributes: [], // We only need to include the associated doctor
+//             }
+//         ] : [];
+
+//         const bookingReport = await bookingModel.findAll({
+//             where: whereCondition,
+//             include: [
+//                 {
+//                     model: userModel,
+//                     attributes: ['name', 'phone'], 
+//                 },
+//                 ...includeDoctor, 
+//             ],
+//             attributes: ['bookingId', 'amount', 'bookingStatus', 'appointmentDate', 'orderId', 'workSlotId'], 
+//         });
 
 
+//         const modifiedBookingReport = bookingReport.map((booking) => {
+//             const doctorName = booking.weeklyTimeSlots?.doctor?.doctor_name || 'Unknown Doctor';
+//             const orderId = booking.orderId || 'Unknown';
+
+//             return {
+//                 bookingId: booking.bookingId,
+//                 amount: booking.amount,
+//                 bookingStatus: booking.bookingStatus,
+//                 appointmentDate: booking.appointmentDate,
+//                 doctorName: doctorName,
+//                 orderId: orderId,
+//                 customer: {
+//                     name: booking.user.name,
+//                     phone: booking.user.phone,
+//                 },
+//             };
+//         });
+
+//         return handleResponse({
+//             res,
+//             statusCode: 200,
+//             message: 'Successfully fetched booking report.',
+//             data: { bookingReport: modifiedBookingReport },
+//         });
+//     } catch (error) {
+//         console.log({ error });
+//         return handleResponse({
+//             res,
+//             statusCode: 500,
+//             message: 'Something went wrong',
+//             data: {},
+//         });
+//     }
+// };
+
+const AllBookingReport = async (requestData, res) => {
+    try {
+        const page = parseInt(requestData.page) || 1;
+        const pageSize = parseInt(requestData.limit) || 10;
+        const date = requestData.date;
+        const offset = (page - 1) * pageSize;
+        const doctorId = requestData.doctorId;
+
+        // Fetch bookings based on doctorId if provided
+        const whereCondition = doctorId ? { doctor_id: doctorId } : {};
+
+        const weeklyTimeSlots = await weeklyTimeSlotsModel.findAll({
+            where: whereCondition,
+            attributes: ['time_slot_id', 'doctor_id'],
+        });
+
+        const workSlotIds = weeklyTimeSlots.map(slot => slot.time_slot_id);
+
+        const totalCount = await bookingModel.count({
+            where: {
+                workSlotId: { [Op.in]: workSlotIds },
+            },
+        });
+        const totalPages = Math.ceil(totalCount / pageSize);
+
+        const bookingReport = await bookingModel.findAll({
+            where: {
+                workSlotId: { [Op.in]: workSlotIds },
+            },
+            attributes: ['bookingId', 'amount', 'bookingStatus', 
+                        'appointmentDate', 'orderId', 'workSlotId', 'customerId'], 
+            limit: pageSize,
+            offset: offset,
+        });
+
+        const modifiedBookingReport = await Promise.all(bookingReport.map(async (booking) => {
+            let doctorName = '';
+
+            if (doctorId) {
+                const associatedDoctor = await doctorModel.findOne({
+                    where: { doctor_id: doctorId },
+                    attributes: ['doctor_name'],
+                });
+
+                doctorName = associatedDoctor?.doctor_name || '';
+            } else {
+                const weeklyTimeSlot = weeklyTimeSlots.find(slot => slot.time_slot_id === booking.workSlotId);
+                if (weeklyTimeSlot) {
+                    const associatedDoctor = await doctorModel.findOne({
+                        where: { doctor_id: weeklyTimeSlot.doctor_id },
+                        attributes: ['doctor_name'],
+                    });
+
+                    doctorName = associatedDoctor?.doctor_name || '';
+                }
+            }
+
+            const orderId = booking.orderId || '';
+            
+            const user = await userModel.findOne({
+                where: { userId: booking.customerId },
+                attributes: ['name', 'phone'],
+            });
+
+            return {
+                bookingId: booking.bookingId,
+                amount: booking.amount,
+                bookingStatus: booking.bookingStatus,
+                appointmentDate: booking.appointmentDate,
+                doctorName: doctorName,
+                orderId: orderId,
+                customer: {
+                    name: user?.name || '',
+                    phone: user?.phone || '',
+                },
+            };
+        }));
+
+        return handleResponse({
+            res,
+            statusCode: 200,
+            message: 'Successfully fetched booking report.',
+            data: { bookingReport: modifiedBookingReport },
+            totalCount: totalCount,
+            totalPages: totalPages,
+            currentPage: page,
+        });
+    } catch (error) {
+        console.log({ error });
+        return handleResponse({
+            res,
+            statusCode: 500,
+            message: 'Something went wrong',
+            data: {},
+        });
+    }
+};
 
 
 export default {
     generateOTP,
     clinicLogin,
     listAllBooking,
+    AllBookingReport
 }
