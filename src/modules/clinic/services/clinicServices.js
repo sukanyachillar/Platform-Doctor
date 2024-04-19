@@ -234,64 +234,79 @@ const clinicLogin = async (payload, res) => {
 //     }
 // };
 
-const listAllBooking = async (requestData, res) => { //for all doctors
+const listAllBooking = async (requestData, res) => {
     try {
         const page = parseInt(requestData.page) || 1;
         const pageSize = parseInt(requestData.limit) || 10;
-        let date = requestData.date;
+        const date = requestData.date;
         const offset = (page - 1) * pageSize;
+        const entityId = requestData.entityId;
+        const doctorId = requestData.doctorId; 
 
-        console.log("date", date)
-        // Fetch bookings for the given date with pagination
-        const { count, rows: bookingInfos } = await bookingModel.findAndCountAll({
-            attributes: ['bookingStatus', 'bookingId', 'customerId', 'workSlotId'],
+        let whereCondition = { date };
+
+        whereCondition = doctorId ? { doctor_id: doctorId } : whereCondition;
+
+        const weeklyTimeSlots = await weeklyTimeSlotsModel.findAll({
+            where: whereCondition,
+            attributes: ['time_slot_id', 'doctor_id', 'time_slot'],
+        });
+
+        const workSlotIds = weeklyTimeSlots.map(slot => slot.time_slot_id);
+
+        const totalCount = await bookingModel.count({
             where: {
-                [Op.and]: [
-                    Sequelize.where(Sequelize.fn('DATE', Sequelize.col('appointmentDate')), '=', date),
-                    { bookingStatus: { [Op.not]: 3 } }
-                ]
+                workSlotId: { [Op.in]: workSlotIds },
             },
-            offset,
+        });
+        const totalPages = Math.ceil(totalCount / pageSize);
+
+        const bookingReport = await bookingModel.findAll({
+            where: {
+                workSlotId: { [Op.in]: workSlotIds },
+                entityId
+            },
+            attributes: ['bookingId', 'amount', 'bookingStatus',
+                'appointmentDate', 'orderId', 'workSlotId', 'customerId'],
             limit: pageSize,
+            offset: offset,
         });
 
         const appointments = [];
-        let completedAppointments = 0;
         let pendingAppointments = 0;
+        let completedAppointments = 0;
+        let timeSlot1
 
-        for (const bookingInfo of bookingInfos) {
-            // const { doctorName } = await weeklyTimeSlotsModel.findOne({
-            //     attributes: [],
-            //     include: [{
-            //         model: doctorModel,
-            //         attributes: ['doctor_name'],
-            //     }],
-            //     where: { time_slot_id: bookingInfo.workSlotId },
-            // });
-            const doctorData = await weeklyTimeSlotsModel.findOne({
-                attributes: [],
-                include: [{
-                    model: doctorModel,
-                    attributes: ['doctor_name'],
-                }],
-                where: { time_slot_id: bookingInfo.workSlotId },
-            });
-
-            const customerInfo = await userModel.findOne({
+        for (const booking of bookingReport) {
+            const user = await userModel.findOne({
+                where: { userId: booking.customerId },
                 attributes: ['name', 'phone'],
-                where: { userId: bookingInfo.customerId },
             });
 
-            appointments.push({
-                bookingId: bookingInfo.bookingId,
-                timeSlot: bookingInfo.time_slot, // Assuming there's a time_slot attribute in bookingInfo
-                customerName: customerInfo ? customerInfo.name : '',
-                customerPhone: customerInfo ? customerInfo.phone : '',
-                bookingStatus: bookingInfo.bookingStatus,
-                doctorName: doctorData?.doctor?.dataValues?.doctor_name ?? '', // Include doctor's name in the appointment
+            const timeSlot = weeklyTimeSlots.find(slot => slot.time_slot_id === booking.workSlotId);
+            timeSlot1 = timeSlot.time_slot;
+            const associatedDoctor = await doctorModel.findOne({
+                where: { doctor_id: timeSlot.doctor_id },
+                attributes: ['doctor_name', 'doctor_id'],
             });
 
-            if (bookingInfo.bookingStatus === 1) {
+            const doctorName = associatedDoctor?.doctor_name || '';
+            const orderId = booking.orderId || '';
+            const appointment = {
+                bookingId: booking.bookingId,
+                timeSlot: timeSlot1,
+                bookingStatus: booking.bookingStatus,
+                doctorName: doctorName,
+                doctorId: associatedDoctor?.doctor_id || '',
+                customer: {
+                    name: user?.name || '',
+                    phone: user?.phone || '',
+                },
+            };
+
+            appointments.push(appointment);
+
+            if (booking.bookingStatus === 1) {
                 completedAppointments++;
             } else {
                 pendingAppointments++;
@@ -301,26 +316,29 @@ const listAllBooking = async (requestData, res) => { //for all doctors
         return handleResponse({
             res,
             statusCode: 200,
-            message: 'Appointment listings fetched successfully',
+            message: 'Successfully fetched booking report.',
             data: {
-                appointments,
-                totalAppointments: count,
-                completedAppointments,
-                pendingAppointments,
-                appointmentDate: date,
-                totalPages: Math.ceil(count / pageSize), // Calculate total pages based on total appointments and limit
+                bookingReport: appointments,
+                totalCount: totalCount,
+                totalPages: totalPages,
                 currentPage: page,
+                completedAppointments: completedAppointments,
+                pendingAppointments: pendingAppointments
             },
         });
     } catch (error) {
-        console.error({ error });
+        console.log({ error });
         return handleResponse({
             res,
-            message: 'Error fetching appointment listings',
             statusCode: 500,
+            message: 'Something went wrong',
+            data: {},
         });
     }
 };
+
+
+
 
 // const AllBookingReport = async (req, res) => {
 //     try {
