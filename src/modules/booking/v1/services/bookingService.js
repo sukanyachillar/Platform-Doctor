@@ -189,7 +189,7 @@ const listBooking = async ({ doctorId, date }, res) => { // for single doctors
             },
         })
 
-        console.log("weeklyTimeSlot==========", weeklyTimeSlots)
+        // console.log("weeklyTimeSlot==========", weeklyTimeSlots)
 
         if (!weeklyTimeSlots) {
             return handleResponse({
@@ -238,13 +238,12 @@ const listBooking = async ({ doctorId, date }, res) => { // for single doctors
                 }
             }
         }
-        console.log("appointmentList", appointmentList)
+        // console.log("appointmentList", appointmentList)
 
         const doctorProfile = await doctorProfileModel.findOne({
             attributes: ['doctor_name'],
             where: { doctor_id: doctorId },
         });
-        console.log("doctorProfile", doctorProfile)
         return handleResponse({
             res,
             statusCode: 200,
