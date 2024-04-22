@@ -479,6 +479,7 @@ const AllBookingReport = async (requestData, res) => {
         const date = requestData.date;
         const offset = (page - 1) * pageSize;
         const doctorId = requestData.doctorId;
+        const entityId = requestData.entityId;
 
         let whereCondition = { date };
 
@@ -494,6 +495,7 @@ const AllBookingReport = async (requestData, res) => {
         const totalCount = await bookingModel.count({
             where: {
                 workSlotId: { [Op.in]: workSlotIds },
+                entityId
             },
         });
         const totalPages = Math.ceil(totalCount / pageSize);
@@ -501,6 +503,7 @@ const AllBookingReport = async (requestData, res) => {
         const bookingReport = await bookingModel.findAll({
             where: {
                 workSlotId: { [Op.in]: workSlotIds },
+                entityId
             },
             attributes: ['bookingId', 'amount', 'bookingStatus', 
                         'appointmentDate', 'orderId', 'workSlotId', 'customerId'], 
