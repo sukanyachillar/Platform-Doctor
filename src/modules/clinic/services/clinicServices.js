@@ -254,11 +254,20 @@ const listAllBooking = async (requestData, res) => {
 
         const workSlotIds = weeklyTimeSlots.map(slot => slot.time_slot_id);
 
+        // const totalCount = await bookingModel.count({
+        //     where: {
+        //         workSlotId: { [Op.in]: workSlotIds },
+        //     },
+        // });
         const totalCount = await bookingModel.count({
             where: {
                 workSlotId: { [Op.in]: workSlotIds },
-            },
+                entityId
+            }
         });
+        
+        // Now 'count' contains the total count of rows matching your query criteria.
+        
         const totalPages = Math.ceil(totalCount / pageSize);
 
         const bookingReport = await bookingModel.findAll({
