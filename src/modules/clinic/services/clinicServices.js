@@ -107,6 +107,7 @@ const clinicLogin = async (payload, res) => {
                 accessToken: tokens.accessToken,
                 refreshToken: tokens.refreshToken,
                 clinicId: getClinic.entity_id,
+                clinicName: getClinic.entity_name,
                 userType: 3
             },
         });
