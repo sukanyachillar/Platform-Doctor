@@ -275,7 +275,8 @@ const listBooking = async ({ doctorId, date }, res) => { // for single doctors
 
 const getBookingReport = async (req, res) => {
     try {
-        const { doctorId, date } = req.body
+        const { doctorId, date } = req.body;
+        console.log("doctorId", doctorId)
         const queryPart = {
             departmentId: doctorId,
             appointmentDate: { [Op.eq]: new Date(date) }, // Filter appointments on or after the specified date
@@ -283,8 +284,11 @@ const getBookingReport = async (req, res) => {
      
         const bookingList = await bookingModel.findAll({
             where: queryPart,
-            attributes: ['orderId', 'amount', 'bookingStatus', 'customerId'], // Include customerId for later use
+            attributes: ['orderId', 'amount', 'bookingStatus',
+                        'customerId', 'patientName', 'bookedPhoneNo'], // Include customerId for later use
         });
+
+        console.log("bookingList", bookingList)
         
         const customerIds = bookingList.map((booking) => booking.customerId);
         const userRecords = await userModel.findAll({
@@ -295,17 +299,30 @@ const getBookingReport = async (req, res) => {
             },
             attributes: ['userId', 'name'],
         });
-        // Create a map of userId to customerName
         const customerNameMap = {};
         userRecords.forEach((user) => {
             customerNameMap[user.userId] = user.name;
         });
-        // Update bookingReport with customerName
-        const bookingReport = bookingList.map((booking) => ({
-            ...booking.toJSON(),
-            customerName: customerNameMap[booking.customerId],
-        }));
+        // const bookingReport = bookingList.map((booking) => ({
+           
+        //     ...booking.toJSON(),
+        //     // customerName: customerNameMap[booking.customerId],
+        //     customerName: booking.patientName? booking.patientName: customerNameMap[booking.customerId] ,
+        // }));
         
+        const bookingReport = bookingList.map((booking) => {
+            const modifiedBooking = {
+                // ...booking.toJSON(),
+                orderId: booking.orderId,
+                amount: booking.amount,
+                bookingStatus: booking.bookingStatus,
+                customerId: booking.customerId,
+                customerName: booking.patientName ? booking.patientName : customerNameMap[booking.customerId]
+            };
+            console.log("booking", booking)
+            return modifiedBooking;
+        });
+
         // const getBookings = await bookingModel.findAll({
         //   where: queryPart,
         //   include: [
@@ -323,6 +340,8 @@ const getBookingReport = async (req, res) => {
         //     amount: booking.amount,
         //     bookingStatus: booking.bookingStatus,
         //   }))
+
+    
 
         return handleResponse({
             res,
