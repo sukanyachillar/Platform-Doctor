@@ -32,7 +32,6 @@ const sendOTPSMS = async (phone, otp) => {
 
 const generateOTP = async ({ phone }, res) => {
 
-    console.log("phone", phone)
     try {
         const clinic = await entityModel.findOne({ where: { phone }, attributes: ['entity_id'], });
         if (!clinic) {
@@ -62,6 +61,7 @@ const generateOTP = async ({ phone }, res) => {
         });
     }
 }
+
 
 const clinicLogin = async (payload, res) => {
     try {
@@ -283,7 +283,8 @@ const listAllBooking = async (requestData, res) => {
                 },
             },
             attributes: ['bookingId', 'amount', 'bookingStatus',
-                'appointmentDate', 'orderId', 'workSlotId', 'customerId', 'patientName', 'bookedPhoneNo'],
+                         'appointmentDate', 'orderId', 'workSlotId', 
+                         'customerId', 'patientName', 'bookedPhoneNo'],
             limit: pageSize,
             offset: offset,
         });

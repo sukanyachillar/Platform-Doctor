@@ -18,6 +18,15 @@ const generateOTP = async (req, res) => {
     }
 }
 
+const resendOTP = async (req, res) => {
+    try {
+        let data = await clinicServices.generateOTP(req.body, res)
+        return data
+    } catch (error) {
+        console.log({ error })
+    }
+}
+
 const clinicLogin = async (req, res) => {
     try {
         let data = await clinicServices.clinicLogin(req.body, res)
@@ -46,6 +55,7 @@ const AllBookingReport = async (req, res) => {
 
 export default {
     generateOTP,  
+    resendOTP,
     clinicLogin,
     listAllBooking,
     AllBookingReport
