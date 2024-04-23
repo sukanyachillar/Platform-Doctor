@@ -1,5 +1,5 @@
 import { hashPassword, comparePasswords } from '../../../utils/password.js';
-import { generateAdminTokens } from '../../../utils/token.js';
+import { generateTokens } from '../../../utils/token.js';
 import { generateUuid } from '../../../utils/generateUuid.js';
 import { handleResponse } from '../../../utils/handlers.js';
 import { Op, fn, Sequelize } from 'sequelize';
@@ -97,15 +97,15 @@ const clinicLogin = async (payload, res) => {
             });
         }
 
-        let tokens = await generateAdminTokens(phone);
+        let tokens = await generateTokens(phone);
 
         return handleResponse({
             res,
             statusCode: 200,
             message: 'Successfully signed In',
             data: {
-                refreshToken: tokens.refreshToken,
                 accessToken: tokens.accessToken,
+                refreshToken: tokens.refreshToken,
                 clinicId: getClinic.entity_id,
                 userType: 3
             },
