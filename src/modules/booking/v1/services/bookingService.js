@@ -276,20 +276,28 @@ const listBooking = async ({ doctorId, date }, res) => { // for single doctors
 const getBookingReport = async (req, res) => {
     try {
         const { doctorId, date } = req.body;
-        console.log("doctorId", doctorId)
-        const queryPart = {
-            departmentId: doctorId,
-            appointmentDate: { [Op.eq]: new Date(date) }, // Filter appointments on or after the specified date
+        const whereCondition = {
+            appointmentDate: { [Op.eq]: new Date(date) }, 
         }
-     
-        const bookingList = await bookingModel.findAll({
-            where: queryPart,
-            attributes: ['orderId', 'amount', 'bookingStatus',
-                        'customerId', 'patientName', 'bookedPhoneNo'], // Include customerId for later use
-        });
 
-        console.log("bookingList", bookingList)
+        const weeklyTimeSlotData = await weeklyTimeSlotsModel.findAll({ date: date, doctor_id: doctorId });
+        const workSlotIds = weeklyTimeSlotData.map(slot => slot.time_slot_id);
         
+        // const bookingList = await bookingModel.findAll({
+        //     where: whereCondition,
+        //     attributes: ['orderId', 'amount', 'bookingStatus', 'workSlotId'
+        //                 'customerId', 'patientName', 'bookedPhoneNo'], // Include customerId for later use
+        // });
+
+        const bookingList = await bookingModel.findAll({
+            where: {
+                ...whereCondition, 
+                workSlotId: { [Op.in]: workSlotIds } 
+            },
+            attributes: ['orderId', 'amount', 'bookingStatus', 
+            'workSlotId', 'customerId', 'patientName', 'bookedPhoneNo'],
+        });
+     
         const customerIds = bookingList.map((booking) => booking.customerId);
         const userRecords = await userModel.findAll({
             where: {
@@ -319,7 +327,6 @@ const getBookingReport = async (req, res) => {
                 customerId: booking.customerId,
                 customerName: booking.patientName ? booking.patientName : customerNameMap[booking.customerId]
             };
-            console.log("booking", booking)
             return modifiedBooking;
         });
 

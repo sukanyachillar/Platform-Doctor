@@ -250,7 +250,6 @@ const getProfile = async (req, res) => {
         let getUser = await authenticationModel.findOne({ where: { phone } });
         let entityId, userProfile
 
-        console.log("getUser out", getUser);
 
         if(getUser){
             userProfile = await profileModel.findOne({  //doctorModel
