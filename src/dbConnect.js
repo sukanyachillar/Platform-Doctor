@@ -18,4 +18,4 @@ const sequelize = new Sequelize('platform_doctor', process.env.MYSQL_USER, '', {
 //   logging: false
 // });
 
-export default sequelize
+export default sequelize;

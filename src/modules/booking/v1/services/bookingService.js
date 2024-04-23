@@ -127,7 +127,7 @@ const bookAppointment = async (req, res) => {
         let newCustomer
         newCustomer = await userModel.findOne({
             where: { phone: customerPhone },
-        })
+        });
         if (!newCustomer) {
             newCustomer = await userModel.create({
                 uuid: randomUUID,
@@ -147,9 +147,12 @@ const bookAppointment = async (req, res) => {
             appointmentDate,
             orderId: data?.id,
             workSlotId: existingTimeslot.time_slot_id,
+            patientName: customerName,
+            bookedPhoneNo: customerPhone,
         }
-        const newBooking = new bookingModel(customerData)
-        const addedBooking = await newBooking.save()
+        const newBooking = new bookingModel(customerData);
+        const addedBooking = await newBooking.save();
+        
         await paymentModel.create({
             bookingId: addedBooking.bookingId,
             orderId: data?.id,
@@ -207,6 +210,8 @@ const listBooking = async ({ doctorId, date }, res) => { // for single doctors
                     'bookingStatus',
                     'bookingId',
                     'customerId',
+                    'patientName',
+                    'bookedPhoneNo'
                 ],
                 where: {
                     workSlotId: weeklyTimeSlot.time_slot_id,
@@ -221,13 +226,16 @@ const listBooking = async ({ doctorId, date }, res) => { // for single doctors
                     where: {
                         userId: bookingInfo.customerId,
                     },
-                })
+                });
+
 
                 appointmentList.push({
                     bookingId: bookingInfo.bookingId,
                     timeSlot: weeklyTimeSlot.time_slot,
-                    customerName: customerInfo ? customerInfo.name : '',
-                    customerPhone: customerInfo ? customerInfo.phone : '',
+                    // customerName: customerInfo ? customerInfo.name : '',
+                    // customerPhone: customerInfo ? customerInfo.phone : '',
+                    customerName: bookingInfo.patientName? bookingInfo.patientName: customerInfo.name,
+                    customerPhone: bookingInfo.bookedPhoneNo? bookingInfo.bookedPhoneNo: customerInfo.phone,
                     bookingStatus: bookingInfo.bookingStatus,
                 })
                 totalAppointments++
@@ -244,6 +252,7 @@ const listBooking = async ({ doctorId, date }, res) => { // for single doctors
             attributes: ['doctor_name'],
             where: { doctor_id: doctorId },
         });
+
         return handleResponse({
             res,
             statusCode: 200,
@@ -334,9 +343,9 @@ const getBookingReport = async (req, res) => {
 
 const bookingConfirmationData = async (bookingData, res) => {
     try {
-        let { bookingId } = bookingData
-        let response = await bookingModel.findOne({ where: { bookingId } })
-        let paymentData = await paymentModel.findOne({ where: { bookingId } })
+        let { bookingId } = bookingData;
+        let response = await bookingModel.findOne({ where: { bookingId } });
+        let paymentData = await paymentModel.findOne({ where: { bookingId } });
 
         console.log({ response })
         const weeklyTimeSlot = await weeklyTimeSlotsModel.findOne({
@@ -370,8 +379,10 @@ const bookingConfirmationData = async (bookingData, res) => {
             statusCode,
             data: {
                 doctorName: doctorData?.doctor_name,
-                customerName: userData?.name,
-                customerPhone: userData.phone,
+                // customerName: userData?.name,
+                // customerPhone: userData.phone,
+                customerName: response.patientName? response.patientName : userData?.name,
+                bookedPhoneNo: response.bookedPhoneNo? response.bookedPhoneNo : userData.phone,
                 appointmentTimeSlot: weeklyTimeSlot.time_slot,
                 appointmentDate: weeklyTimeSlot.date,
                 paymentDate: data.updatedAt,

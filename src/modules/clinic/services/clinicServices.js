@@ -262,6 +262,9 @@ const listAllBooking = async (requestData, res) => {
         const totalCount = await bookingModel.count({
             where: {
                 workSlotId: { [Op.in]: workSlotIds },
+                bookingStatus: {
+                    [Op.not]: 3,
+                },
                 entityId
             }
         });
@@ -273,10 +276,13 @@ const listAllBooking = async (requestData, res) => {
         const bookingReport = await bookingModel.findAll({
             where: {
                 workSlotId: { [Op.in]: workSlotIds },
-                entityId
+                entityId,
+                bookingStatus: {
+                    [Op.not]: 3,
+                },
             },
             attributes: ['bookingId', 'amount', 'bookingStatus',
-                'appointmentDate', 'orderId', 'workSlotId', 'customerId'],
+                'appointmentDate', 'orderId', 'workSlotId', 'customerId', 'patientName', 'bookedPhoneNo'],
             limit: pageSize,
             offset: offset,
         });
@@ -307,9 +313,13 @@ const listAllBooking = async (requestData, res) => {
                 bookingStatus: booking.bookingStatus,
                 doctorName: doctorName,
                 doctorId: associatedDoctor?.doctor_id || '',
+                // customer: {
+                //     name: user?.name || '',
+                //     phone: user?.phone || '',
+                // },
                 customer: {
-                    name: user?.name || '',
-                    phone: user?.phone || '',
+                    name: booking.patientName? booking.patientName: user?.name,
+                    phone: booking.bookedPhoneNo? booking.bookedPhoneNo: user?.phone,
                 },
             };
 
@@ -495,7 +505,10 @@ const AllBookingReport = async (requestData, res) => {
         const totalCount = await bookingModel.count({
             where: {
                 workSlotId: { [Op.in]: workSlotIds },
-                entityId
+                entityId,
+                bookingStatus: {
+                    [Op.not]: 3,
+                },
             },
         });
         const totalPages = Math.ceil(totalCount / pageSize);
@@ -503,10 +516,13 @@ const AllBookingReport = async (requestData, res) => {
         const bookingReport = await bookingModel.findAll({
             where: {
                 workSlotId: { [Op.in]: workSlotIds },
-                entityId
+                entityId,
+                bookingStatus: {
+                    [Op.not]: 3,
+                },
             },
             attributes: ['bookingId', 'amount', 'bookingStatus', 
-                        'appointmentDate', 'orderId', 'workSlotId', 'customerId'], 
+                        'appointmentDate', 'orderId', 'workSlotId', 'customerId', 'patientName', 'bookedPhoneNo'], 
             limit: pageSize,
             offset: offset,
         });
@@ -552,9 +568,13 @@ const AllBookingReport = async (requestData, res) => {
                 doctorName: doctorName,
                 doctorId,
                 orderId: orderId,
+                // customer: {
+                //     name: user?.name || '',
+                //     phone: user?.phone || '',
+                // },
                 customer: {
-                    name: user?.name || '',
-                    phone: user?.phone || '',
+                    name: booking.patientName? booking.patientName: user?.name,
+                    phone: booking.bookedPhoneNo? booking.bookedPhoneNo: user?.phone,
                 },
             };
         }));
