@@ -46,7 +46,7 @@ export const verifyToken = async (req, res, next) => {
                verify.userType = 'clinic';
 
             } else {
-                   const doctorData = await doctorModel.findOne({ where: { doctor_phone: phone }, attributes: ["entity_id"]});
+                   const doctorData = await doctorModel.findOne({ where: { doctor_phone: phone }, attributes: ["entity_id", "doctor_id"]});
                    const doctorEntityData = await doctorEntityModel.findOne({ where: { doctorId: doctorData.doctor_id } });
                    verify.entity_id = doctorEntityData ? doctorEntityData.entityId: null;
                    verify.userType = 'doctor';
