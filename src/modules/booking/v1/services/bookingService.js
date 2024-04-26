@@ -139,7 +139,8 @@ const bookAppointment = async (req, res) => {
 
         const customerData = {
             customerId: newCustomer.userId,
-            entityId: doctorProfile.entity_id,
+            // entityId: doctorProfile.entity_id,
+            entityId: entityId,
             departmentId: doctorProfile.department_id,
             bookingType: 1,
             amount,

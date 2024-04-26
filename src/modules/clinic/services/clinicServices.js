@@ -243,6 +243,7 @@ const listAllBooking = async (requestData, res) => {
         const offset = (page - 1) * pageSize;
         const entityId = requestData.entityId;
         const doctorId = requestData.doctorId; 
+        const searchText = requestData.searchText;
 
         let whereCondition = { date };
 
@@ -260,31 +261,53 @@ const listAllBooking = async (requestData, res) => {
         //         workSlotId: { [Op.in]: workSlotIds },
         //     },
         // });
+
+        
+        const whereClause = {
+            workSlotId: { [Op.in]: workSlotIds },
+            entityId,
+            bookingStatus: {
+                [Op.not]: 3,
+            },
+        };
+        if (searchText) {
+            whereClause[Op.or] = [
+                { patientName: { [Op.like]: `%${searchText}%` } }, // Case-insensitive search on patient name
+                { bookedPhoneNo: { [Op.like]: `%${searchText}%` } }, // Case-insensitive search on booked phone number
+            ];
+        }
+
+        // const totalCount = await bookingModel.count({
+        //     where: {
+        //         workSlotId: { [Op.in]: workSlotIds },
+        //         bookingStatus: {
+        //             [Op.not]: 3,
+        //         },
+        //         entityId,
+        //         ...searchObj,
+        //     }
+        // });
+
         const totalCount = await bookingModel.count({
-            where: {
-                workSlotId: { [Op.in]: workSlotIds },
-                bookingStatus: {
-                    [Op.not]: 3,
-                },
-                entityId
-            }
+            where: whereClause,
         });
-        
-        // Now 'count' contains the total count of rows matching your query criteria.
-        
+               
+                
         const totalPages = Math.ceil(totalCount / pageSize);
 
         const bookingReport = await bookingModel.findAll({
-            where: {
-                workSlotId: { [Op.in]: workSlotIds },
-                entityId,
-                bookingStatus: {
-                    [Op.not]: 3,
-                },
-            },
-            attributes: ['bookingId', 'amount', 'bookingStatus',
-                         'appointmentDate', 'orderId', 'workSlotId', 
-                         'customerId', 'patientName', 'bookedPhoneNo'],
+            where: whereClause,
+            attributes: [
+                'bookingId',
+                'amount',
+                'bookingStatus',
+                'appointmentDate',
+                'orderId',
+                'workSlotId',
+                'customerId',
+                'patientName',
+                'bookedPhoneNo',
+            ],
             limit: pageSize,
             offset: offset,
         });
