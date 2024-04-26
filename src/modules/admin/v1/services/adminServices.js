@@ -69,8 +69,9 @@ const adminLogin = async (credentials, res) => {
             statusCode: 200,
             message: 'Successfully signed in.',
             data: {
-                refreshToken: tokens.refreshToken,
                 accessToken: tokens.accessToken,
+                refreshToken: tokens.refreshToken,
+                userType: 0,
             },
         })
     } catch (err) {
