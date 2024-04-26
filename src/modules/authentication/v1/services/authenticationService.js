@@ -592,17 +592,17 @@ const departmentList = async (requestData, userData, res) => {
         const pageSize = parseInt(requestData.limit) || 10
         const searchQuery = requestData.searchQuery || ''
         const offset = (page - 1) * pageSize
-        const entityId = await entityModel.findAll({
-            where: { entity_type },
-            attributes: ['entity_id'],
-        })
-        const entity_id_list = entityId.map((entity) => entity.entity_id)
+        // const entityId = await entityModel.findAll({
+        //     where: { entity_type },
+        //     attributes: ['entity_id'],
+        // })
+        // const entity_id_list = entityId.map((entity) => entity.entity_id)
         const { count, rows: data } = await departmentModel.findAndCountAll({
-            where: { entity_id: entity_id_list },
+            // where: { entity_id: entity_id_list },
             attributes: [
                 'department_name',
                 'department_id',
-                'entity_id',
+                // 'entity_id',
                 'status',
             ],
             where: {

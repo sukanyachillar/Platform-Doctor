@@ -217,6 +217,7 @@ const entityList = async (requestData, res) => {
         const page = parseInt(requestData.page) || 1;
         const pageSize = parseInt(requestData.limit) || 10;
         const businessType = parseInt(requestData.businessType) || 0;
+        const searchQuery = requestData.searchQuery || '';
         const offset = (page - 1) * pageSize
 
         let whereCondition = {
@@ -229,8 +230,26 @@ const entityList = async (requestData, res) => {
         if (businessType !== 0) {
             whereCondition.entity_type = businessType;
         }
+
+        if (searchQuery) {
+            whereCondition[Sequelize.Op.or] = [
+                { entity_name: { [Sequelize.Op.like]: `%${searchQuery}%` } },
+                { description: { [Sequelize.Op.like]: `%${searchQuery}%` } },
+                { phone: { [Sequelize.Op.like]: `%${searchQuery}%` } },
+                { email: { [Sequelize.Op.like]: `%${searchQuery}%` } },
+            ];
+        }
         const { count, rows: data } = await entityModel.findAndCountAll({
-            attributes: ['entity_name', 'entity_id', 'status', 'imageUrl'],
+            attributes: [
+                'entity_id',
+                'entity_name',
+                'description',
+                'status',
+                'imageUrl',
+                'phone',
+                'location',
+                'email',
+            ],
             where: whereCondition,
             limit: pageSize,
             offset: offset,
