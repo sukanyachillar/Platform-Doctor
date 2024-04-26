@@ -110,6 +110,19 @@ const listAllCustomers = async (req, res) => {
     }
   }
 
+  
+  const listDistrict = async (req, res)=> {
+    try {
+        const data = await adminServices.listDistrict(
+            req,
+            res,
+        );
+        return data;
+    } catch (error) {
+        
+    }
+  }
+
 export default {
     adminRegister,
     adminLogin,
@@ -122,4 +135,5 @@ export default {
     addBankDetails,
     customerHistory,
     addEntity,
+    listDistrict,
 }

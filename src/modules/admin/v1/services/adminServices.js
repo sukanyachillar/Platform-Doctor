@@ -15,6 +15,8 @@ import { handleResponse } from '../../../../utils/handlers.js';
 import { Op, Sequelize } from 'sequelize';
 import DigitalOceanUtils from '../../../../utils/DOFileUpload.js';
 import { encrypt } from '../../../../utils/token.js';
+import districtModel from '../../../../models/districtModel.js';
+import stateModel from '../../../../models/stateModel.js';
 
 const adminRegister = async (credentials, res) => {
     try {
@@ -1021,8 +1023,8 @@ const customerHistory = async (req, res) => {
         if (existingEntity) {
           // If the entity already exists, update its details
           existingEntity = await existingEntity.update({
-            entity_type: businessId,
-            business_type_id: entityType,
+            entity_type: 1 || businessId,
+            business_type_id: 1 || entityType,
             entity_name: entityName,
             phone,
             location,
@@ -1052,8 +1054,8 @@ const customerHistory = async (req, res) => {
         }
         // If the entity does not exist, create a new one
         const newEntity = await entityModel.create({
-          entity_type: businessId,
-          business_type_id: entityType,
+          entity_type: 1 || businessId,
+          business_type_id: 1 ||entityType,
           entity_name: entityName,
           phone,
           location,
@@ -1091,6 +1093,35 @@ const customerHistory = async (req, res) => {
       }
 }
 
+const listDistrict = async (req, res) => {
+    try {
+        let { stateId } = req.body;
+
+        if (!stateId) {
+            return handleResponse({
+                res,
+                statusCode: 404,
+                message: 'Please give state ID',
+            })
+        }
+        const districts = await districtModel.findAll({
+            where: { stateId: stateId },
+            // limit: limit,
+            // offset: offset,
+            // order: [['createdAt', 'DESC']] 
+        });   
+          
+        return handleResponse({
+            res,
+            message: 'Successfully fetched districts',
+            data: districts,
+            statusCode: 200,
+        })
+    } catch (err) {
+        console.log({ err })
+    }
+}
+
 export default {
     adminLogin,
     adminRegister,
@@ -1103,4 +1134,5 @@ export default {
     addBankDetails,
     customerHistory,
     addEntity,
+    listDistrict,
 }
