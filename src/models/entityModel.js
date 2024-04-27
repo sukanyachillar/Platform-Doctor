@@ -99,4 +99,5 @@ const entityModel = sequelize.define('entity', {
 })
 
 entityModel.hasOne(entityAddressModel, { foreignKey: 'entityId' });
+
 export default entityModel

@@ -174,7 +174,6 @@ const listDoctorsForCustomers = async (requestData, res) => {
         });
         const extractedDoctorIds = doctorIds.map(doctor => doctor.doctorId);
 
-        console.log("extractedDoctorIds", extractedDoctorIds)
         if (entityId) {
             whereClause.doctor_id = extractedDoctorIds;
         }
@@ -317,7 +316,7 @@ const getOneEntityDetails = async (req, res) => {
 
         const { entity_name, phone, email, entityAddress, imageUrl, description } = entityDetails;
 
-        let streetName, cityName, districtName, stateName, pincodeValue;
+        let streetName, cityName, districtName, stateName, pincodeValue, pincode;
         if (entityAddress) {
             streetName = entityAddress.streetName;
             cityName = entityAddress.cityName;
@@ -325,8 +324,9 @@ const getOneEntityDetails = async (req, res) => {
             districtName = district && district.districtName ? district.districtName : "";
             const state = entityAddress.state;
             stateName = state && state.stateName ? state.stateName : "";
-            const pincode = entityAddress.pincode;
-            pincodeValue = pincode ? pincode.pincodeValue : "";
+            pincode = entityAddress.pincode? entityAddress.pincode: "";
+            // pincodeValue = pincode ? pincode.pincodeValue : "";
+           
         }
         
         const entityResponse = {
@@ -339,7 +339,7 @@ const getOneEntityDetails = async (req, res) => {
             cityName: cityName ? cityName : "",
             district: districtName ? districtName : "",
             state: stateName ? stateName : "",
-            pincode: pincodeValue ? pincodeValue : "",
+            pincode: pincode? pincode: "",
         };
 
         return handleResponse({
@@ -363,6 +363,8 @@ const getOneEntityDetails = async (req, res) => {
 
 }
 
-export default { listDoctorsForCustomers,
+export default {
+                  listDoctorsForCustomers,
                   getOneEntityDetails
-                }
+
+             }

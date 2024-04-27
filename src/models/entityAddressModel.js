@@ -31,9 +31,13 @@ const entityAddressModel = sequelize.define('entityAddress', {
         type: DataTypes.INTEGER,
         allowNull: false,
     },
+    pincode: {
+        type: DataTypes.INTEGER,
+        allowNull: true,
+    },
     pincodeId: {
         type: DataTypes.INTEGER,
-        allowNull: false,
+        allowNull: true,
     },
     createdAt: {
         type: DataTypes.DATE,
@@ -49,6 +53,6 @@ const entityAddressModel = sequelize.define('entityAddress', {
 
 entityAddressModel.belongsTo(stateModel, { foreignKey: 'stateId' });
 entityAddressModel.belongsTo(districtModel, { foreignKey: 'districtId' });
-entityAddressModel.belongsTo(pincodeModel, { foreignKey: 'pincodeId' });
+// entityAddressModel.belongsTo(pincodeModel, { foreignKey: 'pincodeId' });
 
 export default entityAddressModel;

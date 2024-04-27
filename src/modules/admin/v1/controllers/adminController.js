@@ -1,4 +1,5 @@
-import adminServices from '../services/adminServices.js'
+import adminServices from '../services/adminServices.js';
+import customerServices from '../../../customer/services/customerServices.js';
 
 const adminRegister = async (req, res) => {
     try {
@@ -97,9 +98,9 @@ const listAllCustomers = async (req, res) => {
     }
   }
 
-  const addEntity = async (req, res)=> {
+  const addClinic = async (req, res)=> {
     try {
-        const data = await adminServices.addEntity(
+        const data = await adminServices.addClinic(
             req.body,
             req.file,
             res,
@@ -158,7 +159,31 @@ const updateClinicStatus = async (req, res) => {
     } catch (err) {
         console.log({ err })
     }
-}
+};
+
+const listDoctorsByClinic = async (req, res) => {
+    try {
+        let data = await customerServices.listDoctorsForCustomers(
+            req.body,
+            res
+        )
+        return data;
+    } catch (err) {
+        console.log({ err })
+    }
+};
+
+const clinicProfile = async (req, res) => {
+    try {
+        let data = await customerServices.getOneEntityDetails(
+            req.body,
+            res
+        )
+        return data;
+    } catch (err) {
+        console.log({ err })
+    }
+};
 
 export default {
     adminRegister,
@@ -171,9 +196,11 @@ export default {
     listAllCustomers,
     addBankDetails,
     customerHistory,
-    addEntity,
+    addClinic,
     listState,
     listDistrict,
     listClinic,
     updateClinicStatus,
+    listDoctorsByClinic,
+    clinicProfile,
 }

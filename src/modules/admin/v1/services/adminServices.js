@@ -1063,7 +1063,7 @@ const customerHistory = async (req, res) => {
     }
 }
 
-  const addEntity = async (entityData, image, res) => { 
+  const addClinic = async (entityData, image, res) => { 
 
     try {
         const {
@@ -1079,6 +1079,7 @@ const customerHistory = async (req, res) => {
           pincodeId,
           description,
           email,
+          pincode,
         } = entityData;
 
         let imageUrl;
@@ -1086,10 +1087,10 @@ const customerHistory = async (req, res) => {
          if (image) {
             imageUrl = await DigitalOceanUtils.uploadObject (image); 
         }
-         let existingEntity = await entityModel.findOne({ where: { phone } });
+        let existingEntity = await entityModel.findOne({ where: { phone } });
     
         if (existingEntity) {
-          // If the entity already exists, update its details
+          
           existingEntity = await existingEntity.update({
             entity_type: 1 || businessId,
             business_type_id: 1 || entityType,
@@ -1100,15 +1101,16 @@ const customerHistory = async (req, res) => {
             description,
             email,
         });
-    
-          // Update the entity address
+     
+          
           await entityAddressModel.update(
             {
               streetName,
               cityName,
               stateId,
               districtId,
-              pincodeId,
+            //   pincodeId,
+              pincode
             },
             { where: { entityId: existingEntity.entity_id } }
           );
@@ -1116,7 +1118,7 @@ const customerHistory = async (req, res) => {
           return handleResponse({
             res,
             statusCode: 200,
-            message: 'Entity updated successfully',
+            message: 'Clinic updated successfully',
             data: { entityId: existingEntity.entity_id }, 
           });
         }
@@ -1141,13 +1143,13 @@ const customerHistory = async (req, res) => {
           districtId,
           pincodeId,
           entityId: newEntity.entity_id,
-     
+          pincode
         });
     
         return handleResponse({
           res,
           statusCode: 201,
-          message: 'Entity added successfully',
+          message: 'Clinic added successfully',
           data: { entityId: newEntity.entity_id? newEntity.entity_id: existingEntity.entity_id  }, // Sending the entityId in the response data
         });
 
@@ -1333,7 +1335,7 @@ export default {
     listAllCustomers,
     addBankDetails,
     customerHistory,
-    addEntity,
+    addClinic,
     listState,
     listDistrict,
     listClinic,
