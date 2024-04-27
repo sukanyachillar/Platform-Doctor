@@ -147,7 +147,6 @@ import doctorEntityModel from '../../../models/doctorEntityModel.js';
 
 const listDoctorsForCustomers = async (requestData, res) => {
     try {
-
         const page = requestData.page|| 1;
         const pageSize = requestData.limit || 10;
         const searchQuery = requestData.searchQuery || '';
@@ -299,9 +298,11 @@ const getOneEntityDetails = async (req, res) => {
                     model: stateModel,
                 }, {
                     model: districtModel,
-                }, {
-                    model: pincodeModel,
-                }],
+                }, 
+                // {
+                //     model: pincodeModel,
+                // }
+            ],
             }],
         });
         

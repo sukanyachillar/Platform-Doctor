@@ -175,10 +175,7 @@ const listDoctorsByClinic = async (req, res) => {
 
 const clinicProfile = async (req, res) => {
     try {
-        let data = await customerServices.getOneEntityDetails(
-            req.body,
-            res
-        )
+        const data = await customerServices.getOneEntityDetails(req, res );
         return data;
     } catch (err) {
         console.log({ err })
