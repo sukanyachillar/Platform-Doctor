@@ -9,34 +9,36 @@ const upload = multer({
     },
 })
 
-import express from 'express'
+import express from 'express';
 
 const router = express.Router()
 
-router.post('/register', authenticationController.register)
-router.post('/getProfile', verifyToken, authenticationController.getProfile)
-router.post('/profile', authenticationController.getProfileForCustomer)
+router.post('/register', authenticationController.register);
+router.post('/getProfile', verifyToken, authenticationController.getProfile);
+router.post('/profile', authenticationController.getProfileForCustomer);
 router.post(
     '/addprofile',
     verifyToken,
     upload.single('file'),
     authenticationController.addProfile
 )
-router.post('/adddept', verifyToken, authenticationController.addDept)
+router.post('/adddept', verifyToken, authenticationController.addDept);
 
-router.post('/refreshToken', verifyRefreshToken)
+router.post('/refreshToken', verifyRefreshToken);
 router.get(
     '/generalSettings',
     verifyToken,
     authenticationController.getGeneralSettings
-)
-router.post('/bankdata', verifyToken, authenticationController.fetchBankDetails)
+);
+router.post('/bankdata', verifyToken, authenticationController.fetchBankDetails);
 router.post(
     '/update-status',
     verifyToken,
     authenticationController.updateEntityStatus
-)
-router.post('/update-profile', authenticationController.updateProfile)
-router.post('/list-departments', authenticationController.listDepartments)
+);
+router.post('/update-profile', authenticationController.updateProfile);
+router.post('/list-departments', authenticationController.listDepartments);
+router.post('/update-clinic-status', authenticationController.updateClinicStatus);
+
 
 export default router

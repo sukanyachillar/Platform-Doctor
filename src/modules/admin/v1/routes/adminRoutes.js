@@ -18,7 +18,7 @@ router.post('/admin-register', adminController.adminRegister)
 router.post('/admin-login', adminController.adminLogin)
 router.post('/add-dept', verifyAdminToken, adminController.addDepart)
 router.post('/list-doctors', adminController.listDoctors)
-router.post('/list-entity', adminController.listEntity) // meant list buisness
+router.post('/list-entity', adminController.listEntity) // meant list buisness for clinic side
 router.post('/transaction-history', adminController.transactionHistory)
 router.post('/add-profile', upload.single('file'), adminController.addProfile)
 router.post('/customer-listing', adminController.listAllCustomers)
@@ -27,6 +27,8 @@ router.post('/customer-history', adminController.customerHistory)
 router.post('/customer-listing', adminController.listAllCustomers);
 router.post('/add-entity', upload.single('file'), adminController.addEntity);
 router.post('/list-district', adminController.listDistrict);
+router.post('/list-state', adminController.listState);
+router.post('/list-clinic', adminController.listClinic) // for admin
 
 
 export default router

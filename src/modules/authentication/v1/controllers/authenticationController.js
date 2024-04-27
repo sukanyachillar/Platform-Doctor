@@ -106,11 +106,22 @@ const updateProfile = async (req, res) => {
 const listDepartments = async (req, res) => {
     try {
         let data = await authenticationService.departmentList(
-            req.query,
             req.body,
             res
         )
-        return data
+        return data;
+    } catch (err) {
+        console.log({ err })
+    }
+}
+
+const updateClinicStatus = async (req, res) => {
+    try {
+        let data = await authenticationService.updateClinicStatus(
+            req.body,
+            res
+        )
+        return data;
     } catch (err) {
         console.log({ err })
     }
@@ -127,4 +138,5 @@ export default {
     updateEntityStatus,
     updateProfile,
     listDepartments,
+    updateClinicStatus,
 }

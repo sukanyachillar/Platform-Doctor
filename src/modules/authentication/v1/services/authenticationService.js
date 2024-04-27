@@ -585,36 +585,37 @@ const updateProfileDetails = async (doctorProfile, params, res) => {
     }
 }
 
-const departmentList = async (requestData, userData, res) => {
+const departmentList = async (requestData, res) => {
     try {
-        let { entity_type } = userData
-        const page = parseInt(requestData.page) || 1
-        const pageSize = parseInt(requestData.limit) || 10
-        const searchQuery = requestData.searchQuery || ''
-        const offset = (page - 1) * pageSize
-        // const entityId = await entityModel.findAll({
-        //     where: { entity_type },
-        //     attributes: ['entity_id'],
-        // })
-        // const entity_id_list = entityId.map((entity) => entity.entity_id)
+        let { clinicId } = requestData;
+        const page = parseInt(requestData.page) || 1;
+        const pageSize = parseInt(requestData.limit) || 10;
+        const searchQuery = requestData.searchQuery || '';
+        const offset = (page - 1) * pageSize;
+
+        let whereCondition = {
+            [Op.or]: [
+                { department_name: { [Op.like]: `%${searchQuery}%` } },
+            ],
+        };
+
+        if (clinicId) {
+            whereCondition.clinicId = clinicId;
+        }
+
         const { count, rows: data } = await departmentModel.findAndCountAll({
-            // where: { entity_id: entity_id_list },
             attributes: [
                 'department_name',
                 'department_id',
-                // 'entity_id',
                 'status',
             ],
-            where: {
-                [Op.or]: [
-                    { department_name: { [Op.like]: `%${searchQuery}%` } },
-                ],
-            },
+            where: whereCondition, 
             limit: pageSize,
             offset: offset,
-        })
-        const totalPages = Math.ceil(count / pageSize)
-        if (data)
+        });
+
+        const totalPages = Math.ceil(count / pageSize);
+        if (data) {
             return handleResponse({
                 res,
                 message: 'Successfully fetched data',
@@ -625,16 +626,26 @@ const departmentList = async (requestData, userData, res) => {
                     totalPages,
                     totalCount: count,
                 },
-            })
+            });
+        }
     } catch (err) {
-        console.log({ err })
+        console.log({ err });
         return handleResponse({
             res,
             message: 'Failed in loading department list.',
             statusCode: 404,
-        })
+        });
+    }
+};
+
+const updateClinicStatus = async (requestData, res) => {
+    try {
+        
+    } catch (error) {
+        
     }
 }
+
 
 export default {
     register,
@@ -646,4 +657,5 @@ export default {
     updateEntityStatus,
     updateProfileDetails,
     departmentList,
+    updateClinicStatus
 }

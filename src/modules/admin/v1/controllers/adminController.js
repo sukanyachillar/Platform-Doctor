@@ -123,6 +123,30 @@ const listAllCustomers = async (req, res) => {
     }
   }
 
+  const listState = async (req, res)=> {
+    try {
+        const data = await adminServices.listState(
+            req,
+            res,
+        );
+        return data;
+    } catch (error) {
+        
+    }
+  }
+
+  const listClinic = async (req, res)=> {
+    try {
+        const data = await adminServices.listClinic(
+            req.query,
+            res,
+        );
+        return data;
+    } catch (error) {
+        
+    }
+  }
+
 export default {
     adminRegister,
     adminLogin,
@@ -135,5 +159,7 @@ export default {
     addBankDetails,
     customerHistory,
     addEntity,
+    listState,
     listDistrict,
+    listClinic,
 }

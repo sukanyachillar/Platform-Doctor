@@ -214,6 +214,80 @@ const doctorsList = async (requestData, res) => {
     }
 }
 
+// const entityList = async (requestData, res) => {
+//     try {
+//         const page = parseInt(requestData.page) || 1;
+//         const pageSize = parseInt(requestData.limit) || 10;
+//         const businessType = parseInt(requestData.businessType) || 0;
+//         const searchQuery = requestData.searchQuery || '';
+//         const offset = (page - 1) * pageSize
+
+//         let whereCondition = {
+//             status: 1,
+//             entity_name: {
+//                 [Sequelize.Op.ne]: null,
+//             }
+//         };
+        
+//         if (businessType !== 0) {
+//             whereCondition.entity_type = businessType;
+//         }
+
+//         if (searchQuery) {
+//             whereCondition[Sequelize.Op.or] = [
+//                 { entity_name: { [Sequelize.Op.like]: `%${searchQuery}%` } },
+//                 { description: { [Sequelize.Op.like]: `%${searchQuery}%` } },
+//                 { phone: { [Sequelize.Op.like]: `%${searchQuery}%` } },
+//                 { email: { [Sequelize.Op.like]: `%${searchQuery}%` } },
+//             ];
+//         }
+//         const { count, rows: data } = await entityModel.findAndCountAll({
+//             attributes: [
+//                 'entity_id',
+//                 'entity_name',
+//                 'description',
+//                 'status',
+//                 'imageUrl',
+//                 'phone',
+//                 'location',
+//                 'email',
+//             ],
+//             where: whereCondition,
+//             limit: pageSize,
+//             offset: offset,
+//         })
+
+//         const preSignedUrls = await Promise.all(data.map(async (entity) => {
+//             const preSignedUrl = await DigitalOceanUtils.getPresignedUrl(entity.imageUrl); 
+//             return { ...entity.toJSON() };
+//         }));
+
+//         const totalPages = Math.ceil(count / pageSize)
+//         let message
+//         if (data) message = 'Sucessfully fetched data'
+//         else message = 'No data found'
+
+//         const encryptedEntities = await Promise.all(preSignedUrls.map(async (entity) => {
+//             const encryptedEntityId = await encrypt(entity.entity_id.toString(), process.env.CRYPTO_SECRET);
+//             return { ...entity, encryptedEntityId };
+//         }));
+//         return handleResponse({
+//             res,
+//             message,
+//             statusCode: 200,
+//             data: {
+//                 data: encryptedEntities,
+//                 currentPage: page,
+//                 totalCount: count,
+//                 // data,
+//                 totalPages,
+//             },
+//         })
+//     } catch (err) {
+//         console.log({ err })
+//     }
+// }
+
 const entityList = async (requestData, res) => {
     try {
         const page = parseInt(requestData.page) || 1;
@@ -247,7 +321,6 @@ const entityList = async (requestData, res) => {
                 'entity_name',
                 'description',
                 'status',
-                'imageUrl',
                 'phone',
                 'location',
                 'email',
@@ -257,20 +330,16 @@ const entityList = async (requestData, res) => {
             offset: offset,
         })
 
-        const preSignedUrls = await Promise.all(data.map(async (entity) => {
-            const preSignedUrl = await DigitalOceanUtils.getPresignedUrl(entity.imageUrl); 
-            return { ...entity.toJSON() };
-        }));
-
         const totalPages = Math.ceil(count / pageSize)
         let message
-        if (data) message = 'Sucessfully fetched data'
+        if (data) message = 'Successfully fetched data'
         else message = 'No data found'
 
-        const encryptedEntities = await Promise.all(preSignedUrls.map(async (entity) => {
+        const encryptedEntities = await Promise.all(data.map(async (entity) => {
             const encryptedEntityId = await encrypt(entity.entity_id.toString(), process.env.CRYPTO_SECRET);
-            return { ...entity, encryptedEntityId };
+            return { ...entity.toJSON(), encryptedEntityId };
         }));
+
         return handleResponse({
             res,
             message,
@@ -279,7 +348,6 @@ const entityList = async (requestData, res) => {
                 data: encryptedEntities,
                 currentPage: page,
                 totalCount: count,
-                // data,
                 totalPages,
             },
         })
@@ -1093,6 +1161,22 @@ const customerHistory = async (req, res) => {
       }
 }
 
+const listState = async (req, res) => {
+    try {
+      
+        const states = await stateModel.findAll({});  
+          
+        return handleResponse({
+            res,
+            message: 'Successfully fetched states',
+            data: states,
+            statusCode: 200,
+        });
+    } catch (err) {
+        console.log({ err })
+    }
+}
+
 const listDistrict = async (req, res) => {
     try {
         let { stateId } = req.body;
@@ -1106,8 +1190,6 @@ const listDistrict = async (req, res) => {
         }
         const districts = await districtModel.findAll({
             where: { stateId: stateId },
-            // limit: limit,
-            // offset: offset,
             // order: [['createdAt', 'DESC']] 
         });   
           
@@ -1116,11 +1198,99 @@ const listDistrict = async (req, res) => {
             message: 'Successfully fetched districts',
             data: districts,
             statusCode: 200,
-        })
+        });
     } catch (err) {
         console.log({ err })
     }
 }
+
+const listClinic = async (requestData, res) => {
+    try {
+        const page = parseInt(requestData.page) || 1;
+        const pageSize = parseInt(requestData.limit) || 10;
+        const businessType = parseInt(requestData.businessType) || 0;
+        const searchQuery = requestData.searchQuery || '';
+        const offset = (page - 1) * pageSize;
+
+        let whereCondition = {
+            status: 1,
+            entity_name: {
+                [Sequelize.Op.ne]: null,
+            }
+        };
+        
+        if (businessType !== 0) {
+            whereCondition.entity_type = businessType;
+        }
+
+        if (searchQuery) {
+            whereCondition[Sequelize.Op.or] = [
+                { entity_name: { [Sequelize.Op.like]: `%${searchQuery}%` } },
+                { description: { [Sequelize.Op.like]: `%${searchQuery}%` } },
+                { phone: { [Sequelize.Op.like]: `%${searchQuery}%` } },
+                { email: { [Sequelize.Op.like]: `%${searchQuery}%` } },
+                // { '$entityAddressModel.streetName$': { [Sequelize.Op.like]: `%${searchQuery}%` } },
+            ];
+        }
+        const { count, rows: data } = await entityModel.findAndCountAll({
+            attributes: [
+                'entity_id',
+                'entity_name',
+                'description',
+                'status',
+                'phone',
+                'location',
+                'email',
+            ],
+            
+            where: whereCondition,
+            limit: pageSize,
+            offset: offset,
+            include: [{
+                model: entityAddressModel, 
+                attributes: ['streetName'], 
+            }],
+        });
+
+        const totalPages = Math.ceil(count / pageSize);
+        let message;
+        if (data) message = 'Successfully fetched data';
+        else message = 'No data found';
+
+        const encryptedEntities = await Promise.all(data.map(async (entity) => {
+            const streetName = entity.entityAddress?.streetName;
+            const encryptedEntityId = await encrypt(entity.entity_id.toString(), process.env.CRYPTO_SECRET);
+            const responseData = {
+                entity_id: entity.entity_id,
+                entity_name: entity.entity_name,
+                description: entity.description,
+                status: entity.status,
+                phone: entity.phone,
+                location: entity.location,
+                email: entity.email,
+                streetName, 
+                encryptedEntityId, 
+            };
+        
+            return responseData;
+        }));
+
+        return handleResponse({
+            res,
+            message,
+            statusCode: 200,
+            data: {
+                data: encryptedEntities,
+                currentPage: page,
+                totalCount: count,
+                totalPages,
+            },
+        });
+    } catch (err) {
+        console.log({ err });
+    }
+};
+
 
 export default {
     adminLogin,
@@ -1134,5 +1304,7 @@ export default {
     addBankDetails,
     customerHistory,
     addEntity,
+    listState,
     listDistrict,
+    listClinic
 }
