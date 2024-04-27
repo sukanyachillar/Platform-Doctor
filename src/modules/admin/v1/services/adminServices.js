@@ -322,6 +322,7 @@ const entityList = async (requestData, res) => {
                 'description',
                 'status',
                 'phone',
+                'imageUrl',
                 'location',
                 'email',
             ],

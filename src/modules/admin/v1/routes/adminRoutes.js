@@ -1,6 +1,6 @@
 import express from 'express'
 import adminController from '../controllers/adminController.js'
-import { verifyAdminToken } from '../../../../utils/token.js';
+import { verifyAdminToken, verifyAdminRefreshToken } from '../../../../utils/token.js';
 
 import multer from 'multer'
 
@@ -32,6 +32,7 @@ router.post('/list-clinic', verifyAdminToken, adminController.listClinic); // fo
 router.post('/update-clinic-status', verifyAdminToken, adminController.updateClinicStatus);
 router.post('/list-doctor-by-clinic', verifyAdminToken, adminController.listDoctorsByClinic);
 router.post('/clinic-profile', verifyAdminToken, adminController.clinicProfile);
+router.post('/admin-verify-refreshToken', verifyAdminRefreshToken);
 
 
 export default router
