@@ -638,14 +638,6 @@ const departmentList = async (requestData, res) => {
     }
 };
 
-const updateClinicStatus = async (requestData, res) => {
-    try {
-        
-    } catch (error) {
-        
-    }
-}
-
 
 export default {
     register,
@@ -657,5 +649,4 @@ export default {
     updateEntityStatus,
     updateProfileDetails,
     departmentList,
-    updateClinicStatus
 }

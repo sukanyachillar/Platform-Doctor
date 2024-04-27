@@ -115,17 +115,6 @@ const listDepartments = async (req, res) => {
     }
 }
 
-const updateClinicStatus = async (req, res) => {
-    try {
-        let data = await authenticationService.updateClinicStatus(
-            req.body,
-            res
-        )
-        return data;
-    } catch (err) {
-        console.log({ err })
-    }
-}
 
 export default {
     register,
@@ -138,5 +127,5 @@ export default {
     updateEntityStatus,
     updateProfile,
     listDepartments,
-    updateClinicStatus,
+    
 }

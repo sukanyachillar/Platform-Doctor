@@ -147,6 +147,19 @@ const listAllCustomers = async (req, res) => {
     }
   }
 
+  
+const updateClinicStatus = async (req, res) => {
+    try {
+        let data = await adminServices.updateClinicStatus(
+            req.body,
+            res
+        )
+        return data;
+    } catch (err) {
+        console.log({ err })
+    }
+}
+
 export default {
     adminRegister,
     adminLogin,
@@ -162,4 +175,5 @@ export default {
     listState,
     listDistrict,
     listClinic,
+    updateClinicStatus,
 }

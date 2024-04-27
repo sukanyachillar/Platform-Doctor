@@ -1291,6 +1291,36 @@ const listClinic = async (requestData, res) => {
     }
 };
 
+const updateClinicStatus = async (requestData, res) => {
+    try {
+        const { clinicId, newStatus } = requestData;
+        const entity = await entityModel.findOne({ where: { entity_id: clinicId } });
+        if (!entity) {
+            return handleResponse({
+                res,
+                message: 'Clinic not found',
+                statusCode: 404,
+            });
+        }
+        
+        entity.status = newStatus;
+        await entity.save();
+        return handleResponse({
+            res,
+            message: 'Succusfully updated the status',
+            statusCode: 200,
+        });
+
+    } catch (err) {
+        console.log({ err });
+        return handleResponse({
+            res,
+            message: 'Error in clinic update status',
+            statusCode: 404,
+        });
+    }
+};
+
 
 export default {
     adminLogin,
@@ -1306,5 +1336,6 @@ export default {
     addEntity,
     listState,
     listDistrict,
-    listClinic
+    listClinic,
+    updateClinicStatus
 }

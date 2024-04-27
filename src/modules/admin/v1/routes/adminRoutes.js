@@ -29,6 +29,7 @@ router.post('/add-entity', upload.single('file'), adminController.addEntity);
 router.post('/list-district', adminController.listDistrict);
 router.post('/list-state', adminController.listState);
 router.post('/list-clinic', adminController.listClinic) // for admin
+router.post('/update-clinic-status', adminController.updateClinicStatus);
 
 
 export default router

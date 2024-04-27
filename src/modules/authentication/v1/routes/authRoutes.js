@@ -38,7 +38,5 @@ router.post(
 );
 router.post('/update-profile', authenticationController.updateProfile);
 router.post('/list-departments', authenticationController.listDepartments);
-router.post('/update-clinic-status', authenticationController.updateClinicStatus);
-
 
 export default router
