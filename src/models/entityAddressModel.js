@@ -35,10 +35,10 @@ const entityAddressModel = sequelize.define('entityAddress', {
         type: DataTypes.INTEGER,
         allowNull: true,
     },
-    pincodeId: {
-        type: DataTypes.INTEGER,
-        allowNull: true,
-    },
+    // pincodeId: {
+    //     type: DataTypes.INTEGER,
+    //     allowNull: true,
+    // },
     createdAt: {
         type: DataTypes.DATE,
         defaultValue: DataTypes.NOW,
