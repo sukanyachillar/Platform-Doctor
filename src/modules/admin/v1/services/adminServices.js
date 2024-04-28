@@ -1110,7 +1110,7 @@ const customerHistory = async (req, res) => {
               cityName,
               stateId,
               districtId,
-            //   pincodeId: null,
+              pincodeId: null,
               pincode
             },
             { where: { entityId: existingEntity.entity_id } }
@@ -1142,7 +1142,7 @@ const customerHistory = async (req, res) => {
           cityName,
           stateId,
           districtId,
-        //   pincodeId,
+          pincodeId: null,
           entityId: newEntity.entity_id,
           pincode
         });
