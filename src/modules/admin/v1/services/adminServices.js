@@ -1227,6 +1227,7 @@ const listClinic = async (requestData, res) => {
         
         const includeOptions = [{
             model: entityAddressModel, 
+            as: 'entityAddress',
             attributes: ['streetName']
         }];
 
@@ -1236,18 +1237,16 @@ const listClinic = async (requestData, res) => {
                 { description: { [Sequelize.Op.like]: `%${searchQuery}%` } },
                 { phone: { [Sequelize.Op.like]: `%${searchQuery}%` } },
                 { email: { [Sequelize.Op.like]: `%${searchQuery}%` } },
+                { '$entityAddress.streetName$': { [Sequelize.Op.like]: `%${searchQuery}%` } }
             ];
 
             // includeOptions[0].where = {
-            //     [Sequelize.Op.or]: [
-            //         { streetName: { [Sequelize.Op.like]: `%${searchQuery}%` } }
-            //     ]
+            //     streetName: { [Sequelize.Op.like]: `%${searchQuery}%` }
             // };
-           
-        }
 
-   
-        const { count, rows: data } = await entityModel.findAndCountAll({
+        }
+        const orderOption = [['created_date_time', 'DESC']];
+           const { count, rows: data } = await entityModel.findAndCountAll({
             attributes: [
                 'entity_id',
                 'entity_name',
@@ -1268,7 +1267,7 @@ const listClinic = async (requestData, res) => {
             // },
             //    ],
             include: includeOptions,
-          
+            order: orderOption,
         });
 
         const totalPages = Math.ceil(count / pageSize);
