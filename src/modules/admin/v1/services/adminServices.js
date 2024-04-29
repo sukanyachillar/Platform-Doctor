@@ -128,10 +128,12 @@ const addDept = async (deptData, res) => {
     }
 };
 
-const updateDept = async (departmentId, deptData, res) => {
+const updateDept = async (deptData, res) => {
     try {
-        let { department_name, status } = deptData;
-        let dept = await departmentModel.findByPk(deptId);
+        let { department_id, department_name, status } = deptData;
+        console.log("deptData", deptData)
+        let dept = await departmentModel.findByPk(department_id);
+        console.log("dept", dept)
         if (!dept) {
             return handleResponse({
                 res,
@@ -165,9 +167,9 @@ const updateDept = async (departmentId, deptData, res) => {
     }
 };
 
-const deleteDept = async (deptId, res) => {
+const deleteDept = async (department_id, res) => {
     try {
-        let dept = await departmentModel.findByPk(deptId);
+        let dept = await departmentModel.findByPk(department_id);
         if (!dept) {
             return handleResponse({
                 res,

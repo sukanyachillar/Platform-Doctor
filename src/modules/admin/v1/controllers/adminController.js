@@ -184,7 +184,7 @@ const clinicProfile = async (req, res) => {
 
 const updateDept = async (req, res) => {
     try {
-        const data = await adminServices.updateDept(req, res);
+        const data = await adminServices.updateDept(req.body, res);
         return data;
     } catch (err) {
         console.log({ err })
@@ -193,7 +193,7 @@ const updateDept = async (req, res) => {
 
 const deleteDept = async (req, res) => {
     try {
-        const data = await adminServices.deleteDept(req, res);
+        const data = await adminServices.deleteDept(req.body, res);
         return data;
     } catch (err) {
         console.log({ err })
