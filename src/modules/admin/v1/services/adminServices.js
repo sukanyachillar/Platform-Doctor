@@ -1215,7 +1215,7 @@ const listClinic = async (requestData, res) => {
         const offset = (page - 1) * pageSize;
 
         let whereCondition = {
-            status: 1,
+            // status: 1,
             entity_name: {
                 [Sequelize.Op.ne]: null,
             }
@@ -1309,6 +1309,7 @@ const listClinic = async (requestData, res) => {
         console.log({ err });
     }
 };
+
 
 const updateClinicStatus = async (requestData, res) => {
     try {
