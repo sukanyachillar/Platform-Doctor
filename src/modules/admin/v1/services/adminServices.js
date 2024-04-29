@@ -1102,7 +1102,6 @@ const customerHistory = async (req, res) => {
             description,
             email,
         });
-     
           
           await entityAddressModel.update(
             {
@@ -1149,7 +1148,7 @@ const customerHistory = async (req, res) => {
     
         return handleResponse({
           res,
-          statusCode: 201,
+          statusCode: 200,
           message: 'Clinic added successfully',
           data: { entityId: newEntity.entity_id? newEntity.entity_id: existingEntity.entity_id  }, // Sending the entityId in the response data
         });
@@ -1225,6 +1224,11 @@ const listClinic = async (requestData, res) => {
         if (businessType !== 0) {
             whereCondition.entity_type = businessType;
         }
+        
+        const includeOptions = [{
+            model: entityAddressModel, 
+            attributes: ['streetName']
+        }];
 
         if (searchQuery) {
             whereCondition[Sequelize.Op.or] = [
@@ -1232,9 +1236,17 @@ const listClinic = async (requestData, res) => {
                 { description: { [Sequelize.Op.like]: `%${searchQuery}%` } },
                 { phone: { [Sequelize.Op.like]: `%${searchQuery}%` } },
                 { email: { [Sequelize.Op.like]: `%${searchQuery}%` } },
-                // { '$entityAddressModel.streetName$': { [Sequelize.Op.like]: `%${searchQuery}%` } },
             ];
+
+            // includeOptions[0].where = {
+            //     [Sequelize.Op.or]: [
+            //         { streetName: { [Sequelize.Op.like]: `%${searchQuery}%` } }
+            //     ]
+            // };
+           
         }
+
+   
         const { count, rows: data } = await entityModel.findAndCountAll({
             attributes: [
                 'entity_id',
@@ -1249,10 +1261,14 @@ const listClinic = async (requestData, res) => {
             where: whereCondition,
             limit: pageSize,
             offset: offset,
-            include: [{
-                model: entityAddressModel, 
-                attributes: ['streetName'], 
-            }],
+            // include: [{
+            //     model: entityAddressModel, 
+            //     attributes: ['streetName'], 
+              
+            // },
+            //    ],
+            include: includeOptions,
+          
         });
 
         const totalPages = Math.ceil(count / pageSize);
