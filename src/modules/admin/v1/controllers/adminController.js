@@ -21,7 +21,7 @@ const adminLogin = async (req, res) => {
 
 const addDepart = async (req, res) => {
     try {
-        const dept = await adminServices.addDept(req.body, req.body, res)
+        const dept = await adminServices.addDept(req.body, res)
         return dept
     } catch (error) {
         console.log({ error })
@@ -182,6 +182,24 @@ const clinicProfile = async (req, res) => {
     }
 };
 
+const updateDept = async (req, res) => {
+    try {
+        const data = await adminServices.updateDept(req, res);
+        return data;
+    } catch (err) {
+        console.log({ err })
+    }
+};
+
+const deleteDept = async (req, res) => {
+    try {
+        const data = await adminServices.deleteDept(req, res);
+        return data;
+    } catch (err) {
+        console.log({ err })
+    }
+};
+
 export default {
     adminRegister,
     adminLogin,
@@ -200,4 +218,6 @@ export default {
     updateClinicStatus,
     listDoctorsByClinic,
     clinicProfile,
+    updateDept,
+    deleteDept,
 }

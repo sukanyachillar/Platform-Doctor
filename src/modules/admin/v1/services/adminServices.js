@@ -86,12 +86,12 @@ const adminLogin = async (credentials, res) => {
     }
 }
 
-const addDept = async (deptData, userData, res) => {
+const addDept = async (deptData, res) => {
     try {
-        let { department_name } = deptData
+        let { department_name } = deptData;
         // let { entity_id } = userData
         let status = 1
-        let dept, message, statusCode
+        let dept, message, statusCode;
         dept = await departmentModel.findOne({
             where: { department_name }, // entity_id
         })
@@ -103,9 +103,9 @@ const addDept = async (deptData, userData, res) => {
                 department_name,
                 status,
             })
-            dept = await newDept.save()
-            message = 'Department added'
-            statusCode = 200
+            dept = await newDept.save();
+            message = 'Department added';
+            statusCode = 200;
         }
         return handleResponse({
             res,
@@ -126,7 +126,74 @@ const addDept = async (deptData, userData, res) => {
             message: 'Error while adding department.',
         })
     }
-}
+};
+
+const updateDept = async (departmentId, deptData, res) => {
+    try {
+        let { department_name, status } = deptData;
+        let dept = await departmentModel.findByPk(deptId);
+        if (!dept) {
+            return handleResponse({
+                res,
+                statusCode: 404,
+                message: 'Department not found.',
+            });
+        }
+
+        dept.department_name = department_name;
+        dept.status = status;
+
+        await dept.save();
+
+        return handleResponse({
+            res,
+            statusCode: 200,
+            message: 'Department updated successfully.',
+            data: {
+                department_id: dept.department_id,
+                status: dept.status,
+                department_name: dept.department_name,
+            },
+        });
+    } catch (error) {
+        console.log({ error });
+        return handleResponse({
+            res,
+            statusCode: 500,
+            message: 'Error while updating department.',
+        });
+    }
+};
+
+const deleteDept = async (deptId, res) => {
+    try {
+        let dept = await departmentModel.findByPk(deptId);
+        if (!dept) {
+            return handleResponse({
+                res,
+                statusCode: 404,
+                message: 'Department not found.',
+            });
+        }
+
+        await dept.destroy();
+
+        return handleResponse({
+            res,
+            statusCode: 200,
+            message: 'Department deleted successfully.',
+        });
+
+    } catch (error) {
+        console.log({ error });
+        return handleResponse({
+            res,
+            statusCode: 500,
+            message: 'Error while deleting department.',
+        });
+    }
+};
+
 
 const doctorsList = async (requestData, res) => {
     try {
@@ -212,7 +279,7 @@ const doctorsList = async (requestData, res) => {
     } catch (error) {
         console.log({ error })
     }
-}
+};
 
 // const entityList = async (requestData, res) => {
 //     try {
@@ -1341,7 +1408,6 @@ const updateClinicStatus = async (requestData, res) => {
     }
 };
 
-
 export default {
     adminLogin,
     adminRegister,
@@ -1357,5 +1423,7 @@ export default {
     listState,
     listDistrict,
     listClinic,
-    updateClinicStatus
+    updateClinicStatus,
+    updateDept,
+    deleteDept,
 }
