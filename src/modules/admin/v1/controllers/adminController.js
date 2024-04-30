@@ -225,6 +225,18 @@ const listDeptByClinic = async (req, res) => {
         console.log({ err })
     }
 };
+
+const getDeptDetails = async (req, res) => {
+    try {
+        let data = await adminServices.getDeptDetails(
+            req.body,
+            res
+        )
+        return data;
+    } catch (err) {
+        console.log({ err })
+    }
+}
 export default {
     adminRegister,
     adminLogin,
@@ -247,4 +259,5 @@ export default {
     deleteDept,
     listDepartments,
     listDeptByClinic,
+    getDeptDetails,
 }

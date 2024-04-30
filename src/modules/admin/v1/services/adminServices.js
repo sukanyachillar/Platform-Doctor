@@ -1463,6 +1463,39 @@ const updateClinicStatus = async (requestData, res) => {
     }
 };
 
+const getDeptDetails = async ({ department_id }, res) => {
+    try {
+        let dept = await departmentModel.findByPk(department_id);
+        if (!dept) {
+            return handleResponse({
+                res,
+                statusCode: 404,
+                message: 'Department not found.',
+            });
+        }
+
+        return handleResponse({
+            res,
+            statusCode: 200,
+            message: 'Department data fetched succusfully',
+            data: { 
+                     department_id: dept.department_id,
+                     department_name: dept.department_name,
+                     status: dept.status,
+                  }
+        });
+
+    } catch (error) {
+        console.log({ error });
+        return handleResponse({
+            res,
+            statusCode: 500,
+            message: 'Error while fetching department.',
+        });
+    }
+};
+
+
 const listDeptByClinic = async ({ entityId}, res) => {
     try {
         const doctorEntities = await doctorEntityModel.findAll({
@@ -1530,4 +1563,5 @@ export default {
     deleteDept,
     departmentList,
     listDeptByClinic,
+    getDeptDetails,
 }

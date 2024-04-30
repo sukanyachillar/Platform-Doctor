@@ -19,6 +19,7 @@ router.post('/admin-login', adminController.adminLogin);
 router.post('/add-dept',  adminController.addDepart);
 router.post('/update-dept',  adminController.updateDept);
 router.post('/delete-dept',  adminController.deleteDept);
+router.post('/view-dept',  adminController.getDeptDetails);
 router.post('/list-departments', adminController.listDepartments);
 router.post('/list-dept-clinic', adminController.listDeptByClinic);
 router.post('/list-doctors', adminController.listDoctors);
