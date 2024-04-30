@@ -200,6 +200,31 @@ const deleteDept = async (req, res) => {
     }
 };
 
+
+const listDepartments = async (req, res) => {
+    try {
+        let data = await adminServices.departmentList(
+            req.body,
+            req.query,
+            res
+        )
+        return data;
+    } catch (err) {
+        console.log({ err })
+    }
+};
+
+const listDeptByClinic = async (req, res) => {
+    try {
+        let data = await adminServices.listDeptByClinic(
+            req.body,
+            res
+        )
+        return data;
+    } catch (err) {
+        console.log({ err })
+    }
+};
 export default {
     adminRegister,
     adminLogin,
@@ -220,4 +245,6 @@ export default {
     clinicProfile,
     updateDept,
     deleteDept,
+    listDepartments,
+    listDeptByClinic,
 }

@@ -1,6 +1,7 @@
 import { DataTypes } from 'sequelize'
 import sequelize from '../dbConnect.js';
 import userModel from './userModel.js';
+import doctorEntityModel from './doctorEntityModel.js';
 
 const doctorModel = sequelize.define('doctor', {
     doctor_id: {
@@ -79,7 +80,13 @@ const doctorModel = sequelize.define('doctor', {
         defaultValue: DataTypes.NOW,
         allowNull: false,
     },
-})
+});
+
+doctorModel.associate = function(models) {
+    // doctorModel.hasMany(models.doctorEntityModel, { foreignKey: 'doctorId' });
+    // doctorModel.belongsTo(models.doctorEntityModel, { foreignKey: 'doctorId' }); // Corrected foreign key
+    doctorModel.belongsTo(models.departmentModel, { foreignKey: 'department_id' }); // Assuming each doctor belongs to one department
+};
 
 export default doctorModel;
 

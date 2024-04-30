@@ -37,6 +37,5 @@ router.post(
     authenticationController.updateEntityStatus
 );
 router.post('/update-profile', authenticationController.updateProfile);
-router.post('/list-departments', authenticationController.listDepartments);
 
 export default router

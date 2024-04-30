@@ -103,19 +103,6 @@ const updateProfile = async (req, res) => {
     }
 }
 
-const listDepartments = async (req, res) => {
-    try {
-        let data = await authenticationService.departmentList(
-            req.body,
-            res
-        )
-        return data;
-    } catch (err) {
-        console.log({ err })
-    }
-}
-
-
 export default {
     register,
     addProfile,
@@ -126,6 +113,5 @@ export default {
     getProfileForCustomer,
     updateEntityStatus,
     updateProfile,
-    listDepartments,
     
 }
