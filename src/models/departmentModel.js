@@ -14,11 +14,7 @@ const departmentModel = sequelize.define('department', {
         allowNull: true,
         unique: false,
     },
-    entity_id: {
-        type: DataTypes.INTEGER,
-        allowNull: true,
-        unique: false,
-    },
+
     status: {
         type: DataTypes.INTEGER, // 1: active, 0: inactive
         allowNull: true,
@@ -35,7 +31,10 @@ const departmentModel = sequelize.define('department', {
         defaultValue: DataTypes.NOW,
         allowNull: false,
     },
-})
+});
 
+departmentModel.associate = function(models) {
+    departmentModel.hasMany(models.doctorModel, { foreignKey: 'department_id' }); // Assuming each department can have multiple doctors
+};
 
-export default departmentModel
+export default departmentModel;

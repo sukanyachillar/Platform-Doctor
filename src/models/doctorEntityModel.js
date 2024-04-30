@@ -27,6 +27,12 @@ const doctorEntityModel = sequelize.define('doctorEntity', {
         defaultValue: DataTypes.NOW,
         allowNull: false,
     },
-})
+});
+
+doctorEntityModel.associate = function(models) {
+   
+    doctorEntityModel.belongsTo(models.doctorModel, { foreignKey: 'doctorId' });
+
+};
 
 export default doctorEntityModel;

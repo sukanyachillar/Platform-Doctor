@@ -12,11 +12,15 @@ const upload = multer({
 })
 
 
-const router = express.Router()
+const router = express.Router();
 
 router.post('/admin-register', adminController.adminRegister);
 router.post('/admin-login', adminController.adminLogin);
 router.post('/add-dept',  adminController.addDepart);
+router.post('/update-dept',  adminController.updateDept);
+router.post('/delete-dept',  adminController.deleteDept);
+router.post('/list-departments', adminController.listDepartments);
+router.post('/list-dept-clinic', adminController.listDeptByClinic);
 router.post('/list-doctors', adminController.listDoctors);
 router.post('/list-entity', adminController.listEntity) // meant list buisness for clinic side
 router.post('/transaction-history', adminController.transactionHistory);

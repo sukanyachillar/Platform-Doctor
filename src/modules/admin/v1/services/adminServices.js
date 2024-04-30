@@ -86,12 +86,12 @@ const adminLogin = async (credentials, res) => {
     }
 }
 
-const addDept = async (deptData, userData, res) => {
+const addDept = async (deptData, res) => {
     try {
-        let { department_name } = deptData
+        let { department_name } = deptData;
         // let { entity_id } = userData
         let status = 1
-        let dept, message, statusCode
+        let dept, message, statusCode;
         dept = await departmentModel.findOne({
             where: { department_name }, // entity_id
         })
@@ -103,9 +103,9 @@ const addDept = async (deptData, userData, res) => {
                 department_name,
                 status,
             })
-            dept = await newDept.save()
-            message = 'Department added'
-            statusCode = 200
+            dept = await newDept.save();
+            message = 'Department added';
+            statusCode = 200;
         }
         return handleResponse({
             res,
@@ -126,7 +126,130 @@ const addDept = async (deptData, userData, res) => {
             message: 'Error while adding department.',
         })
     }
-}
+};
+
+const updateDept = async (deptData, res) => {
+    try {
+        let { department_id, department_name, status } = deptData;
+        console.log("deptData", deptData)
+        let dept = await departmentModel.findByPk(department_id);
+        console.log("dept", dept)
+        if (!dept) {
+            return handleResponse({
+                res,
+                statusCode: 404,
+                message: 'Department not found.',
+            });
+        }
+
+        dept.department_name = department_name;
+        dept.status = status;
+
+        await dept.save();
+
+        return handleResponse({
+            res,
+            statusCode: 200,
+            message: 'Department updated successfully.',
+            data: {
+                department_id: dept.department_id,
+                status: dept.status,
+                department_name: dept.department_name,
+            },
+        });
+    } catch (error) {
+        console.log({ error });
+        return handleResponse({
+            res,
+            statusCode: 500,
+            message: 'Error while updating department.',
+        });
+    }
+};
+
+const departmentList = async (requestData, params, res) => {
+    try {
+        // let { clinicId } = requestData;
+        const page = parseInt(params.page) || 1;
+        const pageSize = parseInt(params.limit) || 10;
+        const searchQuery = requestData.searchQuery || '';
+        const offset = (page - 1) * pageSize;
+
+        let whereCondition = {
+            [Op.or]: [
+                { department_name: { [Op.like]: `%${searchQuery}%` } },
+            ],
+        };
+
+        // if (clinicId) {
+        //     whereCondition.clinicId = clinicId;
+        // }
+
+        const { count, rows: data } = await departmentModel.findAndCountAll({
+            attributes: [
+                'department_id',
+                'department_name',
+                'status',
+            ],
+            where: whereCondition, 
+            limit: pageSize,
+            offset: offset,
+        });
+
+        const totalPages = Math.ceil(count / pageSize);
+        if (data) {
+            return handleResponse({
+                res,
+                message: 'Successfully fetched data',
+                statusCode: 200,
+                data: {
+                    data,
+                    currentPage: page,
+                    totalPages,
+                    totalCount: count,
+                },
+            });
+        }
+    } catch (err) {
+        console.log({ err });
+        return handleResponse({
+            res,
+            message: 'Failed in loading department list.',
+            statusCode: 404,
+        });
+    }
+};
+
+
+const deleteDept = async ({ department_id }, res) => {
+    try {
+        let dept = await departmentModel.findByPk(department_id);
+        if (!dept) {
+            return handleResponse({
+                res,
+                statusCode: 404,
+                message: 'Department not found.',
+            });
+        }
+
+        await dept.destroy();
+
+        return handleResponse({
+            res,
+            statusCode: 200,
+            message: 'Department deleted successfully.',
+        });
+
+    } catch (error) {
+        console.log({ error });
+        return handleResponse({
+            res,
+            statusCode: 500,
+            message: 'Error while deleting department.',
+        });
+    }
+};
+
 
 const doctorsList = async (requestData, res) => {
     try {
@@ -212,7 +335,7 @@ const doctorsList = async (requestData, res) => {
     } catch (error) {
         console.log({ error })
     }
-}
+};
 
 // const entityList = async (requestData, res) => {
 //     try {
@@ -1340,6 +1463,52 @@ const updateClinicStatus = async (requestData, res) => {
     }
 };
 
+const listDeptByClinic = async ({ entityId}, res) => {
+    try {
+        const doctorEntities = await doctorEntityModel.findAll({
+            where: { entityId },
+            include: [{
+                model: doctorModel,
+                attributes: ['doctor_id', 'doctor_name'],
+                required: true,
+                include: [{
+                    model: departmentModel,
+                    attributes: ['department_name'],
+                    required: true,
+                }],
+            }],
+        });
+
+        // const departmentNames = doctorEntities.map((doctorEntity) => doctorEntity?.doctor?.department?.department_name ?? null);;
+   
+        const departmentNamesSet = new Set(doctorEntities.map((doctorEntity) => {
+            if (doctorEntity && doctorEntity.doctor && doctorEntity.doctor.department) {
+                return doctorEntity.doctor.department.department_name;
+            } else {
+                return null; 
+            }
+        }));
+        
+        const departmentNames = Array.from(departmentNamesSet);
+        
+        return handleResponse({
+            res,
+            message: 'Succusfully fetched departments',
+            statusCode: 200,
+            data: {
+                departmentNames
+            },
+        });
+    } catch (error) {
+        console.log(error);
+        return handleResponse({
+            res,
+            message: 'Error while fetching clinic wise departments',
+            statusCode: 404,
+          
+        });
+    }
+};
 
 export default {
     adminLogin,
@@ -1356,5 +1525,9 @@ export default {
     listState,
     listDistrict,
     listClinic,
-    updateClinicStatus
+    updateClinicStatus,
+    updateDept,
+    deleteDept,
+    departmentList,
+    listDeptByClinic,
 }

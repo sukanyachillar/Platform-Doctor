@@ -583,60 +583,8 @@ const updateProfileDetails = async (doctorProfile, params, res) => {
             statusCode: 404,
         })
     }
-}
-
-const departmentList = async (requestData, res) => {
-    try {
-        let { clinicId } = requestData;
-        const page = parseInt(requestData.page) || 1;
-        const pageSize = parseInt(requestData.limit) || 10;
-        const searchQuery = requestData.searchQuery || '';
-        const offset = (page - 1) * pageSize;
-
-        let whereCondition = {
-            [Op.or]: [
-                { department_name: { [Op.like]: `%${searchQuery}%` } },
-            ],
-        };
-
-        if (clinicId) {
-            whereCondition.clinicId = clinicId;
-        }
-
-        const { count, rows: data } = await departmentModel.findAndCountAll({
-            attributes: [
-                'department_name',
-                'department_id',
-                'status',
-            ],
-            where: whereCondition, 
-            limit: pageSize,
-            offset: offset,
-        });
-
-        const totalPages = Math.ceil(count / pageSize);
-        if (data) {
-            return handleResponse({
-                res,
-                message: 'Successfully fetched data',
-                statusCode: 200,
-                data: {
-                    data,
-                    currentPage: page,
-                    totalPages,
-                    totalCount: count,
-                },
-            });
-        }
-    } catch (err) {
-        console.log({ err });
-        return handleResponse({
-            res,
-            message: 'Failed in loading department list.',
-            statusCode: 404,
-        });
-    }
 };
+
 
 
 export default {
@@ -648,5 +596,4 @@ export default {
     getProfileForCustomer,
     updateEntityStatus,
     updateProfileDetails,
-    departmentList,
 }
