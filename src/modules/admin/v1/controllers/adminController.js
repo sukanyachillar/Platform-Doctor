@@ -236,7 +236,20 @@ const getDeptDetails = async (req, res) => {
     } catch (err) {
         console.log({ err })
     }
-}
+};
+
+const totalNoOfbookings = async (req, res) => {
+    try {
+        let data = await adminServices.totalNoOfbookings(
+            req.body,
+            res
+        );
+        return data;
+    } catch (err) {
+        console.log({ err })
+    }
+};
+
 export default {
     adminRegister,
     adminLogin,
@@ -260,4 +273,5 @@ export default {
     listDepartments,
     listDeptByClinic,
     getDeptDetails,
+    totalNoOfbookings,
 }

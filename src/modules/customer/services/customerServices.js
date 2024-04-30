@@ -317,7 +317,7 @@ const getOneEntityDetails = async (req, res) => {
 
         const { entity_name, phone, email, entityAddress, imageUrl, description } = entityDetails;
 
-        let streetName, cityName, districtName, stateName, pincodeValue, pincode;
+        let streetName, cityName, districtName, stateName, pincodeValue, pincode, stateId;
         if (entityAddress) {
             streetName = entityAddress.streetName;
             cityName = entityAddress.cityName;
@@ -327,6 +327,7 @@ const getOneEntityDetails = async (req, res) => {
             stateName = state && state.stateName ? state.stateName : "";
             pincode = entityAddress.pincode? entityAddress.pincode: "";
             // pincodeValue = pincode ? pincode.pincodeValue : "";
+            stateId = entityAddress.stateId? entityAddress.stateId: "";
            
         }
         
@@ -341,6 +342,7 @@ const getOneEntityDetails = async (req, res) => {
             district: districtName ? districtName : "",
             state: stateName ? stateName : "",
             pincode: pincode? pincode: "",
+            stateId: stateId? stateId: "",
         };
 
         return handleResponse({

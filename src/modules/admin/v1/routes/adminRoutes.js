@@ -38,6 +38,6 @@ router.post('/update-clinic-status', adminController.updateClinicStatus);
 router.post('/list-doctor-by-clinic', adminController.listDoctorsByClinic);
 router.post('/clinic-profile', adminController.clinicProfile);
 router.post('/admin-verify-refreshToken', verifyAdminRefreshToken);
+router.post('/total-bookings', adminController.totalNoOfbookings);
 
-
-export default router
+export default router;

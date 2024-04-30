@@ -9,7 +9,7 @@ import adminRouter from './src/modules/admin/v1/routes/adminRoutes.js';
 import customerRouter from './src/modules/customer/routes/customerRoutes.js';
 import clinicRouter from './src/modules/clinic/routes/clinicRoutes.js';
 import associateModels from './src/models/index.js';
-
+import moment from 'moment';
 import cors from 'cors';
 import cron from 'node-cron';
 import currentConfig from './config.js'
@@ -66,8 +66,8 @@ app.get('/api', (req, res) => {
     res.status(200).json({
         status: true,
         message: 'welcome',
-    })
-})
+    });
+});
 
 app.use('/api/v1/auth', authRouter);
 app.use('/api/v1/admin', adminRouter);
@@ -83,12 +83,12 @@ app.post('*', (req, res) => {
         status: false,
         message: 'Unknown path specified....',
     })
-})
+});
 
 app.listen(currentConfig.PORT, (err) => {
     if (err) console.log(`server error.`)
     else console.log(`server is on ${currentConfig.PORT}`)
-})
+});
 
 
 

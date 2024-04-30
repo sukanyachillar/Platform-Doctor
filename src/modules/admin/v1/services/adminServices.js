@@ -1543,6 +1543,30 @@ const listDeptByClinic = async ({ entityId}, res) => {
     }
 };
 
+const totalNoOfbookings = async (req, res) => {
+    try {
+        const totalBookings = await bookingModel.count(
+            {
+                where: {
+                    bookingStatus: {
+                        [Op.not]: 3 
+                    }
+                }
+            }
+        );
+        return handleResponse({
+            res,
+            statusCode: 200,
+            message: 'Total no of booking count',
+            data: { totalBookings }
+        });
+
+    } catch (err) {
+        console.error('Error while fetching booking count', err);
+        throw err; 
+    }
+};
+
 export default {
     adminLogin,
     adminRegister,
@@ -1564,4 +1588,5 @@ export default {
     departmentList,
     listDeptByClinic,
     getDeptDetails,
+    totalNoOfbookings,
 }
