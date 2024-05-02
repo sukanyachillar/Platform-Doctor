@@ -17,6 +17,7 @@ import DigitalOceanUtils from '../../../../utils/DOFileUpload.js';
 import { encrypt } from '../../../../utils/token.js';
 import districtModel from '../../../../models/districtModel.js';
 import stateModel from '../../../../models/stateModel.js';
+import moment from 'moment';
 
 const adminRegister = async (credentials, res) => {
     try {
@@ -1310,8 +1311,8 @@ const listDistrict = async (req, res) => {
             return handleResponse({
                 res,
                 statusCode: 404,
-                message: 'Please give state ID',
-            })
+                message: 'State ID not found',
+            });
         }
         const districts = await districtModel.findAll({
             where: { stateId: stateId },
@@ -1567,6 +1568,50 @@ const totalNoOfbookings = async (req, res) => {
     }
 };
 
+const graphData = async (req, res) => {
+    try {
+        const graphData = [];
+        for (let i = 0; i < 7; i++) {
+            const currentDate = moment().subtract(i, 'days').startOf('day').toDate(); 
+            const nextDate = moment(currentDate).add(1, 'days').toDate();
+       
+            const count = await bookingModel.count({
+                where: {
+                    bookingDate: {
+                        [Op.between]: [currentDate, nextDate]
+                    },
+                    bookingStatus: {
+                        [Op.not]: 3 
+                    }
+                }
+            });
+        
+            graphData.push({
+                date: moment(currentDate).format('YYYY-MM-DD'), 
+                count,
+            });
+        };
+
+        return handleResponse({
+            res,
+            statusCode: 200,
+            message: 'Graph data fetched succfully',
+            data: {
+                graphData
+            },
+        });
+    } catch (err) {
+        console.error('Error in getting total bookings for last seven days:', err);
+        return handleResponse({
+            res,
+            statusCode: 404,
+            message: 'Error while fetching graph data',
+            data: {
+            },
+        });
+    }
+};
+
 export default {
     adminLogin,
     adminRegister,
@@ -1589,4 +1634,5 @@ export default {
     listDeptByClinic,
     getDeptDetails,
     totalNoOfbookings,
-}
+    graphData,
+};

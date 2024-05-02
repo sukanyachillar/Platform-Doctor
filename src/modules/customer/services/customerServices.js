@@ -352,7 +352,7 @@ const getOneEntityDetails = async (req, res) => {
             data: {
                 entityResponse
             },
-        })
+        });
     } catch (error) {
         return handleResponse({
             res,

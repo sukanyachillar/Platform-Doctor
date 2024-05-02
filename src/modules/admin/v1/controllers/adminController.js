@@ -250,6 +250,18 @@ const totalNoOfbookings = async (req, res) => {
     }
 };
 
+const graphData = async (req, res) => {
+    try {
+        let data = await adminServices.graphData(
+            req.body,
+            res
+        );
+        return data;
+    } catch (err) {
+        console.log({ err })
+    }
+};
+
 export default {
     adminRegister,
     adminLogin,
@@ -274,4 +286,5 @@ export default {
     listDeptByClinic,
     getDeptDetails,
     totalNoOfbookings,
+    graphData,
 }

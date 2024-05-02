@@ -39,5 +39,6 @@ router.post('/list-doctor-by-clinic', adminController.listDoctorsByClinic);
 router.post('/clinic-profile', adminController.clinicProfile);
 router.post('/admin-verify-refreshToken', verifyAdminRefreshToken);
 router.post('/total-bookings', adminController.totalNoOfbookings);
+router.post('/graph-data', adminController.graphData);
 
 export default router;
