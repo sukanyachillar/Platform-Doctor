@@ -262,6 +262,18 @@ const graphData = async (req, res) => {
     }
 };
 
+const bookingReport_admin = async (req, res) => {
+    try {
+        let data = await adminServices.bookingReport_admin(
+            req.body,
+            res
+        );
+        return data;
+    } catch (err) {
+        console.log({ err })
+    }
+};
+
 export default {
     adminRegister,
     adminLogin,
@@ -287,4 +299,5 @@ export default {
     getDeptDetails,
     totalNoOfbookings,
     graphData,
+    bookingReport_admin,
 }

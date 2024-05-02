@@ -132,9 +132,7 @@ const addDept = async (deptData, res) => {
 const updateDept = async (deptData, res) => {
     try {
         let { department_id, department_name, status } = deptData;
-        console.log("deptData", deptData)
         let dept = await departmentModel.findByPk(department_id);
-        console.log("dept", dept)
         if (!dept) {
             return handleResponse({
                 res,
@@ -177,6 +175,7 @@ const departmentList = async (requestData, params, res) => {
         const offset = (page - 1) * pageSize;
 
         let whereCondition = {
+            status: 1,
             [Op.or]: [
                 { department_name: { [Op.like]: `%${searchQuery}%` } },
             ],
@@ -1612,6 +1611,114 @@ const graphData = async (req, res) => {
     }
 };
 
+const bookingReport_admin = async (requestData, res) => {
+    try {
+        const page = parseInt(requestData.page) || 1;
+        const pageSize = parseInt(requestData.limit) || 10;
+        const date = requestData.date;
+        const offset = (page - 1) * pageSize;
+        const doctorId = requestData.doctorId;
+        const entityId = requestData.entityId;
+
+        let whereCondition = { date };
+
+        if (doctorId) {
+            whereCondition = { ...whereCondition, doctor_id: doctorId };
+        };
+
+        const { count, rows: bookingReport } = await weeklyTimeSlotsModel.findAndCountAll({
+                where: whereCondition,
+                attributes: ['time_slot_id', 'doctor_id'],
+                include: [
+                    {
+                        model: bookingModel,
+                        where: {
+                            bookingStatus: {
+                                [Op.not]: 3,
+                            },
+                        },
+                        attributes: [
+                            'bookingId',
+                            'amount',
+                            'bookingStatus', 
+                            'appointmentDate',
+                            'orderId',
+                            'workSlotId',
+                            'customerId',
+                            'patientName',
+                            'bookedPhoneNo'
+                           ], 
+                    },
+                    {
+                        model: doctorModel,
+                        attributes: ['doctor_name'],
+                    },
+                    // {
+                    //     model: userModel,
+                    //     attributes: ['name', 'phone'],
+                    //     as: 'customer'
+                    // }
+                ],
+
+                limit: pageSize,
+                offset: offset,
+        });
+        
+        // console.log("bookingReport", bookingReport)
+      
+        const totalPages = Math.ceil(count / pageSize);
+
+        // const modifiedBookingReport = bookingReport.map(booking => ({
+        //     bookingId: booking.bookingId,
+        //     amount: booking.amount,
+        //     bookingStatus: booking.bookingStatus,
+        //     appointmentDate: booking.appointmentDate,
+        //     doctorName: booking.doctor?.doctor_name || '',
+        //     doctorId: booking.doctor?.doctor_id || '',
+        //     orderId: booking.orderId || '',
+        //     customerName: booking.patientName ? booking.patientName : booking.customer?.name || '',
+        //     customerPhone: booking.bookedPhoneNo ? booking.bookedPhoneNo : booking.customer?.phone || ''
+        // }));
+
+        // const modifiedBookingReport = bookingReport.map(booking => {
+        //     console.log(booking.bookingId); // Output the booking object to the console
+        //     return {
+        //         bookingId: booking.bookingId,
+        //         amount: booking.amount,
+        //         bookingStatus: booking.bookingStatus,
+        //         appointmentDate: booking.appointmentDate,
+        //         doctorName: booking.doctor?.doctor_name || '',
+        //         doctorId: booking.doctor?.doctor_id || '',
+        //         orderId: booking.orderId || '',
+        //         customerName: booking.patientName ? booking.patientName : booking.customer?.name || '',
+        //         customerPhone: booking.bookedPhoneNo ? booking.bookedPhoneNo : booking.customer?.phone || ''
+        //     };
+        // });
+        
+
+        return handleResponse({
+            res,
+            statusCode: 200,
+            message: 'Successfully fetched booking report.',
+            data: {
+                bookingReport,
+                totalCount: count,
+                totalPages: totalPages,
+                currentPage: page,
+            },
+        });
+    } catch (error) {
+        console.error('Error:', error);
+        return handleResponse({
+            res,
+            statusCode: 500,
+            message: 'Something went wrong',
+            data: {},
+        });
+    }
+};
+
+
 export default {
     adminLogin,
     adminRegister,
@@ -1635,4 +1742,5 @@ export default {
     getDeptDetails,
     totalNoOfbookings,
     graphData,
+    bookingReport_admin
 };

@@ -518,7 +518,7 @@ const AllBookingReport = async (requestData, res) => {
 
         let whereCondition = { date };
 
-         whereCondition = doctorId ? { doctor_id: doctorId } : whereCondition;
+        whereCondition = doctorId ? { doctor_id: doctorId } : whereCondition;
 
         const weeklyTimeSlots = await weeklyTimeSlotsModel.findAll({
             where: whereCondition,
@@ -546,8 +546,18 @@ const AllBookingReport = async (requestData, res) => {
                     [Op.not]: 3,
                 },
             },
-            attributes: ['bookingId', 'amount', 'bookingStatus', 
-                        'appointmentDate', 'orderId', 'workSlotId', 'customerId', 'patientName', 'bookedPhoneNo'], 
+            attributes: [
+                         'bookingId',
+                         'amount',
+                         'bookingStatus', 
+                         'appointmentDate',
+                         'orderId',
+                         'workSlotId',
+                         'customerId',
+                         'patientName',
+                         'bookedPhoneNo'
+                        ], 
+                        
             limit: pageSize,
             offset: offset,
         });

@@ -40,5 +40,6 @@ router.post('/clinic-profile', adminController.clinicProfile);
 router.post('/admin-verify-refreshToken', verifyAdminRefreshToken);
 router.post('/total-bookings', adminController.totalNoOfbookings);
 router.post('/graph-data', adminController.graphData);
+router.post('/booking-report', adminController.bookingReport_admin);
 
 export default router;

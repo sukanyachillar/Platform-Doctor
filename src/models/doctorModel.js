@@ -83,9 +83,7 @@ const doctorModel = sequelize.define('doctor', {
 });
 
 doctorModel.associate = function(models) {
-    // doctorModel.hasMany(models.doctorEntityModel, { foreignKey: 'doctorId' });
-    // doctorModel.belongsTo(models.doctorEntityModel, { foreignKey: 'doctorId' }); // Corrected foreign key
-    doctorModel.belongsTo(models.departmentModel, { foreignKey: 'department_id' }); // Assuming each doctor belongs to one department
+      doctorModel.belongsTo(models.departmentModel, { foreignKey: 'department_id' }); // Assuming each doctor belongs to one department
 };
 
 export default doctorModel;

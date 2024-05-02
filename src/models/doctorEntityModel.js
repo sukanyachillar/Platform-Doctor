@@ -30,9 +30,7 @@ const doctorEntityModel = sequelize.define('doctorEntity', {
 });
 
 doctorEntityModel.associate = function(models) {
-   
     doctorEntityModel.belongsTo(models.doctorModel, { foreignKey: 'doctorId' });
-
 };
 
 export default doctorEntityModel;
