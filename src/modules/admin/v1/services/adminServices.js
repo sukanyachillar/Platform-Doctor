@@ -1604,7 +1604,12 @@ const totalNoOfbookings = async (req, res) => {
 
     } catch (err) {
         console.error('Error while fetching booking count', err);
-        throw err; 
+        return handleResponse({
+            res,
+            statusCode: 404,
+            message: 'Error while fetching booking count',
+            data: { }
+        });
     }
 };
 
@@ -1760,6 +1765,32 @@ const bookingReport_admin = async (requestData, res) => {
     }
 };
 
+const listClinicName = async (req, res )=>{
+    try {
+        const clinicName = await entityModel.findAll(
+            {
+                 where : { status: 1, entity_type: 1 },  
+                 attributes: [ 'entity_id', 'entity_name' ]
+            },
+           
+        );
+        return handleResponse({
+            res,
+            statusCode: 200,
+            message: 'Clinic name fetched succusfully',
+            data: { clinicData : clinicName },
+        });
+
+    } catch (err) {
+        console.error('Error while fetching clinic name', err);
+        return handleResponse({
+            res,
+            statusCode: 404,
+            message: 'Error while fetching clinic name',
+            data: { }
+        });
+    }
+}
 
 export default {
     adminLogin,
@@ -1784,5 +1815,6 @@ export default {
     getDeptDetails,
     totalNoOfbookings,
     graphData,
-    bookingReport_admin
+    bookingReport_admin,
+    listClinicName,
 };

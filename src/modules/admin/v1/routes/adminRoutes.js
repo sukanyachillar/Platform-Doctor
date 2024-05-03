@@ -38,8 +38,10 @@ router.post('/update-clinic-status', adminController.updateClinicStatus);
 router.post('/list-doctor-by-clinic', adminController.listDoctorsByClinic);
 router.post('/clinic-profile', adminController.clinicProfile);
 router.post('/admin-verify-refreshToken', verifyAdminRefreshToken);
-router.post('/total-bookings', adminController.totalNoOfbookings);
+router.post('/total-booking', adminController.totalNoOfbookings);
 router.post('/graph-data', adminController.graphData);
 router.post('/booking-report', adminController.bookingReport_admin);
+router.post('/list-clinic-name', adminController.listClinicName);
+
 
 export default router;

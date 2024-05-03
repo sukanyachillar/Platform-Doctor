@@ -274,6 +274,18 @@ const bookingReport_admin = async (req, res) => {
     }
 };
 
+const listClinicName = async (req, res) => {
+    try {
+        let data = await adminServices.listClinicName(
+            req.body,
+            res
+        );
+        return data;
+    } catch (err) {
+        console.log({ err })
+    }
+};
+
 export default {
     adminRegister,
     adminLogin,
@@ -300,4 +312,5 @@ export default {
     totalNoOfbookings,
     graphData,
     bookingReport_admin,
+    listClinicName,
 }
