@@ -55,9 +55,9 @@ const transactionHistory = async (req, res) => {
     }
 }
 
-const addProfile = async (req, res) => {
+const addNewDoctor = async (req, res) => {
     try {
-        let data = await adminServices.addProfile( 
+        let data = await adminServices.addNewDoctor( 
             req.body,
             req.file,
             res,
@@ -281,7 +281,7 @@ export default {
     listDoctors,
     listEntity,
     transactionHistory,
-    addProfile,
+    addNewDoctor,
     listAllCustomers,
     addBankDetails,
     customerHistory,

@@ -716,29 +716,29 @@ const transactionHistory = async (requestData, res) => {
 }
 
 
-const addProfile = async (docData, image, res) => {
+const addNewDoctor = async (docData, image, res) => {
     try {
-        let redirection, addValue, message, statusCode, imageUrl ;
+        let redirection, response, message, statusCode, imageUrl ;
         if (image) {
             imageUrl = await DigitalOceanUtils.uploadObject (image); 
         }
         if (docData.businessType == 'individual') {
-            addValue = await individualProfile(docData, imageUrl);
-            redirection = true
+            response = await addIndvDoctor(docData, imageUrl);
+            redirection = true;
         } else {
-            addValue = await staffProfile(docData, imageUrl);
+            response = await addDoctorByClinic(docData, imageUrl);
             redirection = false
         }
-        message = addValue
-            ? 'Successfully added profile.'
-            : 'Sorry try after sometime.'
-        statusCode = addValue ? 200 : 404
+        // message = response
+        //     ? 'Successfully added profile.'
+        //     : 'Sorry try after sometime.'
+        statusCode = response ? 200 : 404
         return handleResponse({
             res,
-            message,
+            message: response.responseMsg,
             statusCode,
             data: {
-                entityId: addValue.entityId,
+                entityId: response.entityId,
                 redirection,
             },
         })
@@ -746,13 +746,13 @@ const addProfile = async (docData, image, res) => {
         console.log({ error })
         return handleResponse({
             res,
-            message: 'Sorry! Try after sometime.',
+            message: 'Error while adding doctor',
             statusCode: 404,
         })
     }
 }
 
-const individualProfile = async ({
+const addIndvDoctor = async ({
     doctor_name,
     doctor_phone,
     qualification,
@@ -763,28 +763,25 @@ const individualProfile = async ({
     description,
 }, imageUrl) => {
     try {
-  
+   
         let entityData = await entityModel.findOne({
             where: { phone: doctor_phone },
         });
 
-        console.log("entityData", entityData)
-
-        // let businessData = await businessModel.findOne({ 
-        //     where:{ businessName: 'individual' },attributes:['businessId']
-        // });
-        let docData, newEntity, newDocData;
+        let docData, newEntity, newDocData, responseMsg;
         if (!entityData) {
             entityData = await new entityModel({
                 phone: doctor_phone,
                 entity_name: doctor_name,
                 business_type_id: 0,
-                // entity_type : businessData.businessId
-                entity_type : 2,
-
+                entity_type : 2, // entity_type : businessData.businessId
+                description,
+                email,
+                imageUrl
             });
+
             newEntity = await entityData.save();
-            console.log("newEntity", newEntity)
+
             docData = await new doctorModel({
                 doctor_name,
                 doctor_phone,
@@ -797,8 +794,26 @@ const individualProfile = async ({
                 entity_id: newEntity.entity_id,
                 profileImageUrl: imageUrl,
             });
+           
+           newDocData = await docData.save();
+
+           await doctorEntityModel.create({
+                doctorId: newDocData.doctor_id,
+                entityId: newEntity.entity_id,
+           });
+           
+           responseMsg = 'Doctor Successfully added';
+
         } else {
+            entityData.entity_name = doctor_name;
+            entityData.description = description;
+            entityData.email = email;
+            entityData.imageUrl = imageUrl;
+
+            await entityData.save();
+
             docData = await doctorModel.findOne({ where: { doctor_phone } });
+
             if (!docData) {
                 docData = await new doctorModel({
                     doctor_name,
@@ -811,28 +826,32 @@ const individualProfile = async ({
                     department_id,
                     entity_id: entityData.entity_id,
                     profileImageUrl: imageUrl,
-                })
-                console.log("doc data exists", docData)
+                });
+                newDocData = await docData.save();
             } else {
-                docData.doctor_name = doctor_name
-                docData.qualification = qualification
-                docData.email = email
-                docData.consultation_time = consultation_time
-                docData.consultation_charge = consultation_charge
-                docData.department_id = department_id
-                docData.description = description
-                docData.entity_id = entityData.entity_id
-                docData.profileImageUrl= imageUrl
+                docData.doctor_name = doctor_name;
+                docData.qualification = qualification;
+                docData.email = email;
+                docData.consultation_time = consultation_time;
+                docData.consultation_charge = consultation_charge;
+                docData.department_id = department_id;
+                docData.description = description;
+                // docData.entity_id = entityData.entity_id;
+                docData.profileImageUrl= imageUrl;
+
+                newDocData = await docData.save();
+                
+                responseMsg = 'Doctor Successfully updated';
             }
-        }
-        newDocData = await docData.save();
-        console.log("newDocData", newDocData)
-        const existingDoctorEntity = await doctorEntityModel.findOne({
-            where: { 
-                doctorId: newDocData.doctor_id,
-                entityId: newDocData.entity_id
-            }
-        });
+        };
+        // newDocData = await docData.save();
+
+        // const existingDoctorEntity = await doctorEntityModel.findOne({
+        //     where: { 
+        //         doctorId: newDocData.doctor_id,
+        //         entityId: newDocData.entity_id
+        //     }
+        // });
         // if(!existingDoctorEntity) {
         //     await doctorEntityModel.create({
         //         doctorId: newDocData.id,
@@ -840,15 +859,18 @@ const individualProfile = async ({
         //     });
     
         // }
-      
-        return { entityId: newDocData.entity_id }
+        let getEntity = await entityModel.findOne({
+            where: { phone: doctor_phone },
+        });
+        return { entityId: getEntity.entity_id, responseMsg };
+
     } catch (error) {
         console.log({ error })
         return false
     }
 }
 
-const staffProfile = async ({
+const addDoctorByClinic = async ({
     doctor_name,
     doctor_phone,
     qualification,
@@ -878,10 +900,12 @@ const staffProfile = async ({
         //     // newEntity = await entityData.save()  // no need of enity add in case of doctor under an entity
         // }
 
-        let docData, newDocData
+        let docData, newDocData, responseMsg;
+
         docData = await doctorModel.findOne({
             where: { doctor_phone } //, entity_id },
-        })
+        });
+
         if (!docData) {
             docData = await new doctorModel({
                 doctor_name,
@@ -894,7 +918,10 @@ const staffProfile = async ({
                 description,
                 entity_id,
                 profileImageUrl: imageUrl
-            })
+            });
+
+            responseMsg = 'Doctor Successfully added';
+            
         } else {
             docData.doctorName = doctor_name
             docData.doctorPhone = doctor_phone
@@ -906,24 +933,32 @@ const staffProfile = async ({
             docData.department_id = department_id
             docData.entity_id = entity_id
             docData.profileImageUrl = imageUrl
-
-        }
+             
+            responseMsg = 'Doctor Successfully updated';
+             
+        };
         newDocData = await docData.save();
-        // console.log("newDocData", newDocData)
-        const existingDoctorEntity = await doctorEntityModel.findOne({
-            where: { 
-                doctorId: newDocData.doctor_id,
-                entityId: newDocData.entity_id
-            }
+
+        await doctorEntityModel.create({
+            doctorId: newDocData.doctor_id,
+            entityId: entity_id,
         });
-        if(!existingDoctorEntity) {
-            await doctorEntityModel.create({
-                doctorId: newDocData.doctor_id,
-                entityId: newDocData.entity_id,
-            });
+        // console.log("newDocData", newDocData)
+        // const existingDoctorEntity = await doctorEntityModel.findOne({
+        //     where: { 
+        //         doctorId: newDocData.doctor_id,
+        //         entityId: newDocData.entity_id
+        //     }
+        // });
+        // if(!existingDoctorEntity) {
+        //     await doctorEntityModel.create({
+        //         doctorId: newDocData.doctor_id,
+        //         entityId: newDocData.entity_id,
+        //     });
     
-        }
-        return { entityId: newDocData.entity_id }
+        // }
+        return { entityId: entity_id, responseMsg };
+
     } catch (error) {
         console.log({ error })
         return false
@@ -1733,7 +1768,7 @@ export default {
     doctorsList,
     entityList,
     transactionHistory,
-    addProfile,
+    addNewDoctor,
     listAllCustomers,
     addBankDetails,
     customerHistory,
