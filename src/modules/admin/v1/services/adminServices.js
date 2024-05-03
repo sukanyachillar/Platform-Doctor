@@ -478,7 +478,7 @@ const entityList = async (requestData, res) => {
     } catch (err) {
         console.log({ err })
     }
-}
+};
 
 const transactionHistory = async (requestData, res) => {
     try {
@@ -713,7 +713,7 @@ const transactionHistory = async (requestData, res) => {
             statusCode: 500,
         })
     }
-}
+};
 
 
 const addNewDoctor = async (docData, image, res) => {
@@ -750,7 +750,7 @@ const addNewDoctor = async (docData, image, res) => {
             statusCode: 404,
         })
     }
-}
+};
 
 const addIndvDoctor = async ({
     doctor_name,
@@ -868,7 +868,7 @@ const addIndvDoctor = async ({
         console.log({ error })
         return false
     }
-}
+};
 
 const addDoctorByClinic = async ({
     doctor_name,
@@ -963,7 +963,7 @@ const addDoctorByClinic = async ({
         console.log({ error })
         return false
     }
-}
+};
 const getUserDetails = async (search) => {
     const whereCondition = {}
     if (search) {
@@ -979,7 +979,7 @@ const getUserDetails = async (search) => {
     })
 
     return usersWithDetails
-}
+};
 
 const getBookingDetails = async (customerId) => {
     const bookingDetails = await bookingModel.findAll({
@@ -1000,7 +1000,7 @@ const getBookingDetails = async (customerId) => {
     })
 
     return bookingDetails
-}
+};
 
 const getDoctorDetails = async (workSlotId) => {
     const weeklyTimeSlots = await weeklyTimeSlotsModel.findAll({
@@ -1024,7 +1024,7 @@ const getDoctorDetails = async (workSlotId) => {
     })
 
     return doctorDetails
-}
+};
 
 const listAllCustomers = async (
     { page = 1, limit = 10, searchQuery = '', filter = {} },
@@ -1150,7 +1150,7 @@ const addBankDetails = async (
             statusCode: 404,
         })
     }
-}
+};
 
 const customerHistory = async (req, res) => {
     try {
@@ -1226,7 +1226,7 @@ const customerHistory = async (req, res) => {
             data: {},
         });
     }
-}
+};
 
   const addClinic = async (entityData, image, res) => { 
 
@@ -1325,7 +1325,7 @@ const customerHistory = async (req, res) => {
           statusCode: 500,
         });
       }
-}
+};
 
 const listState = async (req, res) => {
     try {
@@ -1341,7 +1341,7 @@ const listState = async (req, res) => {
     } catch (err) {
         console.log({ err })
     }
-}
+};
 
 const listDistrict = async (req, res) => {
     try {
@@ -1368,7 +1368,7 @@ const listDistrict = async (req, res) => {
     } catch (err) {
         console.log({ err })
     }
-}
+};
 
 const listClinic = async (requestData, res) => {
     try {
@@ -1657,10 +1657,10 @@ const graphData = async (req, res) => {
     }
 };
 
-const bookingReport_admin = async (requestData, res) => {
+const bookingReport_admin = async (requestParams, requestData, res) => {
     try {
-        const page = parseInt(requestData.page) || 1;
-        const pageSize = parseInt(requestData.limit) || 10;
+        const page = parseInt(requestParams.page) || 1;
+        const pageSize = parseInt(requestParams.limit) || 10;
         const date = requestData.date;
         const offset = (page - 1) * pageSize;
         const doctorId = requestData.doctorId;

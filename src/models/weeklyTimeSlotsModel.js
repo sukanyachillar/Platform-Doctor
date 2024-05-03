@@ -39,8 +39,7 @@ const weeklyTimeSlotsModel = sequelize.define('weeklyTimeSlots', {
 
 weeklyTimeSlotsModel.associate = function(models) {
     weeklyTimeSlotsModel.hasOne(models.bookingModel, { foreignKey: 'workSlotId' });
-    weeklyTimeSlotsModel.hasOne(models.doctorModel, { foreignKey: 'doctor_id' });
-
+    weeklyTimeSlotsModel.belongsTo(models.doctorModel, { foreignKey: 'doctor_id' });
 };
 
 export default weeklyTimeSlotsModel;

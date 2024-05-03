@@ -265,6 +265,7 @@ const graphData = async (req, res) => {
 const bookingReport_admin = async (req, res) => {
     try {
         let data = await adminServices.bookingReport_admin(
+            req.query,
             req.body,
             res
         );
