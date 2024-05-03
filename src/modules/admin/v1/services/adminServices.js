@@ -766,19 +766,25 @@ const individualProfile = async ({
   
         let entityData = await entityModel.findOne({
             where: { phone: doctor_phone },
-        })
-        let businessData = await businessModel.findOne({ 
-            where:{ businessName: 'individual' },attributes:['businessId']
-        })
-        let docData, newEntity, newDocData
+        });
+
+        console.log("entityData", entityData)
+
+        // let businessData = await businessModel.findOne({ 
+        //     where:{ businessName: 'individual' },attributes:['businessId']
+        // });
+        let docData, newEntity, newDocData;
         if (!entityData) {
             entityData = await new entityModel({
                 phone: doctor_phone,
                 entity_name: doctor_name,
                 business_type_id: 0,
-                entity_type : businessData.businessId
-            })
+                // entity_type : businessData.businessId
+                entity_type : 2,
+
+            });
             newEntity = await entityData.save();
+            console.log("newEntity", newEntity)
             docData = await new doctorModel({
                 doctor_name,
                 doctor_phone,
@@ -790,9 +796,9 @@ const individualProfile = async ({
                 department_id,
                 entity_id: newEntity.entity_id,
                 profileImageUrl: imageUrl,
-            })
+            });
         } else {
-            docData = await doctorModel.findOne({ where: { doctor_phone } })
+            docData = await doctorModel.findOne({ where: { doctor_phone } });
             if (!docData) {
                 docData = await new doctorModel({
                     doctor_name,
@@ -806,7 +812,7 @@ const individualProfile = async ({
                     entity_id: entityData.entity_id,
                     profileImageUrl: imageUrl,
                 })
-                // console.log({ docData })
+                console.log("doc data exists", docData)
             } else {
                 docData.doctor_name = doctor_name
                 docData.qualification = qualification
@@ -820,20 +826,20 @@ const individualProfile = async ({
             }
         }
         newDocData = await docData.save();
-        // console.log("newDocData", newDocData)
+        console.log("newDocData", newDocData)
         const existingDoctorEntity = await doctorEntityModel.findOne({
             where: { 
-                doctorId: newDocData.id,
+                doctorId: newDocData.doctor_id,
                 entityId: newDocData.entity_id
             }
         });
-        if(!existingDoctorEntity) {
-            await doctorEntityModel.create({
-                doctorId: newDocData.id,
-                entityId: newDocData.entity_id,
-            });
+        // if(!existingDoctorEntity) {
+        //     await doctorEntityModel.create({
+        //         doctorId: newDocData.id,
+        //         entityId: newEntity.entity_id,
+        //     });
     
-        }
+        // }
       
         return { entityId: newDocData.entity_id }
     } catch (error) {
@@ -1664,7 +1670,8 @@ const bookingReport_admin = async (requestData, res) => {
                 offset: offset,
         });
         
-        // console.log("bookingReport", bookingReport)
+        console.log("bookingReport", bookingReport)
+
       
         const totalPages = Math.ceil(count / pageSize);
 

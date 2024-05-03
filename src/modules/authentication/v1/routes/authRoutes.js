@@ -18,7 +18,7 @@ router.post('/getProfile', verifyToken, authenticationController.getProfile);
 router.post('/profile', authenticationController.getProfileForCustomer);
 router.post(
     '/addprofile',
-    verifyToken,
+    // verifyToken,
     upload.single('file'),
     authenticationController.addProfile
 )

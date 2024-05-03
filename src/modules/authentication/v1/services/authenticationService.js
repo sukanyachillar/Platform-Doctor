@@ -127,7 +127,7 @@ const register = async (userData, res) => {
 }
 
 const addProfile = async (userData, user, image, res) => {
-    // doctor add
+    // Individual doctor add
     try {
         let {
             entity_name,
@@ -150,31 +150,31 @@ const addProfile = async (userData, user, image, res) => {
 
         let getUser = await authenticationModel.findOne({
             where: { phone: user.phone },
-        })
+        });
 
         // let imageUrl = await awsUtils.uploadToS3(image);
         let imageUrl = await DigitalOceanUtils.uploadObject (image); 
-        console.log("entity_name>>>>", entity_name)
-        getUser.entity_name = entity_name
-        getUser.business_type_id = business_type == 'individual' ? 1 : 0
-        getUser.email = email
-        getUser.account_no = account_no
-        getUser.ifsc_code = ifsc_code
-        getUser.bank_name = bank_name
-        getUser.UPI_ID = UPI_ID
-        getUser.account_holder_name = account_holder_name
-        getUser.entity_type = entity_type
-
+        getUser.entity_name = entity_name;
+        // getUser.business_type_id = business_type == 'individual' ? 1 : 0
+        getUser.business_type_id = 0;  // 0 for individual entity. 
+        getUser.email = email;
+        getUser.account_no = account_no;
+        getUser.ifsc_code = ifsc_code;
+        getUser.bank_name = bank_name;
+        getUser.UPI_ID = UPI_ID;
+        getUser.account_holder_name = account_holder_name;
+        // getUser.entity_type = entity_type
+        getUser.entity_type = 2; // 2 for individual 1 for clinic
         let profile_completed = 0
-        let entityData = await getUser.save()
+        let entityData = await getUser.save();
 
-        let entity_id = entityData.entity_id
+        let entity_id = entityData.entity_id;
         let userProfile = await profileModel.findOne({
             where: { doctor_phone },
-        })
+        });
         const getDepartment = await departmentModel.findOne({
             where: { department_id },
-        })
+        });
 
         if (!userProfile) {
             userProfile = new profileModel({
@@ -191,7 +191,7 @@ const addProfile = async (userData, user, image, res) => {
                 profileImageUrl: imageUrl? imageUrl: "",
             })
         } else {
-            userProfile.doctor_name = doctor_name
+            userProfile.doctor_name = doctor_name;
             // userProfile.doctor_phone = doctor_phone
             userProfile.qualification = qualification
                 ? qualification.trim()
@@ -242,7 +242,7 @@ const addProfile = async (userData, user, image, res) => {
             statusCode: 422,
         })
     }
-}
+};
 
 const getProfile = async (req, res) => {
     try {

@@ -25,7 +25,7 @@ router.post('/list-dept-clinic', adminController.listDeptByClinic);
 router.post('/list-doctors', adminController.listDoctors);
 router.post('/list-entity', adminController.listEntity) // meant list buisness for clinic side
 router.post('/transaction-history', adminController.transactionHistory);
-router.post('/add-profile', upload.single('file'), adminController.addProfile);
+router.post('/add-doctor', upload.single('file'), adminController.addProfile);
 router.post('/customer-listing', adminController.listAllCustomers);
 router.post('/add-bank', adminController.addBankDetails);
 router.post('/customer-history', adminController.customerHistory);
