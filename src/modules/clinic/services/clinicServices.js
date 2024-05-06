@@ -355,7 +355,31 @@ const listAllBooking = async (requestData, res) => {
             } else {
                 pendingAppointments++;
             }
-        }
+        };
+
+        appointments.sort((a, b) => {
+            const timeA = a.timeSlot.toLowerCase(); 
+            const timeB = b.timeSlot.toLowerCase();
+            const timeAIsAM = timeA.includes("am");
+            const timeBIsAM = timeB.includes("am");
+            
+            // If both times are AM, sort based on the time values
+            if (timeAIsAM && timeBIsAM) {
+                return timeA.localeCompare(timeB);
+            } 
+            // If one is AM and the other is PM, prioritize AM
+            else if (timeAIsAM) {
+                return -1; // a (AM) comes before b (PM)
+            } 
+            else if (timeBIsAM) {
+                return 1; // b (AM) comes after a (PM)
+            } 
+            else {
+                // Both times are PM, sort based on the time values
+                return timeA.localeCompare(timeB);
+            }
+        });
+
 
         return handleResponse({
             res,

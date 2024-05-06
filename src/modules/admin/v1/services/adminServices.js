@@ -1871,11 +1871,10 @@ const bookingReport_admin = async (requestParams, requestData, res) => {
                     },
                              
                 ],
-
+                order: [[{ model: bookingModel, as: 'booking' }, 'appointmentDate', 'DESC']],
                 limit: pageSize,
                 offset: offset,
         });
-        
      
         const totalPages = Math.ceil(count / pageSize);
         const modifiedBookingReport = bookingReport.map(booking => {
