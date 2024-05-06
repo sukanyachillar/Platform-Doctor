@@ -28,9 +28,9 @@ const addDepart = async (req, res) => {
     }
 }
 
-const listDoctors = async (req, res) => {
+const listDoctors_admin = async (req, res) => {
     try {
-        let data = await adminServices.doctorsList(req.body, res)
+        let data = await adminServices.listDoctors_admin(req.query, req.body, res)
         return data
     } catch (err) {
         console.log({ err })
@@ -291,7 +291,7 @@ export default {
     adminRegister,
     adminLogin,
     addDepart,
-    listDoctors,
+    listDoctors_admin,
     listEntity,
     transactionHistory,
     addNewDoctor,

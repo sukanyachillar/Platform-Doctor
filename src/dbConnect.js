@@ -13,9 +13,9 @@ const sequelize = new Sequelize('platform_doctor', process.env.MYSQL_USER, '', {
 });
 
 // const sequelize = new Sequelize('platform_doctor', 'root', '', {
-//   host: 'localhost',
-//   dialect: 'mysql',
-//   logging: false
+//       host: 'localhost',
+//       dialect: 'mysql',
+//       logging: false
 // });
 
 export default sequelize;

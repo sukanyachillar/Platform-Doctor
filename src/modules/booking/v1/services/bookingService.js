@@ -123,8 +123,8 @@ const bookAppointment = async (req, res) => {
                     message: data?.Error?.error?.description,
                 },
             })
-        const randomUUID = await generateUuid()
-        let newCustomer
+        const randomUUID = await generateUuid();
+        let newCustomer;
         newCustomer = await userModel.findOne({
             where: { phone: customerPhone },
         });
@@ -134,7 +134,7 @@ const bookAppointment = async (req, res) => {
                 userType: 1,
                 name: customerName,
                 phone: customerPhone,
-            })
+            });
         }
 
         const customerData = {
@@ -177,7 +177,7 @@ const bookAppointment = async (req, res) => {
             statusCode: 422,
         })
     }
-}
+};
 
 const listBooking = async ({ doctorId, date }, res) => { // for single doctors
     try {
@@ -655,5 +655,4 @@ export default {
     getBookingReport,
     bookingConfirmationData,
     updateBookingStatus,
-    // listAllCustomers,
 }

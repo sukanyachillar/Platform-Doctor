@@ -22,7 +22,7 @@ router.post('/delete-dept',  adminController.deleteDept);
 router.post('/view-dept',  adminController.getDeptDetails);
 router.post('/list-departments', adminController.listDepartments);
 router.post('/list-dept-clinic', adminController.listDeptByClinic);
-router.post('/list-doctors', adminController.listDoctors);
+router.post('/list-doctors', adminController.listDoctors_admin);
 router.post('/list-entity', adminController.listEntity) // meant list buisness for clinic side
 router.post('/transaction-history', adminController.transactionHistory);
 router.post('/add-doctor', upload.single('file'), adminController.addNewDoctor);

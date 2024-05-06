@@ -251,91 +251,91 @@ const deleteDept = async ({ department_id }, res) => {
 };
 
 
-const doctorsList = async (requestData, res) => {
-    try {
-        const page = parseInt(requestData.page) || 1
-        const pageSize = parseInt(requestData.limit) || 10
-        const searchQuery = requestData.searchQuery || ''
-        const offset = (page - 1) * pageSize
+// const doctorsList = async (requestData, res) => {
+//     try {
+//         const page = parseInt(requestData.page) || 1
+//         const pageSize = parseInt(requestData.limit) || 10
+//         const searchQuery = requestData.searchQuery || ''
+//         const offset = (page - 1) * pageSize
 
-        const { count, rows: records } = await doctorModel.findAndCountAll({
-            attributes: [
-                'doctor_id',
-                'doctor_name',
-                'qualification',
-                'doctor_phone',
-                'consultation_time',
-                'consultation_charge',
-                'status',
-                'description',
-                'department_id',
-                'entity_id',
-            ],
-            where: {
-                [Op.or]: [
-                    { doctor_name: { [Op.like]: `%${searchQuery}%` } }, // Search for doctor_name containing the search query
-                    { doctor_phone: { [Op.like]: `%${searchQuery}%` } }, // Search for phone containing the search query
-                ],
-            },
-            limit: pageSize,
-            offset: offset,
-        })
-        const totalPages = Math.ceil(count / pageSize) // Calculate total number of pages
+//         const { count, rows: records } = await doctorModel.findAndCountAll({
+//             attributes: [
+//                 'doctor_id',
+//                 'doctor_name',
+//                 'qualification',
+//                 'doctor_phone',
+//                 'consultation_time',
+//                 'consultation_charge',
+//                 'status',
+//                 'description',
+//                 'department_id',
+//                 'entity_id',
+//             ],
+//             where: {
+//                 [Op.or]: [
+//                     { doctor_name: { [Op.like]: `%${searchQuery}%` } }, // Search for doctor_name containing the search query
+//                     { doctor_phone: { [Op.like]: `%${searchQuery}%` } }, // Search for phone containing the search query
+//                 ],
+//             },
+//             limit: pageSize,
+//             offset: offset,
+//         })
+//         const totalPages = Math.ceil(count / pageSize) // Calculate total number of pages
 
-        const departmentIds = records.map((record) => record.department_id)
-        const entityIds = records.map((record) => record.entity_id)
-        const departments = await departmentModel.findAll({
-            where: {
-                department_id: departmentIds,
-            },
-            attributes: ['department_id', 'department_name'],
-        })
+//         const departmentIds = records.map((record) => record.department_id)
+//         const entityIds = records.map((record) => record.entity_id)
+//         const departments = await departmentModel.findAll({
+//             where: {
+//                 department_id: departmentIds,
+//             },
+//             attributes: ['department_id', 'department_name'],
+//         })
 
-        const entities = await entityModel.findAll({
-            where: {
-                entity_id: entityIds,
-            },
-            attributes: ['entity_id', 'entity_name'],
-        })
-        const departmentMap = {}
-        departments.forEach((department) => {
-            departmentMap[department.department_id] = department.department_name
-        })
+//         const entities = await entityModel.findAll({
+//             where: {
+//                 entity_id: entityIds,
+//             },
+//             attributes: ['entity_id', 'entity_name'],
+//         })
+//         const departmentMap = {}
+//         departments.forEach((department) => {
+//             departmentMap[department.department_id] = department.department_name
+//         })
 
-        const entityMap = {}
-        entities.forEach((entity) => {
-            entityMap[entity.entity_id] = entity.entity_name
-        })
+//         const entityMap = {}
+//         entities.forEach((entity) => {
+//             entityMap[entity.entity_id] = entity.entity_name
+//         })
 
-        // Merging department_name and entity_name into doctor records
-        records.forEach((record) => {
-            record.department_name = departmentMap[record.department_id]
-            record.entity_name = entityMap[record.entity_id]
-            delete record.department_id // Optional: Remove department_id and entity_id from the record
-            delete record.entity_id
-        })
-        const response = {
-            records: records.map((record) => ({
-                ...record.dataValues,
-                department_name: record.department_name,
-                entity_name: record.entity_name,
-            })),
-        }
-        console.log(response)
-        return handleResponse({
-            res,
-            statusCode: '200',
-            data: {
-                response: response.records,
-                currentPage: page,
-                totalPages,
-                totalCount: count,
-            },
-        })
-    } catch (error) {
-        console.log({ error })
-    }
-};
+//         // Merging department_name and entity_name into doctor records
+//         records.forEach((record) => {
+//             record.department_name = departmentMap[record.department_id]
+//             record.entity_name = entityMap[record.entity_id]
+//             delete record.department_id // Optional: Remove department_id and entity_id from the record
+//             delete record.entity_id
+//         })
+//         const response = {
+//             records: records.map((record) => ({
+//                 ...record.dataValues,
+//                 department_name: record.department_name,
+//                 entity_name: record.entity_name,
+//             })),
+//         }
+//         console.log(response)
+//         return handleResponse({
+//             res,
+//             statusCode: '200',
+//             data: {
+//                 response: response.records,
+//                 currentPage: page,
+//                 totalPages,
+//                 totalCount: count,
+//             },
+//         })
+//     } catch (error) {
+//         console.log({ error })
+//     }
+// };
 
 // const entityList = async (requestData, res) => {
 //     try {
@@ -410,6 +410,152 @@ const doctorsList = async (requestData, res) => {
 //         console.log({ err })
 //     }
 // }
+
+const listDoctors_admin = async (requestParams, requestData, res) => {
+    try {
+        const page = parseInt(requestParams.page) || 1;
+        const pageSize = parseInt(requestParams.limit) || 10;
+        const searchQuery = requestData.searchQuery || '';
+        const entityId = requestData.entityId;
+        const offset = (page - 1) * pageSize;
+
+        const whereCondition = {
+            [Op.or]: [
+                { doctor_name: { [Op.like]: `%${searchQuery}%` } },
+                { doctor_phone: { [Op.like]: `%${searchQuery}%` } },
+            ],
+        };
+
+        if (entityId) {
+            whereCondition.entity_id = entityId;
+        }
+
+        const { count, rows: records } = await doctorModel.findAndCountAll({
+            attributes: [
+                'doctor_id',
+                'doctor_name',
+                'qualification',
+                'doctor_phone',
+                'consultation_time',
+                'consultation_charge',
+                'status',
+                'description',
+            ],
+            where: whereCondition,
+            include: [
+                {
+                    model: departmentModel,
+                    attributes: ['department_name'],
+                },
+                {
+                    model: entityModel,
+                    attributes: ['entity_name'],
+                    where: {
+                        entity_name: { [Op.like]: `%${searchQuery}%` },
+                    },
+                    required: true,
+                },
+            ],
+            limit: pageSize,
+            offset: offset,
+        });
+
+        const totalPages = Math.ceil(count / pageSize);
+
+        return handleResponse({
+            res,
+            statusCode: 200,
+            data: {
+                records,
+                currentPage: page,
+                totalPages,
+                totalCount: count,
+            },
+        });
+    } catch (error) {
+        console.error({ error });
+        return handleResponse({
+            res,
+            statusCode: 500,
+            message: 'Something went wrong',
+            data: {},
+        });
+    }
+};
+
+
+const doctorsList = async (requestData, res) => {
+    try {
+        const page = parseInt(requestData.page) || 1;
+        const pageSize = parseInt(requestData.limit) || 10;
+        const searchQuery = requestData.searchQuery || '';
+        const entityId = requestData.entityId;
+        const offset = (page - 1) * pageSize;
+
+        const whereCondition = {
+            [Op.or]: [
+                { doctor_name: { [Op.like]: `%${searchQuery}%` } },
+                { doctor_phone: { [Op.like]: `%${searchQuery}%` } },
+            ],
+        };
+
+        if (entityId) {
+            whereCondition.entity_id = entityId;
+        }
+
+        const { count, rows: records } = await doctorModel.findAndCountAll({
+            attributes: [
+                'doctor_id',
+                'doctor_name',
+                'qualification',
+                'doctor_phone',
+                'consultation_time',
+                'consultation_charge',
+                'status',
+                'description',
+            ],
+            where: whereCondition,
+            include: [
+                {
+                    model: departmentModel,
+                    attributes: ['department_name'],
+                },
+                {
+                    model: entityModel,
+                    attributes: ['entity_name'],
+                    where: {
+                        entity_name: { [Op.like]: `%${searchQuery}%` },
+                    },
+                    required: true,
+                },
+            ],
+            limit: pageSize,
+            offset: offset,
+        });
+
+        const totalPages = Math.ceil(count / pageSize);
+
+        return handleResponse({
+            res,
+            statusCode: 200,
+            data: {
+                records,
+                currentPage: page,
+                totalPages,
+                totalCount: count,
+            },
+        });
+    } catch (error) {
+        console.error({ error });
+        return handleResponse({
+            res,
+            statusCode: 500,
+            message: 'Something went wrong',
+            data: {},
+        });
+    }
+};
+
 
 const entityList = async (requestData, res) => {
     try {
@@ -1146,7 +1292,7 @@ const addBankDetails = async (
         console.log({ error })
         return handleResponse({
             res,
-            message: 'Sorry try after sometime.',
+            message: 'Error while updating bank details',
             statusCode: 404,
         })
     }
@@ -1661,15 +1807,37 @@ const bookingReport_admin = async (requestParams, requestData, res) => {
     try {
         const page = parseInt(requestParams.page) || 1;
         const pageSize = parseInt(requestParams.limit) || 10;
-        const date = requestData.date;
+        const startDate = requestData.startDate;
+        const endDate = requestData.endDate;
         const offset = (page - 1) * pageSize;
         const doctorId = requestData.doctorId;
         const entityId = requestData.entityId;
+        // const date  = requestData.date
+        const searchQuery = requestData.searchQuery;
+        const reportStatus = requestData.reportStatus || 0;
 
-        let whereCondition = { date };
+        let whereCondition = {
+            date: { 
+                [Op.gte]: startDate,
+                [Op.lte]: endDate
+            }
+        };
 
-        if (doctorId) {
-            whereCondition = { ...whereCondition, doctor_id: doctorId };
+        let bookingCondition = {};
+        
+        if (reportStatus === 0) bookingCondition = { bookingStatus: { [Op.not]: 3 }};
+        if (reportStatus === 1) bookingCondition = { bookingStatus: 1 };
+        if (reportStatus === 3) whereCondition = { date: { [Op.lt]: new Date() }, booking_status: 1 };
+        if (entityId) bookingCondition = { ...bookingCondition, entityId };
+        if (doctorId) whereCondition = { ...whereCondition, doctor_id: doctorId };
+ 
+        if (searchQuery) {
+            whereCondition[Op.or] = [
+                { '$booking.patientName$': { [Op.like]: `%${searchQuery}%` } },
+                { '$booking.orderId$': { [Op.like]: `%${searchQuery}%` } },
+                { '$booking.payment.transactionId$': { [Op.like]: `%${searchQuery}%` } },
+                { '$doctor.doctor_name$': { [Op.like]: `%${searchQuery}%` } }
+            ];
         };
 
         const { count, rows: bookingReport } = await weeklyTimeSlotsModel.findAndCountAll({
@@ -1678,77 +1846,104 @@ const bookingReport_admin = async (requestParams, requestData, res) => {
                 include: [
                     {
                         model: bookingModel,
-                        where: {
-                            bookingStatus: {
-                                [Op.not]: 3,
-                            },
-                        },
+                        where: bookingCondition,
                         attributes: [
                             'bookingId',
                             'amount',
                             'bookingStatus', 
                             'appointmentDate',
                             'orderId',
-                            'workSlotId',
+                            // 'workSlotId',
                             'customerId',
                             'patientName',
                             'bookedPhoneNo'
                            ], 
+                           include: [
+                            {
+                                model: paymentModel,
+                                attributes: ['transactionId'], 
+                            },
+                        ]
                     },
                     {
                         model: doctorModel,
                         attributes: ['doctor_name'],
                     },
-                    // {
-                    //     model: userModel,
-                    //     attributes: ['name', 'phone'],
-                    //     as: 'customer'
-                    // }
+                             
                 ],
 
                 limit: pageSize,
                 offset: offset,
         });
         
-        console.log("bookingReport", bookingReport)
-
-      
+     
         const totalPages = Math.ceil(count / pageSize);
+        const modifiedBookingReport = bookingReport.map(booking => {
 
-        // const modifiedBookingReport = bookingReport.map(booking => ({
-        //     bookingId: booking.bookingId,
-        //     amount: booking.amount,
-        //     bookingStatus: booking.bookingStatus,
-        //     appointmentDate: booking.appointmentDate,
-        //     doctorName: booking.doctor?.doctor_name || '',
-        //     doctorId: booking.doctor?.doctor_id || '',
-        //     orderId: booking.orderId || '',
-        //     customerName: booking.patientName ? booking.patientName : booking.customer?.name || '',
-        //     customerPhone: booking.bookedPhoneNo ? booking.bookedPhoneNo : booking.customer?.phone || ''
-        // }));
+           return {
 
-        // const modifiedBookingReport = bookingReport.map(booking => {
-        //     console.log(booking.bookingId); // Output the booking object to the console
-        //     return {
-        //         bookingId: booking.bookingId,
-        //         amount: booking.amount,
-        //         bookingStatus: booking.bookingStatus,
-        //         appointmentDate: booking.appointmentDate,
-        //         doctorName: booking.doctor?.doctor_name || '',
-        //         doctorId: booking.doctor?.doctor_id || '',
-        //         orderId: booking.orderId || '',
-        //         customerName: booking.patientName ? booking.patientName : booking.customer?.name || '',
-        //         customerPhone: booking.bookedPhoneNo ? booking.bookedPhoneNo : booking.customer?.phone || ''
-        //     };
-        // });
+                time_slot_id: booking.dataValues.time_slot_id,
+                doctor_id: booking.dataValues.doctor_id,
+                bookingId: booking.booking.dataValues.bookingId,
+                amount: booking.booking.dataValues.amount,
+                bookingStatus: booking.booking.dataValues.bookingStatus,
+                appointmentDate: booking.booking.dataValues.appointmentDate,
+                orderId: booking.booking.dataValues.orderId,
+                customerId: booking.booking.dataValues.customerId,
+                patientName: booking.booking.dataValues.patientName,
+                bookedPhoneNo: booking.booking.dataValues.bookedPhoneNo,
+                doctorName: booking.doctor.dataValues.doctor_name || '',
+                transactionId: booking.booking.dataValues.payment.dataValues.transactionId
+            };
+            // const weeklyTimeSlotData = {
+            //     time_slot_id: booking.dataValues.time_slot_id,
+            //     doctor_id: booking.dataValues.doctor_id,
+            //     bookingId: booking.booking.dataValues.bookingId,
+            //     amount: booking.booking.dataValues.amount,
+            //     bookingStatus: booking.booking.dataValues.bookingStatus,
+            //     appointmentDate: booking.booking.dataValues.appointmentDate,
+            //     orderId: booking.booking.dataValues.orderId,
+            //     customerId: booking.booking.dataValues.customerId,
+            //     patientName: booking.booking.dataValues.patientName,
+            //     bookedPhoneNo: booking.booking.dataValues.bookedPhoneNo,
+            //     doctorName: booking.doctor.dataValues.doctor_name || '',
+            //     transactionId: booking.booking.dataValues.payment.dataValues.transactionId
+            // };
         
+            // const bookingData = {
+            //     bookingId: booking.booking.dataValues.bookingId,
+            //     amount: booking.booking.dataValues.amount,
+            //     bookingStatus: booking.booking.dataValues.bookingStatus,
+            //     appointmentDate: booking.booking.dataValues.appointmentDate,
+            //     orderId: booking.booking.dataValues.orderId,
+            //     customerId: booking.booking.dataValues.customerId,
+            //     patientName: booking.booking.dataValues.patientName,
+            //     bookedPhoneNo: booking.booking.dataValues.bookedPhoneNo
+            // };
+        
+            // const doctorData = {
+            //     doctorName: booking.doctor.dataValues.doctor_name || ''
+            // };
+        
+            // const paymentData = booking.booking.dataValues.payment ? {
+            //     transactionId: booking.booking.dataValues.payment.dataValues.transactionId
+            // } : {};
+        
+            // return {
+                // weeklyTimeSlotData,
+                // bookingData,
+                // doctorData,
+                // paymentData
+            // };
+        });
+      
 
         return handleResponse({
             res,
             statusCode: 200,
             message: 'Successfully fetched booking report.',
             data: {
-                bookingReport,
+                bookingReport: modifiedBookingReport,
                 totalCount: count,
                 totalPages: totalPages,
                 currentPage: page,
@@ -1790,13 +1985,13 @@ const listClinicName = async (req, res )=>{
             data: { }
         });
     }
-}
+};
 
 export default {
     adminLogin,
     adminRegister,
     addDept,
-    doctorsList,
+    listDoctors_admin,
     entityList,
     transactionHistory,
     addNewDoctor,
