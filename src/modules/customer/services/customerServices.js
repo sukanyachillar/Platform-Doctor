@@ -312,7 +312,7 @@ const getOneEntityDetails = async (req, res) => {
                 statusCode: 400,
                 message: 'Not found',
                 data: {},
-            })
+            });
         }
 
         const { entity_name, phone, email, entityAddress, imageUrl, description } = entityDetails;

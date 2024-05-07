@@ -61,8 +61,8 @@ const addNewDoctor = async (req, res) => {
             req.body,
             req.file,
             res,
-            )
-        return data
+            );
+        return data;
     } catch (error) {
         console.log({ error })
     }
@@ -287,6 +287,32 @@ const listClinicName = async (req, res) => {
     }
 };
 
+const viewDoctor = async (req, res) => {
+    try {
+        let data = await adminServices.viewDoctor(
+            req.body,
+            res
+        );
+        return data;
+    } catch (err) {
+        console.log({ err })
+    }
+};
+
+
+const updateDoctor = async (req, res) => {
+    try {
+        let data = await adminServices.updateDoctor(
+            req.body,
+            req.file,
+            res,
+        );
+        return data;
+    } catch (err) {
+        console.log({ err })
+    }
+};
+
 export default {
     adminRegister,
     adminLogin,
@@ -295,6 +321,8 @@ export default {
     listEntity,
     transactionHistory,
     addNewDoctor,
+    viewDoctor,
+    updateDoctor,
     listAllCustomers,
     addBankDetails,
     customerHistory,

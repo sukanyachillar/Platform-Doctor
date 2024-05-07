@@ -417,7 +417,9 @@ const listDoctors_admin = async (requestParams, requestData, res) => {
         const pageSize = parseInt(requestParams.limit) || 10;
         const searchQuery = requestData.searchQuery || '';
         const offset = (page - 1) * pageSize;
-        let whereCondition = { status: 1 };
+        let whereCondition = {  };
+        const entityType = requestData.entityType;
+        let entityWhereCond = {};
 
         if (searchQuery) {
             whereCondition[Op.or] = [
@@ -427,6 +429,8 @@ const listDoctors_admin = async (requestParams, requestData, res) => {
                 { '$doctorEntity.entity.entity_name$': { [Op.like]: `%${searchQuery}%` } }
             ];
         };
+
+        if (entityType) entityWhereCond = { entity_type : entityType };
 
         const { count, rows: records } = await doctorModel.findAndCountAll({
             attributes: [
@@ -449,7 +453,8 @@ const listDoctors_admin = async (requestParams, requestData, res) => {
                     include: [
                         {
                             model: entityModel,
-                            attributes: ['entity_name'],
+                            attributes: ['entity_name', 'entity_id', 'entity_type'],
+                            where: entityWhereCond,
                             required: true,
                           
                         },
@@ -458,6 +463,7 @@ const listDoctors_admin = async (requestParams, requestData, res) => {
             ],
             limit: pageSize,
             offset: offset,
+            // order: [['createdAt', 'DESC']],
         });
 
         const totalPages = Math.ceil(count / pageSize);
@@ -467,7 +473,9 @@ const listDoctors_admin = async (requestParams, requestData, res) => {
                 doctorId: record.doctor_id,
                 doctorName: record.doctor_name,
                 department: record.department.department_name,
-                entityName: record.doctorEntity ? record.doctorEntity.entity.entity_name : null,
+                entityId: record.doctorEntity ? record.doctorEntity.entity.entity_id : '',
+                entityName: record.doctorEntity ? record.doctorEntity.entity.entity_name : '',
+                entityType: record.doctorEntity ? record.doctorEntity.entity.entity_type : '',
                 doctorPhone: record.doctor_phone,
             })),
             currentPage: page,
@@ -1061,6 +1069,183 @@ const addDoctorByClinic = async ({
         return false
     }
 };
+
+const viewDoctor = async ({ doctorId, entityId }, res) => {
+
+    try {
+        const isValidDr = await doctorModel.findOne({ where: { doctor_id: doctorId } });
+        const isValidClinic = await entityModel.findOne({ where: { entity_id: entityId } });
+    
+        if (!isValidDr) {
+            return handleResponse({
+                res,
+                statusCode: 400,
+                message: 'Doctor Not found',
+                data: {},
+            });
+        };
+        
+        if (!isValidClinic) {
+            return handleResponse({
+                res,
+                statusCode: 400,
+                message: 'Clinic Not found',
+                data: {},
+            });
+        };
+    
+    
+        const getDoctor = await doctorModel.findOne({
+            where: { doctor_id: doctorId },
+            include: [
+                {
+                    model: departmentModel,
+                    attributes: ['department_name'],
+                },
+                {
+                    model: doctorEntityModel,
+                    attributes: ['consultationTime', 'consultationCharge', 'entityId'],
+                    where: { entityId, doctorId },
+                    include: [
+                        {
+                            model: entityModel,
+                            attributes: ['entity_name'],
+                        },
+                    ],
+                },
+            ],
+        });
+    
+        if (!getDoctor) {
+            return handleResponse ({
+                res,
+                statusCode: 404,
+                message: 'Error while fetching doctor details',
+                data: {
+                    formattedResponse
+                },
+            })
+        };
+        const formattedResponse = {
+            doctorId: getDoctor.doctor_id,
+            doctorName: getDoctor.doctor_name,
+            department: getDoctor.department ? getDoctor.department.department_name : null,
+            entityName: getDoctor.doctorEntity ? getDoctor.doctorEntity.entity.entity_name : null,
+            doctorPhone: getDoctor.doctor_phone,
+            qualification: getDoctor.qualification,
+            consultationTime: getDoctor.doctorEntity ? getDoctor.doctorEntity.consultationTime : null,
+            consultationCharge: getDoctor.doctorEntity ? getDoctor.doctorEntity.consultationCharge : null,
+            description: getDoctor.description,
+            email: getDoctor.email,
+            profileImageUrl: getDoctor.profileImageUrl,
+            gstNo: getDoctor.gstNo,
+        };
+    
+        return handleResponse({
+            res,
+            statusCode: 200,
+            message: 'Doctor details fetched successfully',
+            data: {
+                formattedResponse
+            },
+        });
+    } catch (error) {
+        return handleResponse({
+            res,
+            statusCode: 500,
+            message: 'Error while fetching doctor data',
+            data: {},
+        });
+    };
+
+};
+
+const updateDoctor = async (data, profileImage, res) => {
+    try {
+        const { doctorId, entityId, updatedData } = data;
+        const { 
+                doctor_name,
+                qualification,
+                email,
+                consultation_time,
+                consultation_charge,
+                department_id,
+                description,
+                gstNo,
+                newStatus,
+             } = updatedData;
+ 
+        const existingDoctor = await doctorModel.findOne({ where: { doctor_id: doctorId } });
+        const existingEntity = await entityModel.findOne({ where: { entity_id: entityId } });
+
+        if (!existingDoctor) {
+            return handleResponse({
+                res,
+                statusCode: 404,
+                message: 'Doctor not found',
+                data: {},
+            });
+        };
+        
+        if (!existingEntity) {
+            return handleResponse({
+                res,
+                statusCode: 404,
+                message: 'Entity not found',
+                data: {},
+            });
+        };
+
+        const existingDoctorEntity = await doctorEntityModel.findOne(
+                                    { where: { doctorId: doctorId, entityId: entityId } });
+        
+        if (!existingDoctorEntity) {
+            return handleResponse({
+                res,
+                statusCode: 404,
+                message: 'Doctor entity not found',
+                data: {},
+            });
+        };
+
+      await doctorModel.update({
+            doctor_name,
+            qualification,
+            email,
+            department_id,
+            description,
+            gstNo,
+            status: newStatus,
+        }, { where: { doctor_id: doctorId } });
+
+        console.log(consultation_time,consultation_charge )
+        let response = await doctorEntityModel.update({
+            consultationTime: consultation_time,
+            consultationCharge: consultation_charge,
+            status: newStatus,
+        }, { where: { doctorId: doctorId, entityId: entityId } });
+
+        console.log("response", response)
+
+        return handleResponse({
+            res,
+            statusCode: 200,
+            message: 'Doctor details updated successfully',
+            data: {},
+        });
+
+
+    } catch (error) {
+      console.log(error);
+      return handleResponse({
+        res,
+        statusCode: 500,
+        message: 'Error while updating doctor data',
+        data: {},
+    });
+    }
+}
+
 const getUserDetails = async (search) => {
     const whereCondition = {}
     if (search) {
@@ -1947,6 +2132,7 @@ export default {
     entityList,
     transactionHistory,
     addNewDoctor,
+    updateDoctor,
     listAllCustomers,
     addBankDetails,
     customerHistory,
@@ -1964,4 +2150,5 @@ export default {
     graphData,
     bookingReport_admin,
     listClinicName,
+    viewDoctor,
 };
