@@ -22,16 +22,19 @@ import { decrypt } from '../../../../utils/token.js';
 const register = async (userData, res) => {
     try {
         let { phone, token } = userData;
-        let doctorExists
+        let doctorExists;
         const getUser = await authenticationModel.findOne({ where: { phone } });
         if(!getUser) {
             doctorExists =  await profileModel.findOne({ where: { doctor_phone: phone } });
             if (doctorExists) {
                phone = doctorExists.doctor_phone;
-            } 
+            };
         }
-        let tokens = await generateTokens(phone)
-        let userId, newToken
+        let tokens = await generateTokens(phone);
+        let userId, newToken;
+    
+        const entityDetails = await getEntityDetails(phone);
+        console.log("entityDetails", entityDetails)
         if (getUser) {
             userId = getUser.entity_id
             newToken = await new tokenModel({
@@ -39,8 +42,8 @@ const register = async (userData, res) => {
                 token,
                 createdAt: new Date(),
                 updatedAt: new Date(),
-            })
-            await newToken.save()
+            });
+            await newToken.save();
             return handleResponse({
                 res,
                 statusCode: '200',
@@ -53,9 +56,10 @@ const register = async (userData, res) => {
                     profile_completed: getUser.profile_completed,
                     status: getUser.status,
                     entity_type: getUser.entity_type ?  getUser.entity_type : '',
+                    entityDetails: entityDetails,
                 },
             })
-        }
+        };
         if (doctorExists) {
             const existingDoctorEntity = await doctorEntityModel.findOne({
                 where: { 
@@ -67,7 +71,7 @@ const register = async (userData, res) => {
 
             } else{
                 userId = doctorExists.entity_id
-            }
+            };
 
             const getEntity = await authenticationModel.findOne({ where: { entity_id: userId } });
 
@@ -76,7 +80,7 @@ const register = async (userData, res) => {
                 token,
                 createdAt: new Date(),
                 updatedAt: new Date(),
-            })
+            });
             await newToken.save();
             return handleResponse({
                 res,
@@ -90,9 +94,11 @@ const register = async (userData, res) => {
                     profile_completed: 1, // getUser.profile_completed,
                     status: getEntity.status,
                     entity_type: getEntity.entity_type ?  getEntity.entity_type : '',
+                    entityDetails: entityDetails,
+
                 },
             })
-        }
+        };
         const newUser = new authenticationModel(userData)
         const addedUser = await newUser.save();
         newToken = await new tokenModel({
@@ -100,8 +106,8 @@ const register = async (userData, res) => {
             token,
             createdAt: new Date(),
             updatedAt: new Date(),
-        })
-        await newToken.save()
+        });
+        await newToken.save();
         return handleResponse({
             res,
             statusCode: '200',
@@ -115,7 +121,7 @@ const register = async (userData, res) => {
                 access_token: tokens.accessToken,
                 refresh_token: tokens.refreshToken,
             },
-        })
+        });
     } catch (error) {
         console.log({ 'Error while registeration': error })
         return handleResponse({
@@ -124,7 +130,42 @@ const register = async (userData, res) => {
             statusCode: 422,
         })
     }
-}
+};
+
+const getEntityDetails = async (doctorPhone) => {
+    try {
+        const doctor = await doctorModel.findOne({ where: { doctor_phone: doctorPhone } });
+
+        const entities = await doctorEntityModel.findAll({ 
+            where: { doctorId: doctor.doctor_id }, 
+            include: [{ 
+                model: entityModel,
+                attributes: [
+                              'entity_id', 
+                              'entity_name', 
+                              'entity_type',
+                              'phone',
+                            ],
+            }],
+        });
+
+        const entityDetails = entities.map(entity => ({
+            entityId: entity.entity.entity_id,
+            entityName: entity.entity.entity_name,
+            phone: entity.entity.phone,
+            entityType: entity.entity.entity_type,
+           
+        }));
+
+        return entityDetails;
+    } catch (error) {
+        console.error(error);
+        return null; // Return null in case of any error
+    }
+};
+
+
+
 
 const addProfile = async (userData, user, image, res) => {
     // Individual doctor add
