@@ -417,12 +417,15 @@ const listDoctors_admin = async (requestParams, requestData, res) => {
         const pageSize = parseInt(requestParams.limit) || 10;
         const searchQuery = requestData.searchQuery || '';
         const offset = (page - 1) * pageSize;
+        let whereCondition = { status: 1 };
 
-        const whereCondition = {
-            [Op.or]: [
+        if (searchQuery) {
+            whereCondition[Op.or] = [
                 { doctor_name: { [Op.like]: `%${searchQuery}%` } },
                 { doctor_phone: { [Op.like]: `%${searchQuery}%` } },
-            ],
+                { '$department.department_name$': { [Op.like]: `%${searchQuery}%` } },
+                { '$doctorEntity.entity.entity_name$': { [Op.like]: `%${searchQuery}%` } }
+            ];
         };
 
         const { count, rows: records } = await doctorModel.findAndCountAll({
@@ -432,7 +435,6 @@ const listDoctors_admin = async (requestParams, requestData, res) => {
                 'qualification',
                 'doctor_phone',
                 'status',
-                'description',
             ],
             where: whereCondition,
             include: [
@@ -449,9 +451,7 @@ const listDoctors_admin = async (requestParams, requestData, res) => {
                             model: entityModel,
                             attributes: ['entity_name'],
                             required: true,
-                            where: {
-                                entity_name: { [Op.like]: `%${searchQuery}%` },
-                            },
+                          
                         },
                     ],
                 },
@@ -460,14 +460,26 @@ const listDoctors_admin = async (requestParams, requestData, res) => {
             offset: offset,
         });
 
-
         const totalPages = Math.ceil(count / pageSize);
+
+        const formattedResponse = {
+            records: records.map(record => ({
+                doctorId: record.doctor_id,
+                doctorName: record.doctor_name,
+                department: record.department.department_name,
+                entityName: record.doctorEntity ? record.doctorEntity.entity.entity_name : null,
+                doctorPhone: record.doctor_phone,
+            })),
+            currentPage: page,
+            totalPages: Math.ceil(count / pageSize),
+            totalCount: count,
+        };
 
         return handleResponse({
             res,
             statusCode: 200,
             data: {
-                records,
+                doctorList: formattedResponse.records,
                 currentPage: page,
                 totalPages,
                 totalCount: count,
