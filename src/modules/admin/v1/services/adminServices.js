@@ -416,7 +416,6 @@ const listDoctors_admin = async (requestParams, requestData, res) => {
         const page = parseInt(requestParams.page) || 1;
         const pageSize = parseInt(requestParams.limit) || 10;
         const searchQuery = requestData.searchQuery || '';
-        const entityId = requestData.entityId;
         const offset = (page - 1) * pageSize;
 
         const whereCondition = {
@@ -426,18 +425,12 @@ const listDoctors_admin = async (requestParams, requestData, res) => {
             ],
         };
 
-        if (entityId) {
-            whereCondition.entity_id = entityId;
-        }
-
         const { count, rows: records } = await doctorModel.findAndCountAll({
             attributes: [
                 'doctor_id',
                 'doctor_name',
                 'qualification',
                 'doctor_phone',
-                'consultation_time',
-                'consultation_charge',
                 'status',
                 'description',
             ],
@@ -448,17 +441,25 @@ const listDoctors_admin = async (requestParams, requestData, res) => {
                     attributes: ['department_name'],
                 },
                 {
-                    model: entityModel,
-                    attributes: ['entity_name'],
-                    where: {
-                        entity_name: { [Op.like]: `%${searchQuery}%` },
-                    },
+                    model: doctorEntityModel,
+                    attributes: ['consultationTime', 'consultationCharge'],
                     required: true,
+                    include: [
+                        {
+                            model: entityModel,
+                            attributes: ['entity_name'],
+                            required: true,
+                            where: {
+                                entity_name: { [Op.like]: `%${searchQuery}%` },
+                            },
+                        },
+                    ],
                 },
             ],
             limit: pageSize,
             offset: offset,
         });
+
 
         const totalPages = Math.ceil(count / pageSize);
 
@@ -484,77 +485,77 @@ const listDoctors_admin = async (requestParams, requestData, res) => {
 };
 
 
-const doctorsList = async (requestData, res) => {
-    try {
-        const page = parseInt(requestData.page) || 1;
-        const pageSize = parseInt(requestData.limit) || 10;
-        const searchQuery = requestData.searchQuery || '';
-        const entityId = requestData.entityId;
-        const offset = (page - 1) * pageSize;
+// const doctorsList = async (requestData, res) => {
+//     try {
+//         const page = parseInt(requestData.page) || 1;
+//         const pageSize = parseInt(requestData.limit) || 10;
+//         const searchQuery = requestData.searchQuery || '';
+//         const entityId = requestData.entityId;
+//         const offset = (page - 1) * pageSize;
 
-        const whereCondition = {
-            [Op.or]: [
-                { doctor_name: { [Op.like]: `%${searchQuery}%` } },
-                { doctor_phone: { [Op.like]: `%${searchQuery}%` } },
-            ],
-        };
+//         const whereCondition = {
+//             [Op.or]: [
+//                 { doctor_name: { [Op.like]: `%${searchQuery}%` } },
+//                 { doctor_phone: { [Op.like]: `%${searchQuery}%` } },
+//             ],
+//         };
 
-        if (entityId) {
-            whereCondition.entity_id = entityId;
-        }
+//         if (entityId) {
+//             whereCondition.entity_id = entityId;
+//         }
 
-        const { count, rows: records } = await doctorModel.findAndCountAll({
-            attributes: [
-                'doctor_id',
-                'doctor_name',
-                'qualification',
-                'doctor_phone',
-                'consultation_time',
-                'consultation_charge',
-                'status',
-                'description',
-            ],
-            where: whereCondition,
-            include: [
-                {
-                    model: departmentModel,
-                    attributes: ['department_name'],
-                },
-                {
-                    model: entityModel,
-                    attributes: ['entity_name'],
-                    where: {
-                        entity_name: { [Op.like]: `%${searchQuery}%` },
-                    },
-                    required: true,
-                },
-            ],
-            limit: pageSize,
-            offset: offset,
-        });
+//         const { count, rows: records } = await doctorModel.findAndCountAll({
+//             attributes: [
+//                 'doctor_id',
+//                 'doctor_name',
+//                 'qualification',
+//                 'doctor_phone',
+//                 'consultation_time',
+//                 'consultation_charge',
+//                 'status',
+//                 'description',
+//             ],
+//             where: whereCondition,
+//             include: [
+//                 {
+//                     model: departmentModel,
+//                     attributes: ['department_name'],
+//                 },
+//                 {
+//                     model: entityModel,
+//                     attributes: ['entity_name'],
+//                     where: {
+//                         entity_name: { [Op.like]: `%${searchQuery}%` },
+//                     },
+//                     required: true,
+//                 },
+//             ],
+//             limit: pageSize,
+//             offset: offset,
+//         });
 
-        const totalPages = Math.ceil(count / pageSize);
+//         const totalPages = Math.ceil(count / pageSize);
 
-        return handleResponse({
-            res,
-            statusCode: 200,
-            data: {
-                records,
-                currentPage: page,
-                totalPages,
-                totalCount: count,
-            },
-        });
-    } catch (error) {
-        console.error({ error });
-        return handleResponse({
-            res,
-            statusCode: 500,
-            message: 'Something went wrong',
-            data: {},
-        });
-    }
-};
+//         return handleResponse({
+//             res,
+//             statusCode: 200,
+//             data: {
+//                 records,
+//                 currentPage: page,
+//                 totalPages,
+//                 totalCount: count,
+//             },
+//         });
+//     } catch (error) {
+//         console.error({ error });
+//         return handleResponse({
+//             res,
+//             statusCode: 500,
+//             message: 'Something went wrong',
+//             data: {},
+//         });
+//     }
+// };
 
 
 const entityList = async (requestData, res) => {
@@ -864,24 +865,22 @@ const transactionHistory = async (requestData, res) => {
 
 const addNewDoctor = async (docData, image, res) => {
     try {
-        let redirection, response, message, statusCode, imageUrl ;
+        let redirection, response, statusCode, imageUrl ;
         if (image) {
             imageUrl = await DigitalOceanUtils.uploadObject (image); 
         }
         if (docData.businessType == 'individual') {
-            response = await addIndvDoctor(docData, imageUrl);
+            response = await addIndvDoctor(docData, imageUrl, res);
             redirection = true;
         } else {
-            response = await addDoctorByClinic(docData, imageUrl);
+            response = await addDoctorByClinic(docData, imageUrl, res);
             redirection = false
         }
-        // message = response
-        //     ? 'Successfully added profile.'
-        //     : 'Sorry try after sometime.'
-        statusCode = response ? 200 : 404
+
+        statusCode = response.success ? 200 : 404
         return handleResponse({
             res,
-            message: response.responseMsg,
+            message: response.message,
             statusCode,
             data: {
                 entityId: response.entityId,
@@ -907,108 +906,77 @@ const addIndvDoctor = async ({
     consultation_charge,
     department_id,
     description,
+    gstNo,
+
 }, imageUrl) => {
+    
     try {
    
-        let entityData = await entityModel.findOne({
+        let existingIndvEntity = await entityModel.findOne({
             where: { phone: doctor_phone },
         });
 
-        let docData, newEntity, newDocData, responseMsg;
-        if (!entityData) {
-            entityData = await new entityModel({
+        if (existingIndvEntity) {
+            return {
+                success: false,
+                message: 'Individual Entity already exists with this Phone No',
+            };
+        };
+
+        let existingDr = await doctorModel.findOne({
+            where: { doctor_phone: doctor_phone },
+        });
+
+        let addedDoctor, addedIndvEntity;
+
+        if (!existingIndvEntity) {
+            const newIndvEntity = await new entityModel({
                 phone: doctor_phone,
                 entity_name: doctor_name,
                 business_type_id: 0,
                 entity_type : 2, // entity_type : businessData.businessId
                 description,
                 email,
-                imageUrl
+                imageUrl,
+                gstNo,
             });
 
-            newEntity = await entityData.save();
+            addedIndvEntity = await newIndvEntity.save();
 
-            docData = await new doctorModel({
+            const newDoctor = await new doctorModel({
                 doctor_name,
                 doctor_phone,
                 qualification,
                 description,
                 email,
-                consultation_time,
-                consultation_charge,
                 department_id,
-                entity_id: newEntity.entity_id,
+                entity_id: addedIndvEntity.entity_id,
                 profileImageUrl: imageUrl,
+                gstNo,
             });
            
-           newDocData = await docData.save();
+           if (!existingDr) {
+               addedDoctor = await newDoctor.save();
+           }
 
            await doctorEntityModel.create({
-                doctorId: newDocData.doctor_id,
-                entityId: newEntity.entity_id,
+                doctorId: addedDoctor.doctor_id,
+                entityId: addedIndvEntity.entity_id,
+                consultationTime: consultation_time,
+                consultationCharge: consultation_charge,
            });
-           
-           responseMsg = 'Doctor Successfully added';
-
-        } else {
-            entityData.entity_name = doctor_name;
-            entityData.description = description;
-            entityData.email = email;
-            entityData.imageUrl = imageUrl;
-
-            await entityData.save();
-
-            docData = await doctorModel.findOne({ where: { doctor_phone } });
-
-            if (!docData) {
-                docData = await new doctorModel({
-                    doctor_name,
-                    doctor_phone,
-                    qualification,
-                    description,
-                    email,
-                    consultation_time,
-                    consultation_charge,
-                    department_id,
-                    entity_id: entityData.entity_id,
-                    profileImageUrl: imageUrl,
-                });
-                newDocData = await docData.save();
-            } else {
-                docData.doctor_name = doctor_name;
-                docData.qualification = qualification;
-                docData.email = email;
-                docData.consultation_time = consultation_time;
-                docData.consultation_charge = consultation_charge;
-                docData.department_id = department_id;
-                docData.description = description;
-                // docData.entity_id = entityData.entity_id;
-                docData.profileImageUrl= imageUrl;
-
-                newDocData = await docData.save();
-                
-                responseMsg = 'Doctor Successfully updated';
-            }
+ 
         };
-        // newDocData = await docData.save();
 
-        // const existingDoctorEntity = await doctorEntityModel.findOne({
-        //     where: { 
-        //         doctorId: newDocData.doctor_id,
-        //         entityId: newDocData.entity_id
-        //     }
-        // });
-        // if(!existingDoctorEntity) {
-        //     await doctorEntityModel.create({
-        //         doctorId: newDocData.id,
-        //         entityId: newEntity.entity_id,
-        //     });
-    
-        // }
         let getEntity = await entityModel.findOne({
             where: { phone: doctor_phone },
         });
-        return { entityId: getEntity.entity_id, responseMsg };
+
+        return { 
+                 entityId: getEntity.entity_id, 
+                 message: 'Individual doctor added succusfully', 
+                 success: true,
+               };
 
     } catch (error) {
         console.log({ error })
@@ -1026,84 +994,55 @@ const addDoctorByClinic = async ({
     department_id,
     description,
     entity_id,
+    gstNo,
 }, imageUrl) => {
-   
+  
     try {
 
-        // let newEntity
-        // const businessData = await businessModel.findOne({ where:{ businessName: 'clinic' },attributes:['businessId']})
-        // let entityData = await entityModel.findOne({
-        //     where: { entity_id: entity_id },
-        // })
-
-        // if(!entityData) {
-        //     entityData = await new entityModel({
-        //         phone: doctor_phone,
-        //         entity_name: doctor_name,
-        //         business_type_id: 1,
-        //         entity_type : businessData.businessId
-        //     })
-        //     // newEntity = await entityData.save()  // no need of enity add in case of doctor under an entity
-        // }
-
-        let docData, newDocData, responseMsg;
-
-        docData = await doctorModel.findOne({
-            where: { doctor_phone } //, entity_id },
+        const existingDr = await doctorModel.findOne({
+            where: { doctor_phone } 
         });
 
-        if (!docData) {
-            docData = await new doctorModel({
+        const existingDrwithClinic = await doctorEntityModel.findOne({
+            where: { doctorId: existingDr?.existingDr?.doctor_id, entityId: entity_id } 
+        });
+
+        if (existingDrwithClinic) {
+            return {
+                     success: false,
+                     message: 'Doctor already registered with this Clinic',
+                  };
+        };
+
+        const newDoctor = await new doctorModel({
                 doctor_name,
                 doctor_phone,
                 qualification,
                 email,
-                consultation_time,
-                consultation_charge,
                 department_id,
                 description,
                 entity_id,
-                profileImageUrl: imageUrl
+                profileImageUrl: imageUrl,
+                gstNo,
             });
-
-            responseMsg = 'Doctor Successfully added';
             
-        } else {
-            docData.doctorName = doctor_name
-            docData.doctorPhone = doctor_phone
-            docData.qualification = qualification
-            ;(docData.email = email),
-                (docData.consultation_time = consultation_time)
-            docData.consultation_charge = consultation_charge
-            docData.department_id = department_id
-            docData.department_id = department_id
-            docData.entity_id = entity_id
-            docData.profileImageUrl = imageUrl
-             
-            responseMsg = 'Doctor Successfully updated';
-             
-        };
-        newDocData = await docData.save();
+        let addedDoctor;
+        if (!existingDr) {
+            addedDoctor = await newDoctor.save();
+        }
 
         await doctorEntityModel.create({
-            doctorId: newDocData.doctor_id,
+            doctorId: addedDoctor.doctor_id,
             entityId: entity_id,
+            consultationCharge: consultation_charge,
+            consultationTime: consultation_time,
         });
-        // console.log("newDocData", newDocData)
-        // const existingDoctorEntity = await doctorEntityModel.findOne({
-        //     where: { 
-        //         doctorId: newDocData.doctor_id,
-        //         entityId: newDocData.entity_id
-        //     }
-        // });
-        // if(!existingDoctorEntity) {
-        //     await doctorEntityModel.create({
-        //         doctorId: newDocData.doctor_id,
-        //         entityId: newDocData.entity_id,
-        //     });
-    
-        // }
-        return { entityId: entity_id, responseMsg };
+     
+        return { 
+                 entityId: entity_id, 
+                 message: 'Doctor added succusfully',
+                 success: true,
+               };
 
     } catch (error) {
         console.log({ error })
@@ -1391,6 +1330,7 @@ const customerHistory = async (req, res) => {
           description,
           email,
           pincode,
+          gstNo,
         } = entityData;
 
         let imageUrl;
@@ -1411,6 +1351,7 @@ const customerHistory = async (req, res) => {
             imageUrl,
             description,
             email,
+            gstNo,
         });
           
           await entityAddressModel.update(
@@ -1441,7 +1382,8 @@ const customerHistory = async (req, res) => {
           location,
           imageUrl,
           description,
-          email
+          email,
+          gstNo,
          });
 
    
@@ -1880,7 +1822,6 @@ const bookingReport_admin = async (requestParams, requestData, res) => {
         const modifiedBookingReport = bookingReport.map(booking => {
 
            return {
-
                 time_slot_id: booking.dataValues.time_slot_id,
                 doctor_id: booking.dataValues.doctor_id,
                 bookingId: booking.booking.dataValues.bookingId,
@@ -1892,7 +1833,7 @@ const bookingReport_admin = async (requestParams, requestData, res) => {
                 patientName: booking.booking.dataValues.patientName,
                 bookedPhoneNo: booking.booking.dataValues.bookedPhoneNo,
                 doctorName: booking.doctor.dataValues.doctor_name || '',
-                transactionId: booking.booking.dataValues.payment.dataValues.transactionId
+                transactionId: booking.booking.dataValues.payment ? booking.booking.dataValues.payment.dataValues.transactionId || '' : ''
             };
             // const weeklyTimeSlotData = {
             //     time_slot_id: booking.dataValues.time_slot_id,

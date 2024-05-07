@@ -5,6 +5,7 @@ import departmentModel from './departmentModel.js';
 import weeklyTimeSlotsModel from './weeklyTimeSlotsModel.js';
 import bookingModel from './bookingModel.js';
 import paymentModel from './paymentModel.js';
+import entityModel from './entityModel.js';
 
 const models = {
     doctorEntityModel,
@@ -13,6 +14,7 @@ const models = {
     weeklyTimeSlotsModel,
     bookingModel,
     paymentModel,
+    entityModel,
 };
 
 const associateModels = async () => {

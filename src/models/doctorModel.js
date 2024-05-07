@@ -70,6 +70,14 @@ const doctorModel = sequelize.define('doctor', {
         allowNull: true,
         defaultValue: 0, //1 can add
     },
+    razorpayId: {
+        type: DataTypes.STRING, 
+        allowNull: true,
+    },
+    gstNo: {
+        type: DataTypes.STRING, 
+        allowNull: true,
+    },
     created_date_time: {
         type: DataTypes.DATE,
         defaultValue: DataTypes.NOW,
@@ -84,8 +92,7 @@ const doctorModel = sequelize.define('doctor', {
 
 doctorModel.associate = function(models) {
     doctorModel.belongsTo(models.departmentModel, { foreignKey: 'department_id' }); // Assuming each doctor belongs to one department
-    // doctorModel.belongsTo(models.weeklyTimeSlotsModel, { foreignKey: 'doctor_id' }); 
-
+    doctorModel.hasOne(models.doctorEntityModel, { foreignKey: 'doctorId' });
 };
 
 export default doctorModel;

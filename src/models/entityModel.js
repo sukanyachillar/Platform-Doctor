@@ -71,7 +71,6 @@ const entityModel = sequelize.define('entity', {
         allowNull: true,
         defaultValue: 1,
     },
-
     profile_completed: {
         type: DataTypes.INTEGER, //1: completed
         allowNull: true,
@@ -83,6 +82,10 @@ const entityModel = sequelize.define('entity', {
     },
     description: {
         type: DataTypes.TEXT,
+        allowNull: true,
+    },
+    gstNo: { 
+        type: DataTypes.STRING,
         allowNull: true,
     },
     created_date_time: {
@@ -100,4 +103,4 @@ const entityModel = sequelize.define('entity', {
 
 entityModel.hasOne(entityAddressModel, { foreignKey: 'entityId' });
 
-export default entityModel
+export default entityModel;
