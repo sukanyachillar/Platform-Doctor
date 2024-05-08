@@ -1000,7 +1000,10 @@ const addIndvDoctor = async ({
 
     } catch (error) {
         console.log({ error })
-        return false
+        return { 
+            message: 'Error while adding docotr under the clinic', 
+            success: false,
+          };
     }
 };
 
@@ -1033,7 +1036,7 @@ const addDoctorByClinic = async ({
         if (existingDrwithClinic) {
             return {
                      success: false,
-                     message: 'Doctor already registered with this Clinic',
+                     message: 'Doctor already exists with this Clinic',
                   };
         };
 
@@ -1063,7 +1066,7 @@ const addDoctorByClinic = async ({
      
         return { 
                  entityId: entity_id, 
-                 message: 'Doctor added succusfully',
+                 message: 'Doctor under the clinic added succusfully',
                  success: true,
                };
 
