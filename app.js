@@ -74,7 +74,7 @@ app.use('/api/v1/admin', adminRouter);
 app.use('/api/v1/work', workRouter);
 app.use('/api/v1/booking', bookingrouter);
 app.use('/api/v1/payment', paymentRouter);
-app.use('/api/v1/admin/business', businessRouter);
+app.use('/api/v1/app', businessRouter);
 app.use('/api/v1/customer', customerRouter);
 app.use('/api/v1/clinic', clinicRouter);
 

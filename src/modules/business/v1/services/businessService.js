@@ -41,23 +41,31 @@ const listBusiness = async (requestData, res) => {
     const pageSize = parseInt(requestData.limit) || 10;
     const searchQuery = requestData.searchQuery || "";
     const offset = (page - 1) * pageSize;
-    const { count, rows: records } = await businessModel.findAndCountAll({
+    const { count, rows: categoryList } = await businessModel.findAndCountAll({
       where: {
         [Op.or]: [
-          { businessName: { [Op.like]: `%${searchQuery}%` } }, // Search for businessName containing the search query
+          { businessName: { [Op.like]: `%${searchQuery}%` } }, 
         ],
       },
-      attributes: ["businessName", "businessId"],
+      attributes: ["businessName", "businessId", "categoryKey", "status"],
       limit: pageSize,
       offset: offset,
     });
+
+    const formattedResponse = categoryList.map(category => ({
+      catId: category.businessId,
+      catName: category.businessName,
+      catKey: category.categoryKey,
+      catStatus: category.status,
+   }));
+
     const totalPages = Math.ceil(count / pageSize);
     return handleResponse({
       res,
       message: "Sucessfully fetched business list",
       statusCode: 200,
       data: {
-        records,
+        categoryList: formattedResponse,
         totalPages,
         totalCount: count,
         page,

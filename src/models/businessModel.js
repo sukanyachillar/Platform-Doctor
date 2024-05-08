@@ -13,6 +13,14 @@ const businessModel = sequelize.define('business', {
         type: DataTypes.STRING,
         allowNull: false,
     },
+    categoryKey: {
+        type: DataTypes.STRING,
+        allowNull: false,
+    },
+    status: {
+        type: DataTypes.INTEGER,
+        allowNull: false,
+    },
     createdAt: {
         type: DataTypes.DATE,
         defaultValue: DataTypes.NOW,
