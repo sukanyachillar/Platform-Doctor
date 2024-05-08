@@ -1029,7 +1029,7 @@ const addDoctorByClinic = async ({
 
         if (existingDr) {
             existingDrwithClinic = await doctorEntityModel.findOne({
-                where: { doctorId: existingDr?.existingDr?.doctor_id, entityId: entity_id } 
+                where: { doctorId: existingDr.doctor_id, entityId: entity_id } 
             });
         };
    
@@ -1229,8 +1229,6 @@ const updateDoctor = async (data, profileImage, res) => {
             consultationCharge: consultation_charge,
             status: newStatus,
         }, { where: { doctorId: doctorId, entityId: entityId } });
-
-        console.log("response", response)
 
         return handleResponse({
             res,
