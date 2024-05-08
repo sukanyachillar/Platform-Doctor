@@ -463,7 +463,7 @@ const listDoctors_admin = async (requestParams, requestData, res) => {
             ],
             limit: pageSize,
             offset: offset,
-            // order: [['createdAt', 'DESC']],
+            order: [['createdAt', 'DESC']],
         });
 
         const totalPages = Math.ceil(count / pageSize);
@@ -1018,15 +1018,18 @@ const addDoctorByClinic = async ({
 }, imageUrl) => {
   
     try {
+        let existingDrwithClinic;
 
         const existingDr = await doctorModel.findOne({
-            where: { doctor_phone } 
+            where: { doctor_phone },
         });
 
-        const existingDrwithClinic = await doctorEntityModel.findOne({
-            where: { doctorId: existingDr?.existingDr?.doctor_id, entityId: entity_id } 
-        });
-
+        if (existingDr) {
+            existingDrwithClinic = await doctorEntityModel.findOne({
+                where: { doctorId: existingDr?.existingDr?.doctor_id, entityId: entity_id } 
+            });
+        };
+   
         if (existingDrwithClinic) {
             return {
                      success: false,
@@ -1065,7 +1068,7 @@ const addDoctorByClinic = async ({
                };
 
     } catch (error) {
-        console.log({ error })
+        console.log({ error });
         return false
     }
 };
@@ -1218,7 +1221,6 @@ const updateDoctor = async (data, profileImage, res) => {
             status: newStatus,
         }, { where: { doctor_id: doctorId } });
 
-        console.log(consultation_time,consultation_charge )
         let response = await doctorEntityModel.update({
             consultationTime: consultation_time,
             consultationCharge: consultation_charge,
@@ -1405,7 +1407,7 @@ const addBankDetails = async (
         })
         let newData, message, statusCode
         if (!entityData) {
-            message = 'Sorry no entity data available with this ID.'
+            message = 'No entity data available with this ID.'
             statusCode = 404
         } else {
             entityData.account_no = account_no
@@ -1417,7 +1419,7 @@ const addBankDetails = async (
             message = 'Successfully added bank details'
             statusCode = 200
             newData = await entityData.save()
-        }
+        };
         return handleResponse({
             res,
             statusCode,

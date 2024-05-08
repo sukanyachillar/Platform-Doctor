@@ -33,8 +33,7 @@ const register = async (userData, res) => {
         let tokens = await generateTokens(phone);
         let userId, newToken;
     
-        const entityDetails = await getEntityDetails(phone);
-        console.log("entityDetails", entityDetails)
+        const entityDetails = await getEntityDetailsOfTheDr(phone);
         if (getUser) {
             userId = getUser.entity_id
             newToken = await new tokenModel({
@@ -132,7 +131,7 @@ const register = async (userData, res) => {
     }
 };
 
-const getEntityDetails = async (doctorPhone) => {
+const getEntityDetailsOfTheDr = async (doctorPhone) => {
     try {
         const doctor = await doctorModel.findOne({ where: { doctor_phone: doctorPhone } });
 
@@ -287,16 +286,14 @@ const addProfile = async (userData, user, image, res) => {
 
 const getProfile = async (req, res) => {
     try {
-        const phone = req.user.phone
+        const phone = req.user.phone;
         let getUser = await authenticationModel.findOne({ where: { phone } });
-        let entityId, userProfile
+        let entityId, userProfile;
 
-
-        if(getUser){
+        if (getUser){
             userProfile = await profileModel.findOne({  //doctorModel
                where: { entity_id: getUser.entity_id },
             });
-            console.log("userProfile  1", userProfile)
             entityId = getUser.entity_id;
        } else {
            userProfile = await profileModel.findOne({  //doctorModel
