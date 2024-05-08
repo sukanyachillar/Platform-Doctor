@@ -27,7 +27,7 @@ const bookAppointment = async (req, res) => {
 
         const doctorProfile = await doctorProfileModel.findOne({
             where: { doctor_id: doctorId },
-        })
+        });
         const getEntity = await entityModel.findOne({
             where: { entity_id: entityId }, // doctorProfile.entity_id
         });

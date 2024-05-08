@@ -1099,8 +1099,7 @@ const viewDoctor = async ({ doctorId, entityId }, res) => {
                 data: {},
             });
         };
-    
-    
+        
         const getDoctor = await doctorModel.findOne({
             where: { doctor_id: doctorId },
             include: [
@@ -1969,7 +1968,7 @@ const bookingReport_admin = async (requestParams, requestData, res) => {
         
         if (reportStatus === 0) bookingCondition = { bookingStatus: { [Op.not]: 3 }};
         if (reportStatus === 1) bookingCondition = { bookingStatus: 1 };
-        if (reportStatus === 3) whereCondition = { date: { [Op.lt]: new Date() }, booking_status: 1 };
+        if (reportStatus === 2) whereCondition = { date: { [Op.lt]: new Date() }, booking_status: 1 };
         if (entityId) bookingCondition = { ...bookingCondition, entityId };
         if (doctorId) whereCondition = { ...whereCondition, doctor_id: doctorId };
  
