@@ -56,7 +56,7 @@ const paymentStatusCapture = async (req, res) => {
 const paymentUpdate = async (bookingData, res) => {
     try {
         console.log({ bookingData })
-        let { paymentId, orderId } = bookingData
+        let { paymentId, orderId } = bookingData;
         await bookingModel.update(
             {
                 // paymentStatus: 1,
@@ -69,7 +69,7 @@ const paymentUpdate = async (bookingData, res) => {
                     orderId,
                 },
             }
-        )
+        );
 
         const timeSlot = await bookingModel.findOne({
             attributes: ['workSlotId', 'entityId'],

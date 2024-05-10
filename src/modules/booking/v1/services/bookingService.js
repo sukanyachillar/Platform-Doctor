@@ -4,13 +4,14 @@ import weeklyTimeSlotsModel from '../../../../models/weeklyTimeSlotsModel.js'
 import entityModel from '../../../../models/entityModel.js'
 import bookingModel from '../../../../models/bookingModel.js'
 import payment from '../../../../utils/pg.js'
-import { Op } from 'sequelize'
+import { Op } from 'sequelize';
 import doctorModel from '../../../../models/doctorModel.js'
 import paymentModel from '../../../../models/paymentModel.js'
 import userModel from '../../../../models/userModel.js'
 import { generateUuid } from '../../../../utils/generateUuid.js'
 import Sequelize from 'sequelize';
 import doctorEntityModel from '../../../../models/doctorEntityModel.js';
+import { getEntityDetailsOfTheDr } from '../../../authentication/v1/services/authenticationService.js';
 
 const bookAppointment = async (req, res) => {
     try {
@@ -23,7 +24,7 @@ const bookAppointment = async (req, res) => {
             amount,
             paymentMethod,
             entityId,
-        } = req.body
+        } = req.body;
 
         const doctorProfile = await doctorProfileModel.findOne({
             where: { doctor_id: doctorId },
@@ -37,15 +38,15 @@ const bookAppointment = async (req, res) => {
                 doctor_id: doctorId,
                 date: appointmentDate,
             },
-        })
+        });
 
         if (!existingTimeslot) {
             return handleResponse({
                 res,
                 message: 'Slot not found on this date',
                 statusCode: 404,
-            })
-        }
+            });
+        };
 
         if (doctorProfile.status === 0) {
             return handleResponse({
@@ -53,7 +54,7 @@ const bookAppointment = async (req, res) => {
                 message: 'Doctor not available',
                 statusCode: 404,
             })
-        }
+        };
 
         if (getEntity.status === 0) {
             return handleResponse({
@@ -61,7 +62,7 @@ const bookAppointment = async (req, res) => {
                 message: 'Clinic is closed.',
                 statusCode: 404,
             })
-        }
+        };
 
         if (customerPhone.length !== 10) {
             return handleResponse({
@@ -69,7 +70,7 @@ const bookAppointment = async (req, res) => {
                 message: 'Invalid Phone No.',
                 statusCode: 403,
             })
-        }
+        };
 
         if (!existingTimeslot) {
             return handleResponse({
@@ -77,20 +78,20 @@ const bookAppointment = async (req, res) => {
                 message: 'Slot not found on this date',
                 statusCode: 404,
             })
-        }
+        };
         if (existingTimeslot.booking_status === 1) {
             return handleResponse({
                 res,
                 message: 'Slot already booked',
                 statusCode: 400,
             })
-        }
+        };
 
         const doctorEntityData = await doctorEntityModel.findOne({
             where: { 
                 doctorId: doctorId,
                 entityId,
-            }
+            },
         });
         // existingTimeslot.booking_status= 1;
         if (existingTimeslot) {
@@ -113,7 +114,7 @@ const bookAppointment = async (req, res) => {
             name: customerName,
             phone: customerPhone,
             amount: 1000,
-        })
+        });
         if (data?.Error?.statusCode == 400)
             return handleResponse({
                 res,
@@ -122,12 +123,14 @@ const bookAppointment = async (req, res) => {
                 data: {
                     message: data?.Error?.error?.description,
                 },
-            })
+            });
+
         const randomUUID = await generateUuid();
         let newCustomer;
         newCustomer = await userModel.findOne({
             where: { phone: customerPhone },
         });
+
         if (!newCustomer) {
             newCustomer = await userModel.create({
                 uuid: randomUUID,
@@ -135,11 +138,10 @@ const bookAppointment = async (req, res) => {
                 name: customerName,
                 phone: customerPhone,
             });
-        }
+        };
 
         const customerData = {
             customerId: newCustomer.userId,
-            // entityId: doctorProfile.entity_id,
             entityId: entityId,
             departmentId: doctorProfile.department_id,
             bookingType: 1,
@@ -150,14 +152,19 @@ const bookAppointment = async (req, res) => {
             workSlotId: existingTimeslot.time_slot_id,
             patientName: customerName,
             bookedPhoneNo: customerPhone,
-        }
+        };
+
         const newBooking = new bookingModel(customerData);
         const addedBooking = await newBooking.save();
+
+        // const { appCharge, doctorFee } = calcSplitAmt(entityId, doctorId, amount);
         
         await paymentModel.create({
             bookingId: addedBooking.bookingId,
             orderId: data?.id,
-        })
+            appCharge: 10,
+            doctorFee: 200,
+        });
 
         return handleResponse({
             res,
@@ -168,7 +175,7 @@ const bookAppointment = async (req, res) => {
                 amount: 1000,
                 bookingId: addedBooking.bookingId,
             },
-        })
+        });
     } catch (error) {
         console.log(error)
         return handleResponse({
@@ -179,7 +186,34 @@ const bookAppointment = async (req, res) => {
     }
 };
 
-const listBooking = async ({ doctorId, date }, res) => { // for single doctors
+// const calcSplitAmt = async (entityId, doctorId, amount) => {
+
+//     const getEntity = await entityModel.findOne({ where: { entity_id: entityId }, 
+//                                         attributes: ['gstNo', 'entity_type', 'entity_id']});
+
+//     const getDoctor = await doctorModel.findOne({ where: { doctor_id: doctorId },
+//                                         attributes: ['gstNo', 'doctor_id'] });
+    
+//     const entityGSTRate = 18;  // getGSTRateForEntity(entityId);
+//     const doctorGSTRate = 12;  // getGSTRateForDoctor(doctorId);
+
+//     const entityGSTAmount = (amount * entityGSTRate) / 100;
+//     const doctorGSTAmount = (amount * doctorGSTRate) / 100;
+
+//     // Deduct GST amount from the total amount
+//     const totalAmountWithoutGST = amount - entityGSTAmount - doctorGSTAmount;
+
+//     // Perform split between entity and doctor (example: 70% to entity, 30% to doctor)
+//     const entityAmount = totalAmountWithoutGST * 0.7; // 70%
+//     const doctorAmount = totalAmountWithoutGST * 0.3; // 30%
+
+//     return {
+//         entityAmountWithGST: entityAmount + entityGSTAmount,
+//         doctorAmountWithGST: doctorAmount + doctorGSTAmount
+//     };
+// };
+
+const listBooking = async ({ doctorId, date }, res) => { 
     try {
         let totalAppointments = 0;
         let completedAppointments = 0;
@@ -193,8 +227,6 @@ const listBooking = async ({ doctorId, date }, res) => { // for single doctors
             },
         })
 
-        // console.log("weeklyTimeSlot==========", weeklyTimeSlots)
-
         if (!weeklyTimeSlots) {
             return handleResponse({
                 res,
@@ -203,7 +235,6 @@ const listBooking = async ({ doctorId, date }, res) => { // for single doctors
             })
         }
 
-        // Loop through each weekly time slot and fetch booking information
         const appointmentList = []
         for (const weeklyTimeSlot of weeklyTimeSlots) {
             const bookingInfo = await bookingModel.findOne({
@@ -229,7 +260,6 @@ const listBooking = async ({ doctorId, date }, res) => { // for single doctors
                     },
                 });
 
-
                 appointmentList.push({
                     bookingId: bookingInfo.bookingId,
                     timeSlot: weeklyTimeSlot.time_slot,
@@ -245,14 +275,15 @@ const listBooking = async ({ doctorId, date }, res) => { // for single doctors
                 } else {
                     pendingAppointments++
                 }
-            }
-        }
-        // console.log("appointmentList", appointmentList)
+            };
+        };
 
         const doctorProfile = await doctorProfileModel.findOne({
-            attributes: ['doctor_name'],
+            attributes: ['doctor_name', 'doctor_phone'],
             where: { doctor_id: doctorId },
         });
+
+        const getEntities = await getEntityDetailsOfTheDr(doctorProfile.doctor_phone)
 
         return handleResponse({
             res,
@@ -267,12 +298,13 @@ const listBooking = async ({ doctorId, date }, res) => { // for single doctors
                 doctorName: doctorProfile.doctor_name
                     ? doctorProfile.doctor_name
                     : '',
+                entityDetails: getEntities,
             },
         })
     } catch (error) {
         console.log({ error })
     }
-}
+};
 
 const getBookingReport = async (req, res) => {
     try {
@@ -380,18 +412,18 @@ const bookingConfirmationData = async (bookingData, res) => {
             where: {
                 time_slot_id: response.workSlotId,
             },
-        })
+        });
         const doctorData = await doctorModel.findOne({
             where: { doctor_id: weeklyTimeSlot.doctor_id },
             attributes: ['doctor_name'],
-        })
-        let userData
-        let data, message, statusCode
+        });
+        let userData;
+        let data, message, statusCode;
         let dataValues = response.toJSON()
-        let userId = dataValues.customerId
+        let userId = dataValues.customerId;
         userData = await userModel.findOne({
             where: { userId },
-        })
+        });
         if (response) {
             data = dataValues
             ;(message = 'Successfully fetched booking details.'),
@@ -399,7 +431,7 @@ const bookingConfirmationData = async (bookingData, res) => {
         } else {
             ;(message = 'Sorry no data found for this bookingId.'),
                 (statusCode = 404)
-        }
+        };
         return handleResponse({
             res,
             message,
@@ -416,7 +448,7 @@ const bookingConfirmationData = async (bookingData, res) => {
                 // paymentID: data.transactionId,
                 paymentID: paymentData ? paymentData.transactionId : '',
             },
-        })
+        });
     } catch (error) {
         console.log({ 'Error while fetching booking details': error })
         return handleResponse({

@@ -131,7 +131,7 @@ const register = async (userData, res) => {
     }
 };
 
-const getEntityDetailsOfTheDr = async (doctorPhone) => {
+export const getEntityDetailsOfTheDr = async (doctorPhone) => {
     try {
         const doctor = await doctorModel.findOne({ where: { doctor_phone: doctorPhone } });
 
@@ -162,8 +162,6 @@ const getEntityDetailsOfTheDr = async (doctorPhone) => {
         return null; // Return null in case of any error
     }
 };
-
-
 
 
 const addProfile = async (userData, user, image, res) => {

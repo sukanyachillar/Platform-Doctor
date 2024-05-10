@@ -927,7 +927,7 @@ const addIndvDoctor = async ({
     department_id,
     description,
     gstNo,
-
+    paymentMethod,
 }, imageUrl) => {
     
     try {
@@ -973,6 +973,7 @@ const addIndvDoctor = async ({
                 entity_id: addedIndvEntity.entity_id,
                 profileImageUrl: imageUrl,
                 gstNo,
+                paymentMethod,
             });
            
            if (!existingDr) {
@@ -1018,6 +1019,8 @@ const addDoctorByClinic = async ({
     description,
     entity_id,
     gstNo,
+    paymentMethod,
+
 }, imageUrl) => {
   
     try {
@@ -1050,6 +1053,7 @@ const addDoctorByClinic = async ({
                 entity_id,
                 profileImageUrl: imageUrl,
                 gstNo,
+                paymentMethod,
             });
             
         let addedDoctor;
