@@ -1,5 +1,5 @@
-import doctorProfileModel from '../../../../models/doctorModel.js'
-import { handleResponse } from '../../../../utils/handlers.js'
+import doctorProfileModel from '../../../../models/doctorModel.js';
+import { handleResponse } from '../../../../utils/handlers.js';
 import weeklyTimeSlotsModel from '../../../../models/weeklyTimeSlotsModel.js'
 import entityModel from '../../../../models/entityModel.js'
 import bookingModel from '../../../../models/bookingModel.js'
@@ -108,7 +108,7 @@ const bookAppointment = async (req, res) => {
                     },
                 }
             )
-        }
+        };
 
         let data = await payment.createPaymentLink({
             name: customerName,
@@ -162,8 +162,7 @@ const bookAppointment = async (req, res) => {
         await paymentModel.create({
             bookingId: addedBooking.bookingId,
             orderId: data?.id,
-            appCharge: 10,
-            doctorFee: 200,
+            amount,
         });
 
         return handleResponse({
@@ -200,7 +199,6 @@ const bookAppointment = async (req, res) => {
 //     const entityGSTAmount = (amount * entityGSTRate) / 100;
 //     const doctorGSTAmount = (amount * doctorGSTRate) / 100;
 
-//     // Deduct GST amount from the total amount
 //     const totalAmountWithoutGST = amount - entityGSTAmount - doctorGSTAmount;
 
 //     // Perform split between entity and doctor (example: 70% to entity, 30% to doctor)

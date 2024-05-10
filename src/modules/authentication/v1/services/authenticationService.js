@@ -18,7 +18,6 @@ import tokenModel from '../../../../models/tokenModel.js'
 import { hashPassword, comparePasswords } from '../../../../utils/password.js';
 import { decrypt } from '../../../../utils/token.js';
 
-
 const register = async (userData, res) => {
     try {
         let { phone, token } = userData;
@@ -491,6 +490,7 @@ const getGeneralSettings = async (req, res) => {
         let doctorProfile = await profileModel.findOne({
             where: { doctor_phone: phone },
         });
+        const getEntities = await getEntityDetailsOfTheDr(doctorProfile.doctor_phone)
         
         return handleResponse({
             res,
@@ -505,6 +505,7 @@ const getGeneralSettings = async (req, res) => {
                 addService: getEntity? getEntity.add_service: doctorEntity? doctorEntity.add_service: "",
                 entityStatus: getEntity? getEntity.status: doctorEntity? doctorEntity.status: "",
                 profile_completed: getEntity? getEntity.profile_completed: doctorEntity? doctorEntity.profile_completed: "",
+                entityDetails: getEntities,
             },
         });
     } catch (error) {
