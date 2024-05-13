@@ -11,9 +11,9 @@ const listDoctorsForCustomers = async (req, res) => {
 }
 
 
-const getOneEntityDetails = async (req, res)=> {
+const getSingleEntityDetails = async (req, res)=> {
     try {
-        const data = await customerServices.getOneEntityDetails(req, res );
+        const data = await customerServices.getSingleEntityDetails(req, res );
         return data;
     } catch (error) {
         
@@ -21,5 +21,5 @@ const getOneEntityDetails = async (req, res)=> {
   }
 
 
-export default { listDoctorsForCustomers, getOneEntityDetails };
+export default { listDoctorsForCustomers, getSingleEntityDetails };
     
