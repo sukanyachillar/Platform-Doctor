@@ -175,7 +175,7 @@ const listDoctorsByClinic = async (req, res) => {
 
 const clinicProfile = async (req, res) => {
     try {
-        const data = await customerServices.getOneEntityDetails(req, res );
+        const data = await customerServices.getSingleEntityDetails(req, res );
         return data;
     } catch (err) {
         console.log({ err })

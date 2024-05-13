@@ -18,7 +18,7 @@ const getSingleEntityDetails = async (req, res)=> {
     } catch (error) {
         
     }
-  }
+  };
 
 
 export default { listDoctorsForCustomers, getSingleEntityDetails };
