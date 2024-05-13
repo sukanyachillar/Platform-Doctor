@@ -315,9 +315,18 @@ const getSingleEntityDetails = async (req, res) => {
             });
         }
 
-        const { entity_name, phone, email, entityAddress, imageUrl, description, status } = entityDetails;
+        const { 
+                entity_name,
+                phone,
+                email, 
+                entityAddress, 
+                imageUrl, 
+                description, 
+                status,
+                gstNo, 
+            } = entityDetails;
 
-        let streetName, cityName, districtName, stateName, pincodeValue, pincode, stateId;
+        let streetName, cityName, districtName, stateName, pincode, stateId;
         if (entityAddress) {
             streetName = entityAddress.streetName;
             cityName = entityAddress.cityName;
@@ -343,7 +352,8 @@ const getSingleEntityDetails = async (req, res) => {
             state: stateName ? stateName : "",
             pincode: pincode? pincode: "",
             stateId: stateId? stateId: "",
-            status, 
+            status,
+            gstNo, 
         };
 
         return handleResponse({
@@ -371,4 +381,4 @@ export default {
                   listDoctorsForCustomers,
                   getSingleEntityDetails,
 
-             }
+               };
