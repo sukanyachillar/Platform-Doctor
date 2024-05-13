@@ -584,7 +584,7 @@ const entityList = async (requestData, res) => {
         const pageSize = parseInt(requestData.limit) || 10;
         const businessType = parseInt(requestData.businessType) || 0;
         const searchQuery = requestData.searchQuery || '';
-        const offset = (page - 1) * pageSize
+        const offset = (page - 1) * pageSize;
 
         let whereCondition = {
             status: 1,
@@ -595,7 +595,7 @@ const entityList = async (requestData, res) => {
         
         if (businessType !== 0) {
             whereCondition.entity_type = businessType;
-        }
+        };
 
         if (searchQuery) {
             whereCondition[Sequelize.Op.or] = [
@@ -1913,20 +1913,61 @@ const listDeptByClinic = async ({ entityId}, res) => {
 
 const totalNoOfbookings = async (req, res) => {
     try {
-        const totalBookings = await bookingModel.count(
-            {
+        // const totalBookings = await bookingModel.count(
+        //     {
+        //         where: {
+        //             bookingStatus: {
+        //                 [Op.not]: 3 
+        //             }
+        //         }
+        //     }
+        // );
+        const [
+               totalBookings, 
+               todaysBookings,
+               completedBookings,
+               pendingBookings,
+              ] = await Promise.all([
+            bookingModel.count({
                 where: {
                     bookingStatus: {
-                        [Op.not]: 3 
+                        [Op.not]: 3
                     }
                 }
-            }
-        );
+            }),
+            bookingModel.count({
+                where: {
+                    bookingStatus: {
+                        [Op.not]: 3
+                    },
+                    createdAt: {
+                        [Op.between]: [new Date().setHours(0, 0, 0, 0), new Date().setHours(23, 59, 59, 999)]
+                    },
+                }
+            }),
+            bookingModel.count({
+                where: {
+                    bookingStatus: 1
+                },
+            }),
+            bookingModel.count({
+                where: {
+                    bookingStatus: 0, appointmentDate: { [Op.lt]: new Date() }, 
+                },
+            }),
+
+        ]);
+
         return handleResponse({
             res,
             statusCode: 200,
             message: 'Total no of booking count',
-            data: { totalBookings }
+            data: {     
+                     totalBookings, 
+                     todaysBookings,
+                     completedBookings,
+                     pendingBookings, 
+                  },
         });
 
     } catch (err) {

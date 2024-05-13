@@ -44,7 +44,7 @@ const listEntity = async (req, res) => {
     } catch (err) {
         console.log({ err })
     }
-}
+};
 
 const transactionHistory = async (req, res) => {
     try {
