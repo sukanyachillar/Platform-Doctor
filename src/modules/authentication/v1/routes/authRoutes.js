@@ -1,6 +1,6 @@
 import authenticationController from '../controllers/authenticationController.js'
 import { verifyRefreshToken, verifyToken } from '../../../../utils/token.js'
-import multer from 'multer'
+import multer from 'multer';
 
 const upload = multer({
     storage: multer.memoryStorage(),
@@ -11,7 +11,7 @@ const upload = multer({
 
 import express from 'express';
 
-const router = express.Router()
+const router = express.Router();
 
 router.post('/register', authenticationController.register);
 router.post('/getProfile', verifyToken, authenticationController.getProfile);
@@ -21,7 +21,7 @@ router.post(
     // verifyToken,
     upload.single('file'),
     authenticationController.addProfile
-)
+);
 router.post('/adddept', verifyToken, authenticationController.addDept);
 
 router.post('/refreshToken', verifyRefreshToken);
@@ -38,4 +38,4 @@ router.post(
 );
 router.post('/update-profile', authenticationController.updateProfile);
 
-export default router
+export default router;

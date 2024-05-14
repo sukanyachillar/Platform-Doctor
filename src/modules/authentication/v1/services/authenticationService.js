@@ -22,7 +22,7 @@ const register = async (userData, res) => {
     try {
         let { phone, token } = userData;
         let doctorExists;
-        const getUser = await authenticationModel.findOne({ where: { phone } });
+        const getUser = await entityModel.findOne({ where: { phone } });
         if(!getUser) {
             doctorExists =  await profileModel.findOne({ where: { doctor_phone: phone } });
             if (doctorExists) {
@@ -130,7 +130,7 @@ const register = async (userData, res) => {
     }
 };
 
-export const getEntityDetailsOfTheDr = async (doctorPhone) => {
+export const getEntityDetailsOfTheDr = async (doctorPhone, type = 0) => {
     try {
         const doctor = await doctorModel.findOne({ where: { doctor_phone: doctorPhone } });
 
@@ -144,18 +144,31 @@ export const getEntityDetailsOfTheDr = async (doctorPhone) => {
                               'entity_type',
                               'phone',
                             ],
-            }],
+                 }],
         });
 
-        const entityDetails = entities.map(entity => ({
+        let entityDetails = entities.map(entity => ({
             entityId: entity.entity.entity_id,
             entityName: entity.entity.entity_name,
             phone: entity.entity.phone,
             entityType: entity.entity.entity_type,
-           
         }));
 
+        if (type === 1) {
+            entityDetails = entities.map(entity => ({
+                entityId: entity.entity.entity_id,
+                entityName: entity.entity.entity_name,
+                entityPhone: entity.entity.phone,
+                entityType: entity.entity.entity_type,
+                consultationCharge: entity.consultationCharge,
+                consultationTime: entity.consultationTime,
+            }));
+            return entityDetails;
+
+        };
+
         return entityDetails;
+
     } catch (error) {
         console.error(error);
         return null; // Return null in case of any error
@@ -281,86 +294,169 @@ const addProfile = async (userData, user, image, res) => {
     }
 };
 
-const getProfile = async (req, res) => {
+// const getProfile = async (req, res) => {
+//     try {
+//         const phone = req.user.phone;
+//         let getUser = await authenticationModel.findOne({ where: { phone } });
+//         let entityId, userProfile;
+
+//         if (getUser){
+//             userProfile = await profileModel.findOne({  //doctorModel
+//                where: { entity_id: getUser.entity_id },
+//             });
+//             entityId = getUser.entity_id;
+//        } else {
+//            userProfile = await profileModel.findOne({  //doctorModel
+//                where: { doctor_phone: phone },
+//            });
+//            console.log("userProfile2", userProfile)
+//            entityId = userProfile.entity_id;
+//        }
+
+//        console.log("entityId>>>>>>>>>>>",entityId)
+
+//         // let userProfile = await profileModel.findOne({
+//         //     where: { entity_id: getUser.entity_id },
+//         // })
+//         let statusCode, message, getDepartment
+//         if (!userProfile) { 
+//             ;(message =
+//                 'Sorry! Unable to fetch user profile associated with this phone.'),
+//                 (statusCode = 404)
+//         }
+//         let availableSlots = await workScheduleModel.findAll({
+//             where: { entity_id: entityId, status: 1 },
+//             attributes: ['Day'],
+//         });
+//         if (!availableSlots) {
+//             ;(message =
+//                 'Sorry! Unable to fetch available slots associated with this phone.'),
+//                 (statusCode = 404)
+//         }
+//         let uniqueDays = []
+//         let seenDays = new Set()
+//         if (availableSlots) {
+//             availableSlots.forEach((slot) => {
+//                 if (
+//                     slot &&
+//                     slot.dataValues &&
+//                     slot.dataValues.Day &&
+//                     !seenDays.has(slot.dataValues.Day)
+//                 ) {
+//                     uniqueDays.push(slot.dataValues.Day)
+//                     seenDays.add(slot.dataValues.Day)
+//                 }
+//             })
+//             message = 'Profile fetched succesfully'
+//             statusCode = 200
+//             getDepartment = await departmentModel.findOne({
+//                 where: { department_id: userProfile.department_id },
+//             })
+//         }
+//          let key = userProfile?.profileImageUrl;
+//         //  const url = await DigitalOceanUtils.getPresignedUrl(key);
+
+//         return handleResponse({
+//             res,
+//             statusCode,
+//             message,
+//             data: {
+//                 entity_id: entityId, //getUser?.entity_id,
+//                 phone: phone, //getUser?.phone,
+//                 doctor_name: userProfile?.doctor_name,
+//                 qualification: userProfile?.qualification,
+//                 consultation_time: userProfile?.consultation_time,
+//                 consultation_charge: userProfile?.consultation_charge,
+//                 doctor_id: userProfile?.doctor_id,
+//                 profileImageUrl: key,
+//                 description: userProfile?.description,
+//                 // uniqueDays, 
+//                 designation: getDepartment?.department_name,
+//             },
+//         })
+//     } catch (error) {
+//         console.log({ error })
+//         return handleResponse({
+//             res,
+//             message: 'Error while fetching profile',
+//             statusCode: 422,
+//         })
+//     }
+// }
+const getProfile = async (req, res) => {   // for APP
     try {
+        
         const phone = req.user.phone;
-        let getUser = await authenticationModel.findOne({ where: { phone } });
-        let entityId, userProfile;
 
-        if (getUser){
-            userProfile = await profileModel.findOne({  //doctorModel
-               where: { entity_id: getUser.entity_id },
+        if (!phone) {
+            return handleResponse({
+                res,
+                statusCode: 404,
+                message: 'something went wrong with user',
+                data: {},
             });
-            entityId = getUser.entity_id;
-       } else {
-           userProfile = await profileModel.findOne({  //doctorModel
-               where: { doctor_phone: phone },
-           });
-           console.log("userProfile2", userProfile)
-           entityId = userProfile.entity_id;
-       }
+        };
 
-       console.log("entityId>>>>>>>>>>>",entityId)
-
-        // let userProfile = await profileModel.findOne({
-        //     where: { entity_id: getUser.entity_id },
-        // })
-        let statusCode, message, getDepartment
-        if (!userProfile) { 
-            ;(message =
-                'Sorry! Unable to fetch user profile associated with this phone.'),
-                (statusCode = 404)
-        }
-        let availableSlots = await workScheduleModel.findAll({
-            where: { entity_id: entityId, status: 1 },
-            attributes: ['Day'],
+        const isValidDr = await doctorModel.findOne(
+                         { where: { doctor_phone: phone }, attributes: ['doctor_id'] });
+    
+        if (!isValidDr) {
+            return handleResponse({
+                res,
+                statusCode: 404,
+                message: 'Doctor Not found',
+                data: {},
+            });
+        };
+      
+        const getDoctor = await doctorModel.findOne({
+            where: { doctor_phone: phone },
+            attributes: [
+                'doctor_id',
+                'doctor_name',
+                'department_id',
+                'qualification',
+                'doctor_phone',
+                'status',
+                'description',
+                'profileImageUrl',
+            ],
+            include: [
+                {
+                    model: departmentModel,
+                    attributes: ['department_name'],
+                },
+                {
+                    model: doctorEntityModel,
+                    attributes: ['consultationTime', 'consultationCharge', 'entityId'],
+                    include: [
+                        {
+                            model: entityModel,
+                            attributes: ['entity_name'],
+                        },
+                    ],
+                },
+            ],
         });
-        if (!availableSlots) {
-            ;(message =
-                'Sorry! Unable to fetch available slots associated with this phone.'),
-                (statusCode = 404)
-        }
-        let uniqueDays = []
-        let seenDays = new Set()
-        if (availableSlots) {
-            availableSlots.forEach((slot) => {
-                if (
-                    slot &&
-                    slot.dataValues &&
-                    slot.dataValues.Day &&
-                    !seenDays.has(slot.dataValues.Day)
-                ) {
-                    uniqueDays.push(slot.dataValues.Day)
-                    seenDays.add(slot.dataValues.Day)
-                }
-            })
-            message = 'Profile fetched succesfully'
-            statusCode = 200
-            getDepartment = await departmentModel.findOne({
-                where: { department_id: userProfile.department_id },
-            })
-        }
-         let key = userProfile?.profileImageUrl;
-        //  const url = await DigitalOceanUtils.getPresignedUrl(key);
 
+        const additionalInfo = await getEntityDetailsOfTheDr(phone, 1);
+  
         return handleResponse({
             res,
-            statusCode,
-            message,
+            statusCode: 200,
+            message: 'Doctor Profile fetched succusfully.',
             data: {
-                entity_id: entityId, //getUser?.entity_id,
-                phone: phone, //getUser?.phone,
-                doctor_name: userProfile?.doctor_name,
-                qualification: userProfile?.qualification,
-                consultation_time: userProfile?.consultation_time,
-                consultation_charge: userProfile?.consultation_charge,
-                doctor_id: userProfile?.doctor_id,
-                profileImageUrl: key,
-                description: userProfile?.description,
-                // uniqueDays, 
-                designation: getDepartment?.department_name,
-            },
-        })
+                // getDoctor,
+                phone: phone, 
+                doctor_name: getDoctor?.doctor_name,
+                qualification: getDoctor?.qualification,
+                doctor_id: getDoctor?.doctor_id,
+                profileImageUrl: getDoctor?.profileImageUrl,
+                description: getDoctor?.description,
+                departmentName: getDoctor?.department.department_name,
+                additionalInfo,
+            }
+        });
     } catch (error) {
         console.log({ error })
         return handleResponse({
@@ -371,22 +467,22 @@ const getProfile = async (req, res) => {
     }
 }
 
-const getProfileForCustomer = async ({ phone, encryptedPhone }, res) => {
+
+const getProfileForCustomer = async ({ phone, encryptedPhone, entityId }, res) => {
 // const getProfileForCustomer = async ({ encryptedPhone }, res) => {
 
     try {
-        let decryptedPhone
-        let userProfile 
-        let phoneNo
-        if(encryptedPhone) {
+        let decryptedPhone;
+        let userProfile;
+        let phoneNo;
+        if (encryptedPhone) {
             decryptedPhone = await decrypt(encryptedPhone, process.env.CRYPTO_SECRET);
             phoneNo = decryptedPhone;
         } else {
             phoneNo = phone
-        }
-        console.log("phoneNo>>>>>", phoneNo);
+        };
         let getUser = await authenticationModel.findOne({ where: { phone: phoneNo } }); //entityModel
-        if(getUser){
+        if (getUser){
             console.log("inside getUser")
              userProfile = await profileModel.findOne({  //doctorModel
                 where: { entity_id: getUser.entity_id },

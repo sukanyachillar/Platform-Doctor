@@ -928,6 +928,7 @@ const addIndvDoctor = async ({
     description,
     gstNo,
     paymentMethod,
+    entityName
 }, imageUrl) => {
     
     try {
@@ -952,7 +953,7 @@ const addIndvDoctor = async ({
         if (!existingIndvEntity) {
             const newIndvEntity = await new entityModel({
                 phone: doctor_phone,
-                entity_name: doctor_name,
+                entity_name: entityName,
                 business_type_id: 0,
                 entity_type : 2, // entity_type : businessData.businessId
                 description,
@@ -978,14 +979,15 @@ const addIndvDoctor = async ({
            
            if (!existingDr) {
                addedDoctor = await newDoctor.save();
-           }
-
-           await doctorEntityModel.create({
+               await doctorEntityModel.create({
                 doctorId: addedDoctor.doctor_id,
                 entityId: addedIndvEntity.entity_id,
                 consultationTime: consultation_time,
                 consultationCharge: consultation_charge,
            });
+           };
+
+         
  
         };
 
@@ -1093,13 +1095,14 @@ const addDoctorByClinic = async ({
         let addedDoctor;
         if (!existingDr) {
             addedDoctor = await newDoctor.save();
-            await doctorEntityModel.create({
-                  doctorId: addedDoctor.doctor_id,
-                  entityId: entity_id,
-                  consultationCharge: consultation_charge,
-                  consultationTime: consultation_time,
-            });
         };
+
+        await doctorEntityModel.create({
+            doctorId: addedDoctor.doctor_id,
+            entityId: entity_id,
+            consultationCharge: consultation_charge,
+            consultationTime: consultation_time,
+        });
 
         return { 
                  entityId: entity_id, 

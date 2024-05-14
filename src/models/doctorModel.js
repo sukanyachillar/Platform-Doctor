@@ -82,7 +82,6 @@ const doctorModel = sequelize.define('doctor', {
         type: DataTypes.STRING,
         allowNull: true,
         defaultValue: 'Razorpay',
-
     },
     created_date_time: {
         type: DataTypes.DATE,
