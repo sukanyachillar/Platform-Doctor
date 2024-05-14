@@ -313,7 +313,7 @@ const listBooking = async ({ doctorId, date, entityId }, res) => {
         let whereBookingCond = {};
         
         if (entityId) {
-            whereBookingCond = { entityId };
+            whereBookingCond = { entityId: entityId };
         };
 
         console.log("whereBookingCond", whereBookingCond)
@@ -378,12 +378,10 @@ const listBooking = async ({ doctorId, date, entityId }, res) => {
             return handleResponse({
                 res,
                 statusCode: 404,
-                message: 'No appointments found',
+                message: 'No appointments found.',
             });
         };
 
-        console.log("bookingList", bookingList)
-     
         const appointmentList = bookingList.map(booking => ({
             bookingId: booking.bookingId,
             timeSlot: booking.weeklyTimeSlot.time_slot,
