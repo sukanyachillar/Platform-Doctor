@@ -1173,7 +1173,7 @@ const viewDoctor = async ({ doctorId, entityId }, res) => {
                 statusCode: 404,
                 message: 'Error while fetching doctor details',
                 data: {
-                    formattedResponse
+                    formattedResponse,
                 },
             })
         };
@@ -1197,7 +1197,7 @@ const viewDoctor = async ({ doctorId, entityId }, res) => {
             statusCode: 200,
             message: 'Doctor details fetched successfully',
             data: {
-                formattedResponse
+                formattedResponse,
             },
         });
     } catch (error) {
