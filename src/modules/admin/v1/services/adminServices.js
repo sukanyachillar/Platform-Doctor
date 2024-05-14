@@ -979,15 +979,16 @@ const addIndvDoctor = async ({
            
            if (!existingDr) {
                addedDoctor = await newDoctor.save();
-               await doctorEntityModel.create({
-                doctorId: addedDoctor.doctor_id,
-                entityId: addedIndvEntity.entity_id,
-                consultationTime: consultation_time,
-                consultationCharge: consultation_charge,
-           });
            };
 
-         
+           const doctorId = addedDoctor? addedDoctor.doctor_id: existingDr.doctor_id;
+
+           await doctorEntityModel.create({
+                 doctorId: doctorId,
+                 entityId: addedIndvEntity.entity_id,
+                 consultationTime: consultation_time,
+                 consultationCharge: consultation_charge,
+           });
  
         };
 
@@ -1097,8 +1098,10 @@ const addDoctorByClinic = async ({
             addedDoctor = await newDoctor.save();
         };
 
+        const doctorId = addedDoctor? addedDoctor.doctor_id: existingDr.doctor_id;
+
         await doctorEntityModel.create({
-            doctorId: addedDoctor.doctor_id,
+            doctorId: doctorId,
             entityId: entity_id,
             consultationCharge: consultation_charge,
             consultationTime: consultation_time,
