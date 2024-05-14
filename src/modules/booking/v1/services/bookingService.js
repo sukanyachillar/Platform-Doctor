@@ -309,7 +309,7 @@ const bookAppointment = async (req, res) => {
 
 const listBooking = async ({ doctorId, date, entityId }, res) => { 
     try {
-        
+        console.log(doctorId, date, entityId)
         let whereBookingCond = {};
         
         if (entityId) {
@@ -342,7 +342,6 @@ const listBooking = async ({ doctorId, date, entityId }, res) => {
             getEntityDetailsOfTheDr(getDoctor.doctor_phone),
         
             bookingModel.findAll({
-                where: whereBookingCond,
                 attributes: [
                     'bookingStatus',
                     'bookingId',
@@ -360,6 +359,7 @@ const listBooking = async ({ doctorId, date, entityId }, res) => {
                     bookingStatus: {
                         [Op.not]: 3,
                     },
+                    ...whereBookingCond,
                 },
                 include: [
                     {
