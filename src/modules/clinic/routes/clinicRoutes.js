@@ -10,5 +10,4 @@ router.post('/clinic-login', clinicController.clinicLogin);
 router.post('/list-booking', verifyToken, clinicController.listAllBooking);
 router.post('/booking-report', clinicController.AllBookingReport);
 
-
 export default router;

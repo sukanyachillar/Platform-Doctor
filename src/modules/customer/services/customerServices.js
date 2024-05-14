@@ -11,7 +11,7 @@ import pincodeModel from '../../../models/pincodeModel.js';
 import entityAddressModel from '../../../models/entityAddressModel.js';
 import DigitalOceanUtils from '../../../utils/DOFileUpload.js';
 import doctorEntityModel from '../../../models/doctorEntityModel.js';
-
+import adminServices from '../../admin/v1/services/adminServices.js';
 
 // const listDoctorsForCustomers = async (requestData, res) => {
 //     try {
@@ -313,7 +313,7 @@ const getSingleEntityDetails = async (req, res) => {
                 message: 'Not found',
                 data: {},
             });
-        }
+        };
 
         const { 
                 entity_name,
@@ -337,7 +337,6 @@ const getSingleEntityDetails = async (req, res) => {
             pincode = entityAddress.pincode? entityAddress.pincode: "";
             // pincodeValue = pincode ? pincode.pincodeValue : "";
             stateId = entityAddress.stateId? entityAddress.stateId: "";
-           
         };
         
         const entityResponse = {
@@ -356,12 +355,15 @@ const getSingleEntityDetails = async (req, res) => {
             gstNo, 
         };
 
+        const departmentList = await adminServices.listDeptByClinic({ entityId }, res, 1)
+
         return handleResponse({
             res,
             statusCode: 200,
             message: 'Entity details fetched successfully',
             data: {
-                entityResponse
+                entityResponse,
+                departmentList,
             },
         });
     } catch (error) {

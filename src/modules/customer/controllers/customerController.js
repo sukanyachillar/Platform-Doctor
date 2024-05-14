@@ -16,7 +16,7 @@ const getSingleEntityDetails = async (req, res)=> {
         const data = await customerServices.getSingleEntityDetails(req, res );
         return data;
     } catch (error) {
-        
+        console.log({ err });
     }
   };
 

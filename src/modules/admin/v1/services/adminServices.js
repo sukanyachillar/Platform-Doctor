@@ -1864,7 +1864,8 @@ const getDeptDetails = async ({ department_id }, res) => {
 };
 
 
-const listDeptByClinic = async ({ entityId}, res) => {
+const listDeptByClinic = async ({ entityId}, res, type = 0) => {
+
     try {
         const doctorEntities = await doctorEntityModel.findAll({
             where: { entityId },
@@ -1891,6 +1892,8 @@ const listDeptByClinic = async ({ entityId}, res) => {
         }));
         
         const departmentNames = Array.from(departmentNamesSet);
+
+        if (type === 1) return departmentNames;
         
         return handleResponse({
             res,

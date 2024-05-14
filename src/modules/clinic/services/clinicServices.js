@@ -406,8 +406,6 @@ const listAllBooking = async (requestData, res) => {
 };
 
 
-
-
 // const AllBookingReport = async (req, res) => {
 //     try {
 //         const { date, doctorId } = req.body;
@@ -661,7 +659,6 @@ const AllBookingReport = async (requestData, res) => {
         });
     }
 };
-
 
 export default {
     generateOTP,
