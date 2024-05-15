@@ -13,9 +13,9 @@ import DigitalOceanUtils from '../../../utils/DOFileUpload.js';
 import doctorEntityModel from '../../../models/doctorEntityModel.js';
 import adminServices from '../../admin/v1/services/adminServices.js';
 
+
 // const listDoctorsForCustomers = async (requestData, res) => {
 //     try {
-
 //         const page = requestData.page|| 1;
 //         const pageSize = requestData.limit || 10;
 //         const searchQuery = requestData.searchQuery || '';
@@ -34,8 +34,16 @@ import adminServices from '../../admin/v1/services/adminServices.js';
 //             ],
 //         };
 
+//         const doctorIds =  await doctorEntityModel.findAll({
+//             where: {
+//                 entityId: entityId,
+//             },
+//             attributes: ['doctorId'],
+//         });
+//         const extractedDoctorIds = doctorIds.map(doctor => doctor.doctorId);
+
 //         if (entityId) {
-//             whereClause.entity_id = entityId;
+//             whereClause.doctor_id = extractedDoctorIds;
 //         }
 
 //         const { count, rows: records } = await doctorModel.findAndCountAll({
@@ -91,7 +99,7 @@ import adminServices from '../../admin/v1/services/adminServices.js';
 
 //         const entities = await entityModel.findAll({
 //             where: {
-//                 entity_id: entityIds,
+//                 entity_id: entityId,
 //             },
 //             attributes: ['entity_id', 'entity_name'],
 //         });
@@ -105,6 +113,7 @@ import adminServices from '../../admin/v1/services/adminServices.js';
 //         entities.forEach((entity) => {
 //             entityMap[entity.entity_id] = entity.entity_name;
 //         });
+//         console.log("entityMap", entityMap)
 
 //         const encryptedRecords = await Promise.all(dataWithSignedUrls.map(async (record) => {
 
@@ -117,6 +126,7 @@ import adminServices from '../../admin/v1/services/adminServices.js';
 //         const response = {
 //             records: encryptedRecords.map((record) => ({
 //                 ...record,
+//                 entity_id: entityId,
 //                 department_name: departmentMap[record.department_id],
 //                 entity_name: entityMap[record.entity_id],
 //                 encryptedPhone: record.doctor_phone_encrypted,
@@ -145,37 +155,42 @@ import adminServices from '../../admin/v1/services/adminServices.js';
 //     }
 // };
 
+
 const listDoctorsForCustomers = async (requestData, res) => {
     try {
-        const page = requestData.page|| 1;
+        const page = requestData.page || 1;
         const pageSize = requestData.limit || 10;
         const searchQuery = requestData.searchQuery || '';
         const offset = (page - 1) * pageSize;
         const entityId = requestData.entityId || null;
 
-        const whereClause = {
+        let entityWhereCond = {};
+
+        let whereCondition = {
             [Op.and]: [
-                { doctor_name: { [Op.not]: null } }, 
-                {
-                    [Op.or]: [
-                        { doctor_name: { [Op.like]: `%${searchQuery}%` } },
-                        { doctor_phone: { [Op.like]: `%${searchQuery}%` } },
-                    ],
-                },
+                { doctor_name: { [Op.not]: null } },
             ],
         };
 
-        const doctorIds =  await doctorEntityModel.findAll({
-            where: {
-                entityId: entityId,
-            },
-            attributes: ['doctorId'],
-        });
-        const extractedDoctorIds = doctorIds.map(doctor => doctor.doctorId);
+  
+        // if (entityId) {
+        //     whereCondition['$doctorEntities.entity.entity_id$'] = entityId;
+        // };
 
-        if (entityId) {
-            whereClause.doctor_id = extractedDoctorIds;
-        }
+        // if (entityType) {
+        //     whereCondition['$doctorEntities.entity.entity_type$'] = entityType;
+        // }
+
+        if (entityId) entityWhereCond = { entity_id : entityId };
+
+        if (searchQuery) {
+            whereCondition[Op.or] = [
+                { doctor_name: { [Op.like]: `%${searchQuery}%` } },
+                { doctor_phone: { [Op.like]: `%${searchQuery}%` } },
+                { '$department.department_name$': { [Op.like]: `%${searchQuery}%` } },
+                { '$doctorEntity.entity.entity_name$': { [Op.like]: `%${searchQuery}%` } }
+            ];
+        };
 
         const { count, rows: records } = await doctorModel.findAndCountAll({
             attributes: [
@@ -187,93 +202,70 @@ const listDoctorsForCustomers = async (requestData, res) => {
                 'consultation_charge',
                 'status',
                 'description',
-                'department_id',
-                'entity_id',
                 'profileImageUrl',
+                'department_id',
             ],
-            // where: {
-            //     [Op.or]: [
-            //         { doctor_name: { [Op.like]: `%${searchQuery}%` } },
-            //         { doctor_phone: { [Op.like]: `%${searchQuery}%` } },
-            //     ],
-            // },
-            // where: {
-            //     [Op.and]: [
-            //         { doctor_name: { [Op.not]: null } }, // Ensuring doctor_name is not null
-            //         {
-            //             [Op.or]: [
-            //                 { doctor_name: { [Op.like]: `%${searchQuery}%` } },
-            //                 { doctor_phone: { [Op.like]: `%${searchQuery}%` } },
-            //             ],
-            //         },
-            //     ],
-            // },
-            where: whereClause,
+            where: whereCondition,
+
+            include: [
+                {
+                    model: departmentModel,
+                    attributes: ['department_name'],
+                },
+                {
+                    model: doctorEntityModel,
+                    attributes: ['consultationTime', 'consultationCharge'],
+                    required: true,
+                    include: [
+                        {
+                            model: entityModel,
+                            attributes: ['entity_name', 'entity_id', 'entity_type'],
+                            where: entityWhereCond,
+                            required: true,
+                          
+                        },
+                    ],
+                },
+            
+            ],
+            
             limit: pageSize,
             offset: offset,
         });
-        const dataWithSignedUrls = await Promise.all(records.map(async (record) => {
-            const preSignedUrl = await DigitalOceanUtils.getPresignedUrl(record.profileImageUrl);
-            return { ...record.toJSON() };
-        }));
 
         const totalPages = Math.ceil(count / pageSize);
 
-        const departmentIds = dataWithSignedUrls.map((record) => record.department_id);
-        const entityIds = dataWithSignedUrls.map((record) => record.entity_id);
-        const departments = await departmentModel.findAll({
-            where: {
-                department_id: departmentIds,
-            },
-            attributes: ['department_id', 'department_name'],
-        });
-
-        const entities = await entityModel.findAll({
-            where: {
-                entity_id: entityId,
-            },
-            attributes: ['entity_id', 'entity_name'],
-        });
-
-        const departmentMap = {};
-        departments.forEach((department) => {
-            departmentMap[department.department_id] = department.department_name;
-        });
-
-        const entityMap = {};
-        entities.forEach((entity) => {
-            entityMap[entity.entity_id] = entity.entity_name;
-        });
-        console.log("entityMap", entityMap)
-
-        const encryptedRecords = await Promise.all(dataWithSignedUrls.map(async (record) => {
-
-            const encryptedPhone = await encrypt(record.doctor_phone, process.env.CRYPTO_SECRET);
-            record.doctor_phone_encrypted = encryptedPhone;
-            return record;
-        }));
-
-        // Merging department_name, entity_name, and encrypted phone into doctor records
         const response = {
-            records: encryptedRecords.map((record) => ({
-                ...record,
-                entity_id: entityId,
-                department_name: departmentMap[record.department_id],
-                entity_name: entityMap[record.entity_id],
-                encryptedPhone: record.doctor_phone_encrypted,
+            response: await Promise.all(records.map(async (record) => {
+                const encryptedPhone = await encrypt(record.doctor_phone, process.env.CRYPTO_SECRET);
+                return {
+                    doctor_id: record.doctor_id,
+                    doctor_name: record.doctor_name,
+                    qualification: record.qualification,
+                    doctor_phone: record.doctor_phone,
+                    consultation_time: record.consultation_time,
+                    consultation_charge: record.consultation_charge,
+                    status: record.status,
+                    description: record.description,
+                    department_id: record.department ? record.department.department_id : '',
+                    entity_id: record.doctorEntity ? record.doctorEntity.entity.entity_id : '',
+                    profileImageUrl: record.profileImageUrl,
+                    doctor_phone_encrypted: encryptedPhone,
+                    department_name: record.department ? record.department.department_name : '',
+                    entity_name: record.doctorEntity ? record.doctorEntity.entity.entity_name : '',
+                    encryptedPhone: encryptedPhone, 
+                };
             })),
+            currentPage: page,
+            totalPages,
+            totalCount: count,
         };
-
+        
         return handleResponse({
             res,
-            statusCode: '200',
-            message : 'Dr list fetched succesfully',
-            data: {
-                response: response.records,
-                currentPage: page,
-                totalPages,
-                totalCount: count,
-            },
+            statusCode: 200,
+            message: 'Doctor list fetched successfully',
+            data: response,
         });
     } catch (error) {
         console.error({ error });
@@ -282,9 +274,11 @@ const listDoctorsForCustomers = async (requestData, res) => {
             statusCode: 500,
             message: 'Something went wrong',
             data: {},
-        })
+        });
     }
 };
+
+
 const getSingleEntityDetails = async (req, res) => {
 
     try {

@@ -439,6 +439,8 @@ const listDoctors_admin = async (requestParams, requestData, res) => {
                 'qualification',
                 'doctor_phone',
                 'status',
+                'profileImageUrl',
+                'department_id',
             ],
             where: whereCondition,
             include: [
@@ -477,6 +479,7 @@ const listDoctors_admin = async (requestParams, requestData, res) => {
                 entityName: record.doctorEntity ? record.doctorEntity.entity.entity_name : '',
                 entityType: record.doctorEntity ? record.doctorEntity.entity.entity_type : '',
                 doctorPhone: record.doctor_phone,
+                profileImageUrl: record.profileImageUrl,
             })),
             currentPage: page,
             totalPages: Math.ceil(count / pageSize),
