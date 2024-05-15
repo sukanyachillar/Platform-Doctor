@@ -312,6 +312,17 @@ const updateDoctor = async (req, res) => {
         console.log({ err })
     }
 };
+const findDrByPhoneNo = async (req, res) => {
+    try {
+        let data = await adminServices.findDrByPhoneNo(
+            req.body,
+            res,
+        );
+        return data;
+    } catch (err) {
+        console.log({ err })
+    }
+};
 
 export default {
     adminRegister,
@@ -342,4 +353,5 @@ export default {
     graphData,
     bookingReport_admin,
     listClinicName,
-}
+    findDrByPhoneNo,
+};

@@ -7,7 +7,6 @@ import bookingModel from '../../../../models/bookingModel.js';
 import weeklyTimeSlotsModel from '../../../../models/weeklyTimeSlotsModel.js';
 import entityAddressModel from '../../../../models/entityAddressModel.js';
 import doctorEntityModel from '../../../../models/doctorEntityModel.js';
-import businessModel from '../../../../models/businessModel.js';
 import { hashPassword, comparePasswords } from '../../../../utils/password.js';
 import { generateAdminTokens } from '../../../../utils/token.js';
 import { generateUuid } from '../../../../utils/generateUuid.js';
@@ -18,6 +17,7 @@ import { encrypt } from '../../../../utils/token.js';
 import districtModel from '../../../../models/districtModel.js';
 import stateModel from '../../../../models/stateModel.js';
 import moment from 'moment';
+import { getEntityDetailsOfTheDr } from '../../../authentication/v1/services/authenticationService.js';
 
 const adminRegister = async (credentials, res) => {
     try {
@@ -1008,7 +1008,7 @@ const addIndvDoctor = async ({
             message: 'Error while adding docotr under the clinic', 
             success: false,
           };
-    }
+    };
 };
 
 const addDoctorByClinic = async ({
@@ -1125,8 +1125,8 @@ const addDoctorByClinic = async ({
 const viewDoctor = async ({ doctorId, entityId }, res) => {
 
     try {
-        const isValidDr = await doctorModel.findOne({ where: { doctor_id: doctorId } });
-        const isValidClinic = await entityModel.findOne({ where: { entity_id: entityId } });
+        const isValidDr = await doctorModel.findOne({ where: { doctor_id: doctorId }, attributes: ['doctor_id'] });
+        const isValidClinic = await entityModel.findOne({ where: { entity_id: entityId }, attributes: ['entity_id'] });
     
         if (!isValidDr) {
             return handleResponse({
@@ -1171,11 +1171,9 @@ const viewDoctor = async ({ doctorId, entityId }, res) => {
             return handleResponse ({
                 res,
                 statusCode: 404,
-                message: 'Error while fetching doctor details',
-                data: {
-                    formattedResponse,
-                },
-            })
+                message: 'No Doctor details found',
+                data: {},
+            });
         };
         const formattedResponse = {
             doctorId: getDoctor.doctor_id,
@@ -2216,6 +2214,82 @@ const listClinicName = async (req, res )=>{
     }
 };
 
+const findDrByPhoneNo = async ({ doctorPhone }, res) => {
+
+    try {
+        const isValidDr = await doctorModel.findOne({ where: { doctor_phone: doctorPhone }, 
+                                            attributes: ['doctor_id'] });
+    
+        if (!isValidDr) {
+            return handleResponse({
+                res,
+                statusCode: 400,
+                message: 'Doctor Not found with this Phone No',
+                data: {},
+            });
+        };
+        
+        const getDoctor = await doctorModel.findOne({
+            where: { doctor_phone: doctorPhone },
+            attributes: [
+                'doctor_id',
+                'doctor_name',
+                'department_id',
+                'qualification',
+                'doctor_phone',
+                'status',
+                'description',
+                'profileImageUrl',
+            ],
+            include: [
+                {
+                    model: departmentModel,
+                    attributes: ['department_name'],
+                },
+            ],
+        });
+    
+        if (!getDoctor) {
+            return handleResponse ({
+                res,
+                statusCode: 404,
+                message: 'No Doctor details found',
+                data: {},
+            })
+        };
+        const additionalInfo =  await getEntityDetailsOfTheDr(doctorPhone, 1);
+        const doctorData = {
+            doctorId: getDoctor.doctor_id,
+            doctorName: getDoctor.doctor_name,
+            department: getDoctor.department ? getDoctor.department.department_name : null,
+            doctorPhone: getDoctor.doctor_phone,
+            qualification: getDoctor.qualification,
+            description: getDoctor.description,
+            email: getDoctor.email,
+            profileImageUrl: getDoctor.profileImageUrl,
+            gstNo: getDoctor.gstNo,
+            additionalInfo,
+        };
+    
+        return handleResponse({
+            res,
+            statusCode: 200,
+            message: 'Doctor details fetched successfully',
+            data: {
+                doctorData,
+            },
+        });
+    } catch (error) {
+        return handleResponse({
+            res,
+            statusCode: 500,
+            message: 'Error while fetching doctor data with phone No',
+            data: {},
+        });
+    };
+
+};
+
 export default {
     adminLogin,
     adminRegister,
@@ -2243,4 +2317,5 @@ export default {
     bookingReport_admin,
     listClinicName,
     viewDoctor,
+    findDrByPhoneNo,
 };

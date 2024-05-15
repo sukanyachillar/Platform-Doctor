@@ -163,6 +163,7 @@ export const getEntityDetailsOfTheDr = async (doctorPhone, type = 0) => {
                 consultationCharge: entity.consultationCharge,
                 consultationTime: entity.consultationTime,
             }));
+
             return entityDetails;
 
         };
@@ -172,7 +173,7 @@ export const getEntityDetailsOfTheDr = async (doctorPhone, type = 0) => {
     } catch (error) {
         console.error(error);
         return null; // Return null in case of any error
-    }
+    };
 };
 
 
@@ -724,7 +725,6 @@ const getGeneralSettings = async (req, res) => {
 
 const getBankDetails = async (userData, res) => {
     try {
-        console.log("userData", userData)
         let { entity_id } = userData
         let message, statusCode
         let bankdata = await entityModel.findOne({
@@ -825,7 +825,6 @@ const updateProfileDetails = async (doctorProfile, params, res) => {
         })
     }
 };
-
 
 
 export default {
