@@ -891,14 +891,14 @@ const addNewDoctor = async (docData, image, res) => {
         let redirection, response, statusCode, imageUrl ;
         if (image) {
             imageUrl = await DigitalOceanUtils.uploadObject (image); 
-        }
+        };
         if (docData.businessType == 'individual') {
             response = await addIndvDoctor(docData, imageUrl, res);
             redirection = true;
         } else {
             response = await addDoctorByClinic(docData, imageUrl, res);
             redirection = false
-        }
+        };
 
         statusCode = response.success ? 200 : 404
         return handleResponse({
@@ -1226,6 +1226,11 @@ const updateDoctor = async (data, profileImage, res) => {
                 gstNo,
                 newStatus,
              } = updatedData;
+
+        let imageUrl; 
+        if (profileImage) {
+            imageUrl = await DigitalOceanUtils.uploadObject (profileImage); 
+        };
  
         const existingDoctor = await doctorModel.findOne({ where: { doctor_id: doctorId } });
         const existingEntity = await entityModel.findOne({ where: { entity_id: entityId } });
@@ -1267,10 +1272,11 @@ const updateDoctor = async (data, profileImage, res) => {
             department_id,
             description,
             gstNo,
+            profileImageUrl: imageUrl,
             status: newStatus,
         }, { where: { doctor_id: doctorId } });
 
-        let response = await doctorEntityModel.update({
+        await doctorEntityModel.update({
             consultationTime: consultation_time,
             consultationCharge: consultation_charge,
             status: newStatus,
@@ -1283,7 +1289,6 @@ const updateDoctor = async (data, profileImage, res) => {
             data: {},
         });
 
-
     } catch (error) {
       console.log(error);
       return handleResponse({
@@ -1291,15 +1296,15 @@ const updateDoctor = async (data, profileImage, res) => {
         statusCode: 500,
         message: 'Error while updating doctor data',
         data: {},
-    });
-    }
-}
+      });
+    };
+};
 
 const getUserDetails = async (search) => {
     const whereCondition = {}
     if (search) {
         whereCondition.name = { [Sequelize.Op.like]: `%${search}%` }
-    }
+    };
     const usersWithDetails = await userModel.findAll({
         attributes: ['userId', 'name', 'phone'],
         where: {
@@ -1818,7 +1823,7 @@ const updateClinicStatus = async (requestData, res) => {
                 message: 'Clinic not found',
                 statusCode: 404,
             });
-        }
+        };
         
         entity.status = newStatus;
         await entity.save();

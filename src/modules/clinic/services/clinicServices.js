@@ -405,7 +405,6 @@ const listAllBooking = async (requestData, res) => {
     }
 };
 
-
 // const AllBookingReport = async (req, res) => {
 //     try {
 //         const { date, doctorId } = req.body;
@@ -665,4 +664,4 @@ export default {
     clinicLogin,
     listAllBooking,
     AllBookingReport
-}
+};
