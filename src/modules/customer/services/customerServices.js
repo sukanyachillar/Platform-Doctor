@@ -163,6 +163,7 @@ const listDoctorsForCustomers = async (requestData, res) => {
         const searchQuery = requestData.searchQuery || '';
         const offset = (page - 1) * pageSize;
         const entityId = requestData.entityId || null;
+        const statusCheck = requestData.statusCheck || false;
 
         let entityWhereCond = {};
 
@@ -172,6 +173,7 @@ const listDoctorsForCustomers = async (requestData, res) => {
             ],
         };
 
+        if (statusCheck) whereCondition[Op.and].push({ status: 1 });
   
         // if (entityId) {
         //     whereCondition['$doctorEntities.entity.entity_id$'] = entityId;
@@ -191,7 +193,6 @@ const listDoctorsForCustomers = async (requestData, res) => {
                 { '$doctorEntity.entity.entity_name$': { [Op.like]: `%${searchQuery}%` } }
             ];
         };
-
         const { count, rows: records } = await doctorModel.findAndCountAll({
             attributes: [
                 'doctor_id',

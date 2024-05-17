@@ -181,7 +181,7 @@ const bookAppointment = async (req, res) => {
             res,
             message: 'Error while booking appointment.',
             statusCode: 422,
-        })
+        });
     }
 };
 
