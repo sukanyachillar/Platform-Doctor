@@ -2298,6 +2298,82 @@ const findDrByPhoneNo = async ({ doctorPhone }, res) => {
 
 };
 
+const findDoctorByID = async ({ doctorId }, res) => {
+
+    try {
+        const isValidDr = await doctorModel.findOne({ where: { doctor_id: doctorId }, 
+                                            attributes: ['doctor_phone'] });
+    
+        if (!isValidDr) {
+            return handleResponse({
+                res,
+                statusCode: 400,
+                message: 'Doctor ID not found.',
+                data: {},
+            });
+        };
+        
+        const getDoctor = await doctorModel.findOne({
+            where: { doctor_id: doctorId },
+            attributes: [
+                'doctor_id',
+                'doctor_name',
+                'department_id',
+                'qualification',
+                'doctor_phone',
+                'status',
+                'description',
+                'profileImageUrl',
+            ],
+            include: [
+                {
+                    model: departmentModel,
+                    attributes: ['department_name'],
+                },
+            ],
+        });
+    
+        if (!getDoctor) {
+            return handleResponse ({
+                res,
+                statusCode: 404,
+                message: 'No Doctor details found',
+                data: {},
+            })
+        };
+        const additionalInfo =  await getEntityDetailsOfTheDr(isValidDr.doctor_phone, 1);
+        const doctorData = {
+            doctorId: getDoctor.doctor_id,
+            doctorName: getDoctor.doctor_name,
+            department: getDoctor.department ? getDoctor.department.department_name : null,
+            doctorPhone: getDoctor.doctor_phone,
+            qualification: getDoctor.qualification,
+            description: getDoctor.description,
+            email: getDoctor.email,
+            profileImageUrl: getDoctor.profileImageUrl,
+            gstNo: getDoctor.gstNo,
+            additionalInfo,
+        };
+    
+        return handleResponse({
+            res,
+            statusCode: 200,
+            message: 'Doctor details fetched successfully',
+            data: {
+                doctorData,
+            },
+        });
+    } catch (error) {
+        return handleResponse({
+            res,
+            statusCode: 500,
+            message: 'Error while fetching doctor data with ID',
+            data: {},
+        });
+    };
+
+};
+
 export default {
     adminLogin,
     adminRegister,
@@ -2326,4 +2402,5 @@ export default {
     listClinicName,
     viewDoctor,
     findDrByPhoneNo,
+    findDoctorByID,
 };

@@ -33,6 +33,10 @@ const paymentModel = sequelize.define('payment', {
     allowNull: true,
     unique: false,
   },
+  amount: {
+    type: DataTypes.INTEGER, 
+    unique: false,
+  },
   createdAt: {
     type: DataTypes.DATE,
     defaultValue: DataTypes.NOW,

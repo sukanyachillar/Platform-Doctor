@@ -7,7 +7,6 @@ import { Op, Sequelize } from 'sequelize';
 import { encrypt } from '../../../utils/token.js';
 import stateModel from '../../../models/stateModel.js';
 import districtModel from '../../../models/districtModel.js';
-import pincodeModel from '../../../models/pincodeModel.js';
 import entityAddressModel from '../../../models/entityAddressModel.js';
 import DigitalOceanUtils from '../../../utils/DOFileUpload.js';
 import doctorEntityModel from '../../../models/doctorEntityModel.js';
@@ -374,8 +373,4 @@ const getSingleEntityDetails = async (req, res) => {
 
 };
 
-export default {
-                  listDoctorsForCustomers,
-                  getSingleEntityDetails,
-
-               };
+export default { listDoctorsForCustomers, getSingleEntityDetails };
