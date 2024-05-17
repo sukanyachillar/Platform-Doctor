@@ -2248,6 +2248,7 @@ const findDrByPhoneNo = async ({ doctorPhone }, res) => {
                 'status',
                 'description',
                 'profileImageUrl',
+                'email',
             ],
             include: [
                 {
@@ -2324,6 +2325,7 @@ const findDoctorByID = async ({ doctorId }, res) => {
                 'status',
                 'description',
                 'profileImageUrl',
+                'email',
             ],
             include: [
                 {
@@ -2337,7 +2339,7 @@ const findDoctorByID = async ({ doctorId }, res) => {
             return handleResponse ({
                 res,
                 statusCode: 404,
-                message: 'No Doctor details found',
+                message: 'No Doctor details found.',
                 data: {},
             })
         };

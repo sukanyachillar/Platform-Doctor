@@ -34,6 +34,13 @@ const doctorModel = sequelize.define('doctor', {
         allowNull: true,
         unique: false,
     },
+    email: {
+        type: DataTypes.STRING,
+        allowNull: true,
+        validate: {
+            isEmail: true,
+        },
+    },
     consultation_time: {
         type: DataTypes.INTEGER, // 20mins
         allowNull: true,
