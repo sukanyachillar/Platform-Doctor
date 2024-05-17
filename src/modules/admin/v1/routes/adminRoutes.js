@@ -46,5 +46,6 @@ router.post('/booking-report', adminController.bookingReport_admin);
 router.post('/list-clinic-name', adminController.listClinicName);
 router.post('/search-doctor-by-phone', adminController.findDrByPhoneNo);
 router.post('/find-doctor-by-id', adminController.findDoctorByID);
+router.post('/list-booking', adminController.listBooking_admin);
 
 export default router;

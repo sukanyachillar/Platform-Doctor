@@ -15,7 +15,7 @@ const listBooking = async (req, res) => {
             req.body,
             res
         )
-        return listBookingResponse
+        return listBookingResponse;
     } catch (error) {
         console.log('error', error)
     }
