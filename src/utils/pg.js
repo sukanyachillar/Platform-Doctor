@@ -1,9 +1,9 @@
-import Razorpay from 'razorpay'
-import { nanoid } from 'nanoid'
+import Razorpay from 'razorpay';
+import { nanoid } from 'nanoid';
 
 const createPaymentLink = async (body) => {
     let reference_id = nanoid();
-    let { name, phone, amount } = body
+    let { name, phone, amount } = body;
     try {
         // let body = {
         //     amount,
@@ -34,12 +34,12 @@ const createPaymentLink = async (body) => {
         //     body
         // )
         let response = await razorpay.orders.create(body);
-        console.log({ response })
+        console.log({ response });
         return response;
     } catch (err) {
-        console.log({ Error: err })
-        return err
-    }
-}
+        console.log({ Error: err });
+        return err;
+    };
+};
 
-export default { createPaymentLink }
+export default { createPaymentLink };

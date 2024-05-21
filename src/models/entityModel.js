@@ -42,7 +42,6 @@ const entityModel = sequelize.define('entity', {
         allowNull: true,
         unique: false,
     },
-
     account_no: {
         type: DataTypes.STRING,
         allowNull: true,

@@ -721,7 +721,7 @@ const getGeneralSettings = async (req, res) => {
             statusCode: 422,
         });
     }
-}
+};
 
 const getBankDetails = async (userData, res) => {
     try {
@@ -759,7 +759,7 @@ const getBankDetails = async (userData, res) => {
             message: 'Error while fetching bank details.',
         })
     }
-}
+};
 
 const updateEntityStatus = async (userData, res) => {
     try {
@@ -792,7 +792,7 @@ const updateEntityStatus = async (userData, res) => {
             statusCode: 422,
         })
     }
-}
+};
 const updateProfileDetails = async (doctorProfile, params, res) => {
     try {
         let { id } = params
@@ -826,7 +826,6 @@ const updateProfileDetails = async (doctorProfile, params, res) => {
     }
 };
 
-
 export default {
     register,
     addProfile,
@@ -836,4 +835,4 @@ export default {
     getProfileForCustomer,
     updateEntityStatus,
     updateProfileDetails,
-}
+};

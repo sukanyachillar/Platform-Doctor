@@ -27,140 +27,231 @@ const paymentStatusCapture = async (req, res) => {
                         where: {
                             orderId: req.body?.payload?.order?.entity?.id,
                         },
-                    }
-                )
+                    },
+                );
                 const timeSlot = await bookingModel.findOne({
                     attributes: ['workSlotId'],
                     where: { orderId: req.body?.payload?.order?.entity?.id },
-                })
+                });
                 await weeklyTimeSlotsModel.update(
                     { booking_status: 1 },
                     { where: { time_slot_id: timeSlot.workSlotId } }
-                )
+                );
                 await paymentModel.update(
                     {
                         paymentStatus: 1,
                         transactionId: req.body?.payload?.payment?.entity?.id,
                     },
                     { where: { orderId: req.body?.payload?.order?.entity?.id } }
-                )
+                );
             }
-        }
+        };
 
-        return true
+        return true;
     } catch (error) {
         console.log({ error })
-    }
-}
+    };
+};
+
+// const paymentUpdate = async (bookingData, res) => {
+//     try {
+//         console.log({ bookingData })
+//         let { paymentId, orderId } = bookingData;
+//         await bookingModel.update(
+//             {
+//                 // paymentStatus: 1,
+//                 bookingStatus: 0,
+//                 updatedAt: new Date(),
+//                 // transactionId: paymentId,
+//             },
+//             {
+//                 where: {
+//                     orderId,
+//                 },
+//             },
+//         );
+
+//         const timeSlot = await bookingModel.findOne({
+//             attributes: ['workSlotId', 'entityId'],
+//             where: { orderId },
+//         });
+//         let registration_id = await tokenModel.findAll({
+//             where: { userId: timeSlot.entityId },
+//             attributes: ['token'],
+//         });
+
+//         const registration_ids = registration_id.map((token) => token.token)
+//         console.log({ registration_ids: registration_ids })
+
+//         await weeklyTimeSlotsModel.update(
+//             { booking_status: 1 },
+//             { where: { time_slot_id: timeSlot.workSlotId } }
+//         );
+
+//         await paymentModel.update(
+//             {
+//                 paymentStatus: 1,
+//                 transactionId: paymentId,
+//             },
+//             { where: { orderId } },
+//         );
+//         let timeData = await weeklyTimeSlotsModel.findOne({
+//             where: { time_slot_id: timeSlot.workSlotId },
+//         });
+//         // admin.initializeApp({
+//         //     credential: admin.credential.cert(serviceAccount),
+//         // })
+
+//         // const messaging = admin.messaging()
+
+//         // const message = {
+//         //     notification: {
+//         //         title: 'Appointment Booking',
+//         //         body: `You have got an booking on ${timeData.date} at ${timeData.time_slot}`,
+//         //     },
+//         //     tokens: registration_ids,
+//         // }
+
+//         // messaging
+//         //    // .send(message)
+//         //    .sendEachForMulticast(message)
+//         //     .then((response) => {
+//         //         console.log('Successfully sent message:', response)
+//         //     })
+//         //     .catch((error) => {
+//         //         console.log('Error sending message:', error)
+//         //     })
+
+//         if (!admin.apps.length) {
+//             // Initialize the Firebase app
+//             admin.initializeApp({
+//                 credential: admin.credential.cert(serviceAccount),
+//             });
+//         };
+//         const messaging = admin.messaging();
+
+//         const message = {
+//             notification: {
+//                 title: 'Appointment Booking',
+//                 body: `You have got a booking on ${timeData.date} at ${timeData.time_slot}`,
+//             },
+//             tokens: registration_ids,
+//         };
+
+//         // Wrap the notification sending logic in a try-catch block
+//         try {
+//             await messaging.sendEachForMulticast(message)
+//             console.log('Successfully sent message')
+//         } catch (notificationError) {
+//             console.log('Error sending notification:', notificationError)
+//             // Handle the notification error as needed, without affecting the overall process
+//         };
+
+//         return handleResponse({
+//             res,
+//             message: 'Successfully updated with status',
+//             statusCode: 200,
+//         });
+//     } catch (error) {
+//         console.log({ error })
+//         return handleResponse({
+//             res,
+//             message: 'Unable to update status.',
+//             statusCode: 404,
+//         });
+//     };
+// };
 
 const paymentUpdate = async (bookingData, res) => {
     try {
-        console.log({ bookingData })
-        let { paymentId, orderId } = bookingData;
-        await bookingModel.update(
-            {
-                // paymentStatus: 1,
-                bookingStatus: 0,
-                updatedAt: new Date(),
-                // transactionId: paymentId,
-            },
-            {
-                where: {
-                    orderId,
+        const { paymentId, orderId } = bookingData;
+
+        const [updateBooking, timeSlot, updatePayment] = await Promise.all([
+            bookingModel.update(
+                {
+                    bookingStatus: 0,
+                    updatedAt: new Date(),
                 },
-            }
-        );
+                { where: { orderId } },
+            ),
+            bookingModel.findOne({
+                attributes: ['workSlotId', 'entityId'],
+                where: { orderId },
+            }),
+            paymentModel.update(
+                {
+                    paymentStatus: 1,
+                    transactionId: paymentId,
+                },
+                { where: { orderId } }
+            ),
+        ]);
 
-        const timeSlot = await bookingModel.findOne({
-            attributes: ['workSlotId', 'entityId'],
-            where: { orderId },
-        })
-        let registration_id = await tokenModel.findAll({
-            where: { userId: timeSlot.entityId },
-            attributes: ['token'],
-        });
+        const [ registrationIds, updateTimeSlot ] = await Promise.all([
+            tokenModel.findAll({
+                where: { userId: timeSlot.entityId },
+                attributes: ['token'],
+            }),
+            weeklyTimeSlotsModel.update(
+                { booking_status: 1 },
+                { where: { time_slot_id: timeSlot.workSlotId } },
+            ),
+        ]);
 
-        const registration_ids = registration_id.map((token) => token.token)
-        console.log({ registration_ids: registration_ids })
+        const registration_tokens = registrationIds.map((token) => token.token);
+        console.log({ registration_ids: registration_tokens });
 
-        await weeklyTimeSlotsModel.update(
-            { booking_status: 1 },
-            { where: { time_slot_id: timeSlot.workSlotId } }
-        )
-
-        await paymentModel.update(
-            {
-                paymentStatus: 1,
-                transactionId: paymentId,
-            },
-            { where: { orderId } }
-        )
-        let timeData = await weeklyTimeSlotsModel.findOne({
+        // Fetch time data for the notification
+        const timeData = await weeklyTimeSlotsModel.findOne({
             where: { time_slot_id: timeSlot.workSlotId },
         });
-        // admin.initializeApp({
-        //     credential: admin.credential.cert(serviceAccount),
-        // })
 
-        // const messaging = admin.messaging()
-
-        // const message = {
-        //     notification: {
-        //         title: 'Appointment Booking',
-        //         body: `You have got an booking on ${timeData.date} at ${timeData.time_slot}`,
-        //     },
-        //     tokens: registration_ids,
-        // }
-
-        // messaging
-        //    // .send(message)
-        //    .sendEachForMulticast(message)
-        //     .then((response) => {
-        //         console.log('Successfully sent message:', response)
-        //     })
-        //     .catch((error) => {
-        //         console.log('Error sending message:', error)
-        //     })
+        if (!timeData) {
+            return handleResponse({
+                res,
+                message: 'Time data not found.',
+                statusCode: 404,
+            });
+        };
 
         if (!admin.apps.length) {
-            // Initialize the Firebase app
             admin.initializeApp({
                 credential: admin.credential.cert(serviceAccount),
             });
-        }
-        const messaging = admin.messaging()
+        };
+
+        const messaging = admin.messaging();
 
         const message = {
             notification: {
                 title: 'Appointment Booking',
                 body: `You have got a booking on ${timeData.date} at ${timeData.time_slot}`,
             },
-            tokens: registration_ids,
-        }
+            tokens: registration_tokens,
+        };
 
-        // Wrap the notification sending logic in a try-catch block
         try {
-            await messaging.sendEachForMulticast(message)
-            console.log('Successfully sent message')
+            await messaging.sendEachForMulticast(message);
+            console.log('Successfully sent message');
         } catch (notificationError) {
-            console.log('Error sending notification:', notificationError)
-            // Handle the notification error as needed, without affecting the overall process
-        }
+            console.log('Error sending notification:', notificationError);
+            // Log the notification error and continue
+        };
 
         return handleResponse({
             res,
             message: 'Successfully updated with status',
             statusCode: 200,
-        })
+        });
     } catch (error) {
-        console.log({ error })
+        console.log({ error });
         return handleResponse({
             res,
             message: 'Unable to update status.',
             statusCode: 404,
-        })
-    }
-}
+        });
+    };
+};
 
 const transactionHistory = async (requestData, res) => {
     try {

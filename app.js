@@ -60,6 +60,7 @@ await associateModels();
 cron.schedule('5 0 * * *', async () => {
     cronJobs.timeSlotCron();
 });
+
 // cronJobs.timeSlotCron();
 
 app.get('/api', (req, res) => {

@@ -2,6 +2,7 @@
 import adminServices from '../services/adminServices.js';
 import customerServices from '../../../customer/services/customerServices.js';
 import bookingService from '../../../booking/v1/services/bookingService.js';
+import clinicServices from '../../../clinic/services/clinicServices.js';
 
 const adminRegister = async (req, res) => {
     try {
@@ -336,7 +337,7 @@ const findDoctorByID = async (req, res) => {
 };
 const listBooking_admin = async (req, res) => {
     try {
-        let data = await bookingService.listBooking(
+        let data = await clinicServices.listAllBooking(
             req.body,
             res,
         );

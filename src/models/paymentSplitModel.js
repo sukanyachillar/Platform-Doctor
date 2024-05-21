@@ -7,6 +7,10 @@ const paymentSplitModel = sequelize.define('paymentSplit', {
         primaryKey: true,
         autoIncrement: true,
     },
+    paymentId: {
+        type: DataTypes.INTEGER,
+        allowNull: false,
+    },
     doctorFee: {
         type: DataTypes.INTEGER,
         allowNull: false,
@@ -29,6 +33,6 @@ const paymentSplitModel = sequelize.define('paymentSplit', {
         defaultValue: DataTypes.NOW,
         allowNull: false,
     },
-})
+});
 
 export default paymentSplitModel;
