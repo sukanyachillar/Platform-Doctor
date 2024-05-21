@@ -582,12 +582,23 @@ const listBooking_admin = async ({ doctorId, date, entityId, searchQuery }, para
             });
         };
 
+        let searchCondition = {};
+        if (searchQuery) {
+            searchCondition = {
+                [Op.or]: [
+                    { patientName: { [Op.like]: `%${searchQuery}%` } },
+                    { bookedPhoneNo: { [Op.like]: `%${searchQuery}%` } }
+                ]
+            };
+        };
+
         const totalCount = await bookingModel.count({
             where: {
                 bookingStatus: {
                     [Op.not]: 3,
                 },
                 ...whereBookingCond,
+                ...searchCondition,
             },
             include: [
                 {
@@ -631,6 +642,7 @@ const listBooking_admin = async ({ doctorId, date, entityId, searchQuery }, para
                         [Op.not]: 3,
                     },
                     ...whereBookingCond,
+                    ...searchCondition,
                 },
                 include: [
                     {
@@ -677,7 +689,7 @@ const listBooking_admin = async ({ doctorId, date, entityId, searchQuery }, para
                 // pendingAppointments,
                 appointmentDate: date,
                 doctorName: getDoctor.doctor_name || '',
-                entityDetails: getEntities,
+                // entityDetails: getEntities,
                 currentPage: page,
                 totalPages: totalPages,
                 totalCount: totalCount,
