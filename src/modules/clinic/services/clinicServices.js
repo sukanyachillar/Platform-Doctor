@@ -380,7 +380,6 @@ const listAllBooking = async (requestData, res) => {
             }
         });
 
-
         return handleResponse({
             res,
             statusCode: 200,

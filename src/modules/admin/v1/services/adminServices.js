@@ -908,6 +908,7 @@ const addNewDoctor = async (docData, image, res) => {
             data: {
                 entityId: response.entityId,
                 redirection,
+                validateMessages: response.validateMessages? response.validateMessages: [],
             },
         })
     } catch (error) {

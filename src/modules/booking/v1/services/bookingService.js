@@ -374,82 +374,10 @@ const bookAppointment = async (req, res) => {
 //     return paymentSplitRecord;
 // };
 
-// const createOrderAndSplitPayment = async (amount, currency, doctorAccountId, clinicAccountId) => {
-//     try {
-//         // Create an order
-//         const order = await razorpay.orders.create({
-//             amount: amount * 100, // Amount in paise
-//             currency: currency,
-//             payment_capture: 1
-//         });
-
-//         // Calculate splits
-//         const doctorFee = (amount * 0.7) * 100; // 70% of the amount goes to doctor
-//         const clinicFee = (amount * 0.3) * 100; // 30% of the amount goes to clinic
-
-//         // Create payment link with split
-//         const paymentLink = await razorpay.paymentLink.create({
-//             amount: amount * 100,
-//             currency: currency,
-//             accept_partial: false,
-//             description: "Payment for services",
-//             customer: {
-//                 contact: "9999999999",
-//                 email: "customer@example.com"
-//             },
-//             notify: {
-//                 sms: true,
-//                 email: true
-//             },
-//             notes: {
-//                 order_id: order.id
-//             },
-//             callback_url: "https://your-callback-url.com/",
-//             callback_method: "get",
-//             line_items: [
-//                 {
-//                     name: "Doctor Fee",
-//                     amount: doctorFee,
-//                     currency: currency,
-//                     description: "Doctor Fee",
-//                     receipt: "rcptid_11",
-//                     payee: {
-//                         account: doctorAccountId,
-//                         amount: doctorFee,
-//                         currency: currency,
-//                         commission: 0
-//                     }
-//                 },
-//                 {
-//                     name: "Clinic Fee",
-//                     amount: clinicFee,
-//                     currency: currency,
-//                     description: "Clinic Fee",
-//                     receipt: "rcptid_12",
-//                     payee: {
-//                         account: clinicAccountId,
-//                         amount: clinicFee,
-//                         currency: currency,
-//                         commission: 0
-//                     }
-//                 }
-//             ]
-//         });
-
-//         return {
-//             orderId: order.id,
-//             paymentLink
-//         };
-//     } catch (error) {
-//         console.error("Error creating order and splitting payment: ", error);
-//         throw error;
-//     }
-// };
 
 
 const listBooking = async ({ doctorId, date, entityId }, res) => { 
     try {
-        console.log(doctorId, date, entityId)
         let whereBookingCond = {};
         
         if (entityId) {
