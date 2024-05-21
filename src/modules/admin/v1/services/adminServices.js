@@ -1034,7 +1034,7 @@ const addDoctorByClinic = async ({
         let existingDrwithClinic;
 
         const existingDr = await doctorModel.findOne({
-            where: { doctor_phone },
+            where: { doctor_phone }, attributes: ['doctor_phone', 'email']
         });
 
         if (existingDr) {
@@ -1048,6 +1048,17 @@ const addDoctorByClinic = async ({
                      success: false,
                      message: 'Doctor already exists with this Clinic',
                    };
+        };
+
+        const emailAlreadyExists = await doctorModel.findOne({
+              where: { email }, attributes: ['doctor_phone', 'email']
+        });
+
+        if (emailAlreadyExists && emailAlreadyExists.doctor_phone !== doctor_phone) {
+                    return {
+                        success: false,
+                        message: 'This Email ID already exists with another Phone No',
+                    };
         };
 
         // if (existingDr && !existingDrwithClinic) {
@@ -1226,6 +1237,7 @@ const updateDoctor = async (data, profileImage, res) => {
              } = updatedData;
 
         let imageUrl; 
+
         if (profileImage) {
             imageUrl = await DigitalOceanUtils.uploadObject (profileImage); 
         };
@@ -1250,6 +1262,17 @@ const updateDoctor = async (data, profileImage, res) => {
                 data: {},
             });
         };
+
+      const emailAlreadyExists = await doctorModel.findOne({
+            where: { email }, attributes: ['doctor_phone', 'email']
+      });
+
+      if (emailAlreadyExists && emailAlreadyExists.doctor_phone !== existingDoctor.doctor_phone) {
+                  return {
+                      success: false,
+                      message: 'This Email ID already exists with another Phone No',
+                  };
+      };
 
         const existingDoctorEntity = await doctorEntityModel.findOne(
                                     { where: { doctorId: doctorId, entityId: entityId } });
