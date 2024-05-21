@@ -672,9 +672,9 @@ const listBooking_admin = async ({ doctorId, date, entityId, searchQuery }, para
             message: 'Appointment listing fetched successfully',
             data: {
                 appointmentList,
-                totalAppointments,
-                completedAppointments,
-                pendingAppointments,
+                // totalAppointments,
+                // completedAppointments,
+                // pendingAppointments,
                 appointmentDate: date,
                 doctorName: getDoctor.doctor_name || '',
                 entityDetails: getEntities,
