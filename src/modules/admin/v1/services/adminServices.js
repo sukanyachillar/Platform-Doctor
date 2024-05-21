@@ -1050,39 +1050,36 @@ const addDoctorByClinic = async ({
                    };
         };
 
-        if (existingDr && !existingDrwithClinic) {
-                const validateMessages = [];
+        // if (existingDr && !existingDrwithClinic) {
+        //         const validateMessages = [];
 
-                if (existingDr.doctor_name !== doctor_name) {
-                    validateMessages.push('Doctor name does not match the existing record.');
-                };
-                if (existingDr.qualification !== qualification) {
-                    validateMessages.push('Qualification does not match the existing record.');
-                };
-                if (existingDr.email !== email) {
-                    validateMessages.push('Email does not match the existing record.');
-                };
-                if (existingDr.department_id !== department_id) {
-                    validateMessages.push('Department ID does not match the existing record.');
-                };
-                if (existingDr.department_id !== department_id) {
-                    validateMessages.push('Department ID does not match the existing record.');
-                };
-                if (existingDr.gstNo !== gstNo) {
-                    validateMessages.push('GST No does not match the existing record.');
-                };
-                if (existingDr.paymentMethod !== paymentMethod) {
-                    validateMessages.push('Payment method does not match the existing record.');
-                };
+        //         if (existingDr.doctor_name !== doctor_name) {
+        //             validateMessages.push('Doctor name does not match the existing record.');
+        //         };
+        //         if (existingDr.qualification !== qualification) {
+        //             validateMessages.push('Qualification does not match the existing record.');
+        //         };
+        //         if (existingDr.email !== email) {
+        //             validateMessages.push('Email does not match the existing record.');
+        //         };
+        //         if (existingDr.department_id !== department_id) {
+        //             validateMessages.push('Department ID does not match the existing record.');
+        //         };
+        //         if (existingDr.gstNo !== gstNo) {
+        //             validateMessages.push('GST No does not match the existing record.');
+        //         };
+        //         if (existingDr.paymentMethod !== paymentMethod) {
+        //             validateMessages.push('Payment method does not match the existing record.');
+        //         };
 
-                if (validateMessages.length > 0) {
-                    return {
-                        success: false,
-                        message: 'Input data does not match the existing doctor details.',
-                        validateMessages: validateMessages,
-                    };
-                };
-            };
+        //         if (validateMessages.length > 0) {
+        //             return {
+        //                 success: false,
+        //                 message: 'Input data does not match the existing doctor details.',
+        //                 validateMessages: validateMessages,
+        //             };
+        //         };
+        //     };
 
         const newDoctor = await new doctorModel({
                 doctor_name,
