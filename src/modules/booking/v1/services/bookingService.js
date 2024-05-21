@@ -556,120 +556,143 @@ const listBooking = async ({ doctorId, date, entityId }, res) => {
     }
 };
 
-// const listBooking_admin = async ({ doctorId, date, entityId }, params, res) => { 
-//     try {
-//         const page = parseInt(params.page) || 1;
-//         const pageSize = parseInt(params.limit) || 10;
-//         // const searchQuery = requestData.searchQuery || '';
-//         const offset = (page - 1) * pageSize;
+const listBooking_admin = async ({ doctorId, date, entityId, searchQuery }, params, res) => { 
+    try {
+        const page = parseInt(params.page) || 1;
+        const pageSize = parseInt(params.limit) || 10;
+        const offset = (page - 1) * pageSize;
 
-//         let whereBookingCond = {};
+        let whereBookingCond = {};
         
-//         if (entityId) {
-//             whereBookingCond = { entityId: entityId };
-//         };
+        if (entityId) {
+            whereBookingCond = { entityId: entityId };
+        };
 
-//         const getDoctor = await doctorModel.findOne( { where: { doctor_id : doctorId }, 
-//                                             attributes: ['doctor_id', 'doctor_phone'], } );
+        const getDoctor = await doctorModel.findOne({
+            where: { doctor_id: doctorId },
+            attributes: ['doctor_id', 'doctor_name', 'doctor_phone'],
+        });
 
-//         if (!getDoctor) {
-//             return handleResponse({
-//                 res,
-//                 statusCode: '404',
-//                 message : 'Doctor ID not found',
-//                 data: {},
-//             });
-//         };
+        if (!getDoctor) {
+            return handleResponse({
+                res,
+                statusCode: '404',
+                message: 'Doctor ID not found',
+                data: {},
+            });
+        };
 
-//         const [ totalAppointments, getEntities, bookingList ] = await Promise.all([
-//             weeklyTimeSlotsModel.count({
-//                 where: {
-//                     doctor_id: doctorId,
-//                     date: date,
-//                     // bookingStatus: 0,
-//                 }
-//             }),
+        const totalCount = await bookingModel.count({
+            where: {
+                bookingStatus: {
+                    [Op.not]: 3,
+                },
+                ...whereBookingCond,
+            },
+            include: [
+                {
+                    model: weeklyTimeSlotsModel,
+                    where: {
+                        doctor_id: doctorId,
+                        date: date,
+                    },
+                },
+            ],
+        });
 
-//             getEntityDetailsOfTheDr(getDoctor.doctor_phone),
-        
-//             bookingModel.findAll({
-//                 attributes: [
-//                     'bookingStatus',
-//                     'bookingId',
-//                     'customerId',
-//                     'patientName',
-//                     'bookedPhoneNo'
-//                 ],
-//                 include: [
-//                     {
-//                         model: userModel,
-//                         attributes: ['name', 'phone']
-//                     }
-//                 ],
-//                 where: {
-//                     bookingStatus: {
-//                         [Op.not]: 3,
-//                     },
-//                     ...whereBookingCond,
-//                 },
-//                 include: [
-//                     {
-//                         model: weeklyTimeSlotsModel,
-//                         attributes: ['time_slot'],
-//                         where: {
-//                             doctor_id: doctorId,
-//                             date: date,
-//                         },
-//                     },
-//                 ],
-//                 limit: pageSize,
-//                 offset: offset,
-//             })
-//         ]);
+        const totalPages = Math.ceil(totalCount / pageSize);
 
-//         if (bookingList.length === 0) {
-//             return handleResponse({
-//                 res,
-//                 statusCode: 404,
-//                 message: 'No appointments found.',
-//             });
-//         };
+        const [totalAppointments, getEntities, bookingList] = await Promise.all([
+            weeklyTimeSlotsModel.count({
+                where: {
+                    doctor_id: doctorId,
+                    date: date,
+                }
+            }),
 
-//         const appointmentList = bookingList.map(booking => ({
-//             bookingId: booking.bookingId,
-//             timeSlot: booking.weeklyTimeSlot.time_slot,
-//             customerName: booking.patientName ? booking.patientName : "",
-//             customerPhone: booking.bookedPhoneNo ? booking.bookedPhoneNo : "",
-//             bookingStatus: booking.bookingStatus,
-//         }));
+            getEntityDetailsOfTheDr(getDoctor.doctor_phone),
 
-//         const completedAppointments = appointmentList.filter(appointment => appointment.bookingStatus === 1).length;
-//         const pendingAppointments = totalAppointments - completedAppointments;
+            bookingModel.findAll({
+                attributes: [
+                    'bookingStatus',
+                    'bookingId',
+                    'customerId',
+                    'patientName',
+                    'bookedPhoneNo'
+                ],
+                include: [
+                    {
+                        model: userModel,
+                        attributes: ['name', 'phone']
+                    }
+                ],
+                where: {
+                    bookingStatus: {
+                        [Op.not]: 3,
+                    },
+                    ...whereBookingCond,
+                },
+                include: [
+                    {
+                        model: weeklyTimeSlotsModel,
+                        attributes: ['time_slot'],
+                        where: {
+                            doctor_id: doctorId,
+                            date: date,
+                        },
+                    },
+                ],
+                limit: pageSize,
+                offset: offset,
+            })
+        ]);
 
-//         return handleResponse({
-//             res,
-//             statusCode: 200,
-//             message: 'Appointment listing fetched successfully',
-//             data: {
-//                 appointmentList,
-//                 totalAppointments,
-//                 completedAppointments,
-//                 pendingAppointments,
-//                 appointmentDate: date,
-//                 doctorName: getDoctor.doctor_name || '',
-//                 entityDetails: getEntities,
-//             },
-//         });
-//     } catch (error) {
-//         console.log({ error });
-//         return handleResponse({
-//             res,
-//             statusCode: 500,
-//             message: 'Internal server error',
-//             data: {},
-//         });
-//     }
-// };
+        if (bookingList.length === 0) {
+            return handleResponse({
+                res,
+                statusCode: 404,
+                message: 'No appointments found.',
+            });
+        };
+
+        const appointmentList = bookingList.map(booking => ({
+            bookingId: booking.bookingId,
+            timeSlot: booking.weeklyTimeSlot.time_slot,
+            customerName: booking.patientName ? booking.patientName : "",
+            customerPhone: booking.bookedPhoneNo ? booking.bookedPhoneNo : "",
+            bookingStatus: booking.bookingStatus,
+        }));
+
+        const completedAppointments = appointmentList.filter(appointment => appointment.bookingStatus === 1).length;
+        const pendingAppointments = totalAppointments - completedAppointments;
+
+        return handleResponse({
+            res,
+            statusCode: 200,
+            message: 'Appointment listing fetched successfully',
+            data: {
+                appointmentList,
+                totalAppointments,
+                completedAppointments,
+                pendingAppointments,
+                appointmentDate: date,
+                doctorName: getDoctor.doctor_name || '',
+                entityDetails: getEntities,
+                currentPage: page,
+                totalPages: totalPages,
+                totalCount: totalCount,
+            },
+        });
+    } catch (error) {
+        console.log({ error });
+        return handleResponse({
+            res,
+            statusCode: 500,
+            message: 'Internal server error',
+            data: {},
+        });
+    }
+};
 
 
 const getBookingReport = async (req, res) => {
@@ -1051,4 +1074,5 @@ export default {
     getBookingReport,
     bookingConfirmationData,
     updateBookingStatus,
+    listBooking_admin,
 }

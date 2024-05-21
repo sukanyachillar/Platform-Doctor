@@ -337,8 +337,9 @@ const findDoctorByID = async (req, res) => {
 };
 const listBooking_admin = async (req, res) => {
     try {
-        let data = await clinicServices.listAllBooking(
+        let data = await bookingService.listBooking_admin(
             req.body,
+            req.query,
             res,
         );
         return data;
