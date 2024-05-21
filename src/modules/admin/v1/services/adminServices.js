@@ -1034,7 +1034,7 @@ const addDoctorByClinic = async ({
         let existingDrwithClinic;
 
         const existingDr = await doctorModel.findOne({
-            where: { doctor_phone }, attributes: ['doctor_phone', 'email']
+            where: { doctor_phone }, attributes: ['doctor_phone', 'email', 'doctor_id']
         });
 
         if (existingDr) {
