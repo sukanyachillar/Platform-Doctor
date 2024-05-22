@@ -37,7 +37,7 @@ const listDoctors_admin = async (req, res) => {
         return data
     } catch (err) {
         console.log({ err })
-    }
+    };
 };
 
 const listEntity = async (req, res) => {

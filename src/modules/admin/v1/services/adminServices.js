@@ -480,6 +480,7 @@ const listDoctors_admin = async (requestParams, requestData, res) => {
                 entityType: record.doctorEntity ? record.doctorEntity.entity.entity_type : '',
                 doctorPhone: record.doctor_phone,
                 profileImageUrl: record.profileImageUrl,
+                status: record.status,
             })),
             currentPage: page,
             totalPages: Math.ceil(count / pageSize),
