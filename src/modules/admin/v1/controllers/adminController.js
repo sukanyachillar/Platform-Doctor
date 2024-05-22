@@ -77,8 +77,8 @@ const addBankDetails = async(req,res)=>{
         return data;
     } catch(err){
         console.log(err)
-    }
-}
+    };
+};
 
 const listAllCustomers = async (req, res) => {
     try {

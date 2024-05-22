@@ -952,6 +952,17 @@ const addIndvDoctor = async ({
             where: { doctor_phone: doctor_phone },
         });
 
+        let emailAlreadyExists = await doctorModel.findOne({
+            where: { email }, attributes: ['doctor_id', 'doctor_phone']
+        });
+
+        if (emailAlreadyExists && emailAlreadyExists.doctor_phone !== doctor_phone) {
+            return {
+                success: false,
+                message: 'This Email ID already exists with another Phone No',
+            };
+        };
+
         let addedDoctor, addedIndvEntity;
 
         if (!existingIndvEntity) {
@@ -1245,6 +1256,7 @@ const updateDoctor = async (data, profileImage, res) => {
         const existingDoctor = await doctorModel.findOne({ where: { doctor_id: doctorId } });
         const existingEntity = await entityModel.findOne({ where: { entity_id: entityId } });
 
+
         if (!existingDoctor) {
             return handleResponse({
                 res,
@@ -1263,18 +1275,21 @@ const updateDoctor = async (data, profileImage, res) => {
             });
         };
 
-      const emailAlreadyExists = await doctorModel.findOne({
-            where: { email }, attributes: ['doctor_phone', 'email']
-      });
-
-      if (emailAlreadyExists && emailAlreadyExists.doctor_phone !== existingDoctor.doctor_phone) {
-                  return {
-                      success: false,
-                      message: 'This Email ID already exists with another Phone No',
-                  };
-      };
-
-        const existingDoctorEntity = await doctorEntityModel.findOne(
+       if (email) {
+            const emailAlreadyExists = await doctorModel.findOne({
+                  where: { email }, attributes: ['doctor_phone', 'email']
+            });
+            if (emailAlreadyExists && emailAlreadyExists.doctor_phone !== existingDoctor.doctor_phone) {
+                return handleResponse({
+                    res,
+                    statusCode: 404,
+                    message: 'This email ID is already associated with a different Phone No.',
+                    data: {},
+                });
+            };
+       };
+   
+       const existingDoctorEntity = await doctorEntityModel.findOne(
                                     { where: { doctorId: doctorId, entityId: entityId } });
         
         if (!existingDoctorEntity) {
@@ -1370,7 +1385,7 @@ const getDoctorDetails = async (workSlotId) => {
 
     if (!weeklyTimeSlots.length) {
         return []
-    }
+    };
 
     const doctorDetails = await doctorModel.findAll({
         attributes: ['doctor_id', 'doctor_name'],
@@ -1378,9 +1393,9 @@ const getDoctorDetails = async (workSlotId) => {
             doctor_id: weeklyTimeSlots[0].doctor_id,
         },
         raw: true,
-    })
+    });
 
-    return doctorDetails
+    return doctorDetails;
 };
 
 const listAllCustomers = async (
@@ -1477,8 +1492,8 @@ const addBankDetails = async (
     try {
         let entityData = await entityModel.findOne({
             where: { entity_id: entityId },
-        })
-        let newData, message, statusCode
+        });
+        let newData, message, statusCode;
         if (!entityData) {
             message = 'No entity data available with this ID.'
             statusCode = 404
@@ -1491,22 +1506,22 @@ const addBankDetails = async (
             entityData.profile_completed = 1
             message = 'Successfully added bank details'
             statusCode = 200
-            newData = await entityData.save()
+            newData = await entityData.save();
         };
         return handleResponse({
             res,
             statusCode,
             message,
             data: { newData },
-        })
+        });
     } catch (error) {
         console.log({ error })
         return handleResponse({
             res,
             message: 'Error while updating bank details',
             statusCode: 404,
-        })
-    }
+        });
+    };
 };
 
 const customerHistory = async (req, res) => {
