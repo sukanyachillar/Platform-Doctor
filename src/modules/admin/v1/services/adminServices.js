@@ -965,7 +965,7 @@ const addIndvDoctor = async ({
         };
 
         let addedDoctor, addedIndvEntity;
-
+       console.log("imageUrl>>>>>>>", imageUrl)
         if (!existingIndvEntity) {
             const newIndvEntity = await new entityModel({
                 phone: doctor_phone,
@@ -981,7 +981,7 @@ const addIndvDoctor = async ({
             addedIndvEntity = await newIndvEntity.save();
             
             const capitalizedDoctorName = doctor_name.charAt(0).toUpperCase() + doctor_name.slice(1); 
-           
+            
             const newDoctor = await new doctorModel({
                 doctor_name: capitalizedDoctorName,
                 doctor_phone,
@@ -1026,7 +1026,7 @@ const addIndvDoctor = async ({
 
         return { 
                  entityId: getEntity.entity_id, 
-                 message: 'Individual doctor added succusfully', 
+                 message: 'Individual doctor added succesfully', 
                  success: true,
                };
 
