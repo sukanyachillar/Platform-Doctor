@@ -60,7 +60,7 @@ const addWorkSchedule = async (data, userData, res) => {
             where: { entity_id: entityId, day, doctor_id, startTime, endTime }, 
         });
        
-        const consultation_time = doctorEntityData.consultation_time;
+        const consultation_time = doctorEntityData.consultationTime;
               
         const time_slots = await generateTimeSlots(
                 startTime,
