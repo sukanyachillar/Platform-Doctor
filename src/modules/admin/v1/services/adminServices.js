@@ -937,7 +937,7 @@ const addIndvDoctor = async ({
 }, imageUrl) => {
     
     try {
-   
+
         let existingIndvEntity = await entityModel.findOne({
             where: { phone: doctor_phone },
         });
@@ -979,9 +979,11 @@ const addIndvDoctor = async ({
             });
 
             addedIndvEntity = await newIndvEntity.save();
-
+            
+            const capitalizedDoctorName = doctor_name.charAt(0).toUpperCase() + doctor_name.slice(1); 
+           
             const newDoctor = await new doctorModel({
-                doctor_name,
+                doctor_name: capitalizedDoctorName,
                 doctor_phone,
                 qualification,
                 description,
@@ -1004,7 +1006,7 @@ const addIndvDoctor = async ({
                userModel.create({
                    uuid: await generateUuid(),
                    userType: 2,
-                   name: doctor_name,
+                   name: capitalizedDoctorName,
                    phone: doctor_phone,
                });
            };
@@ -1053,8 +1055,8 @@ const addDoctorByClinic = async ({
 }, imageUrl) => {
   
     try {
+        
         let existingDrwithClinic;
-
         const existingDr = await doctorModel.findOne({
             where: { doctor_phone }, attributes: ['doctor_phone', 'email', 'doctor_id']
         });
@@ -1113,9 +1115,11 @@ const addDoctorByClinic = async ({
         //             };
         //         };
         //     };
-
+        
+        const capitalizedDoctorName = doctor_name.charAt(0).toUpperCase() + doctor_name.slice(1); 
+        
         const newDoctor = await new doctorModel({
-                doctor_name,
+                doctor_name: capitalizedDoctorName,
                 doctor_phone,
                 qualification,
                 email,
@@ -1146,7 +1150,7 @@ const addDoctorByClinic = async ({
             userModel.create({
                 uuid: await generateUuid(),
                 userType: 2,
-                name: doctor_name,
+                name: capitalizedDoctorName,
                 phone: doctor_phone,
             });
         };

@@ -28,6 +28,6 @@ const tokenModel = sequelize.define('token', {
         defaultValue: DataTypes.NOW,
         allowNull: false,
     },
-})
+});
 
 export default tokenModel; //Model used to store FCM tokens of devices.

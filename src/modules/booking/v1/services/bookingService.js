@@ -287,11 +287,13 @@ const bookAppointment = async (req, res) => {
         };
 
         let newCustomer = await userModel.findOne({ where: { phone: customerPhone } });
+        const capitalizedUserName = doctor_name.charAt(0).toUpperCase() + customerName.slice(1); 
+
         if (!newCustomer) {
             newCustomer = await userModel.create({
                 uuid: await generateUuid(),
                 userType: 1,
-                name: customerName,
+                name: capitalizedUserName,
                 phone: customerPhone,
             });
         };

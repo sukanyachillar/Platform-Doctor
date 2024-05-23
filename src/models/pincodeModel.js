@@ -29,6 +29,6 @@ const pincodeModel = sequelize.define('pincode', {
         defaultValue: DataTypes.NOW,
         allowNull: false,
     },
-})
+});
 
 export default pincodeModel;
