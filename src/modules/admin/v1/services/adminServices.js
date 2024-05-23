@@ -965,7 +965,6 @@ const addIndvDoctor = async ({
         };
 
         let addedDoctor, addedIndvEntity;
-       console.log("imageUrl>>>>>>>", imageUrl)
         if (!existingIndvEntity) {
             const newIndvEntity = await new entityModel({
                 phone: doctor_phone,

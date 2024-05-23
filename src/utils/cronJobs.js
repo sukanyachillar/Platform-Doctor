@@ -1,10 +1,8 @@
-// consolidatedScript.js
 
 import doctorEntityModel from '../models/doctorEntityModel.js';
 import doctorModel from '../models/doctorModel.js';
 import weeklyTimeSlotsModel from '../models/weeklyTimeSlotsModel.js';
 import workScheduleModel from '../models/workScheduleModel.js';
-import { Op, Sequelize } from 'sequelize'
 
 const generateTimeslots = (startTime, endTime, consultationTime) => {
     const startDate = new Date(`2000-01-01T${startTime}`);
@@ -40,10 +38,10 @@ const generateTimeslots = (startTime, endTime, consultationTime) => {
   };
   
   const formatDate = (date) => {
-    const year = date.getFullYear();
-    const month = String(date.getMonth() + 1).padStart(2, '0');
-    const day = String(date.getDate()).padStart(2, '0');
-    return `${year}-${month}-${day}`;
+       const year = date.getFullYear();
+       const month = String(date.getMonth() + 1).padStart(2, '0');
+       const day = String(date.getDate()).padStart(2, '0');
+       return `${year}-${month}-${day}`;
   };
 
 
@@ -55,68 +53,63 @@ async function getPreviousDayName() {
     const previousDayName = daysOfWeek[previousDayIndex];
 
     return previousDayName;
-}
+};
 
 const timeSlotCron = async() => {
     console.log("Inside crone");
     const previousDateDay = await getPreviousDayName();
 
     let previousDateData = await workScheduleModel.findAll({
-        where: {day: previousDateDay}
-    })
+        where: { day: previousDateDay }
+    });
 
     console.log('previousDateDay:', previousDateDay);
-    // console.log('previousDateData:', previousDateData);
-   
-   for (const record of previousDateData) {
-      const doctorData = await doctorModel.findOne({
-          attributes: [
-              'doctor_id',
-              'doctor_name',
-              'consultation_time',
-          ],
-          where: { doctor_id: record.doctor_id },
+    console.log('previousDateData:', previousDateData);
+
+    for (const record of previousDateData) {
+        // console.log("record", record);
+        const { doctor_id, entity_id } = record;
+       // const doctorData = await doctorModel.findOne({
+       //     attributes: [
+       //         'doctor_id',
+       //         'doctor_name',
+       //         'consultation_time',
+       //     ],
+       //     where: { doctor_id: record.doctor_id },
         
-      })
-    //   console.log("doctorData", doctorData)
-      const startTime = record.startTime;
-      const endTime = record.endTime;
-      const consultationTime = doctorData.consultation_time;
+        // })
+        const doctorEntityData = await doctorEntityModel.findOne({ where: { doctorId: doctor_id, entityId :entity_id } });
+        // console.log("doctorEntityData", doctorEntityData)
+        const startTime = record.startTime;
+        const endTime = record.endTime;
+        const consultationTime = doctorEntityData.consultationTime;
+        console.log("consultationTime", consultationTime)
+        console.log("startTime", startTime)
+        console.log("endTime", endTime)
+
    
-      const timeslots =  generateTimeslots(startTime, endTime, consultationTime );
-    //   console.log("timeslots", timeslots)y
-      console.log('record.day', record.day)
+        const timeslots =  generateTimeslots(startTime, endTime, consultationTime );
+        console.log("timeslots", timeslots)
 
-      let index = await getDayOfWeekIndex(record.day)
-      const nextWeekDate = await dateFromDay(index);
-      // console.log("nextWeekDate", nextWeekDate )
-      const currentDate = new Date(nextWeekDate)
-      const year = currentDate.getFullYear()
-      const month = String(currentDate.getMonth() + 1).padStart(2, '0') // Adding 1 to month as it's zero-based
-      const date = String(currentDate.getDate()).padStart(2, '0')
-      const formattedDate = `${year}-${month}-${date}`
+        let index = await getDayOfWeekIndex(record.day)
+        const nextWeekDate = await dateFromDay(index);
+        const currentDate = new Date(nextWeekDate)
+        const year = currentDate.getFullYear()
+        const month = String(currentDate.getMonth() + 1).padStart(2, '0') // Adding 1 to month as it's zero-based
+        const date = String(currentDate.getDate()).padStart(2, '0')
+        const formattedDate = `${year}-${month}-${date}`
 
-      // console.log("formattedDate", formattedDate)
+        // console.log("formattedDate", formattedDate)
 
-      let doctorEntityData = await doctorEntityModel.findOne({
-        where: {
-          entityId: record.entity_id,
-          doctorId: record.doctor_id,
-        }
-      });
-
-      // console.log("doctorEntityData", doctorEntityData.doctorEntityId)
-
-      for (const ele of timeslots) {
-
-          const existingTimeslot = await weeklyTimeSlotsModel.findOne({
-              where: {
-                  time_slot: ele,
-                  doctor_id: record.doctor_id,
-                  date: formattedDate,
-              },
-          })
-          if (!existingTimeslot) {
+        for (const ele of timeslots) {
+             const existingTimeslot = await weeklyTimeSlotsModel.findOne({
+                   where: {
+                             time_slot: ele,
+                             doctor_id: record.doctor_id,
+                             date: formattedDate,
+                          },
+            });
+            if (!existingTimeslot) {
               await weeklyTimeSlotsModel.create({
                   date: formattedDate,
                   day: record.day,
@@ -125,11 +118,11 @@ const timeSlotCron = async() => {
                   booking_status: 0, // Default value for availability
                   doctorEntityId: doctorEntityData? doctorEntityData.doctorEntityId: null,
               });
-          }
+            }
         
         }
     }
-}
+};
 
 const dateFromDay = async (day) => {
     try {
@@ -166,6 +159,6 @@ const getDayOfWeekIndex = async (dayName) => {
     } catch (err) {
         console.log({ err })
     }
-}
+};
 
-export default { timeSlotCron } 
+export default { timeSlotCron };

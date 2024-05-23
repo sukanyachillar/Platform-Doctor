@@ -3,15 +3,14 @@ import entityModel from '../../../../models/entityModel.js'
 import weeklyTimeSlots from '../../../../models/weeklyTimeSlotsModel.js'
 import workScheduleModel from '../../../../models/workScheduleModel.js'
 import { handleResponse } from '../../../../utils/handlers.js';
-import { Sequelize } from 'sequelize';
 import { decrypt } from '../../../../utils/token.js';
 import doctorEntityModel from '../../../../models/doctorEntityModel.js';
 
 const addWorkSchedule = async (data, userData, res) => {
     try {
         let { entity_id } = userData;
-        let { day, startTime, endTime, doctor_id, session, entityId } = data
-        let doctorEntityData, errorMessages = [] ;
+        let { day, startTime, endTime, doctor_id, session, entityId } = data;
+        let errorMessages = [] ;
         let daysArray = [
             'monday',
             'tuesday',
@@ -20,7 +19,7 @@ const addWorkSchedule = async (data, userData, res) => {
             'friday',
             'saturday',
             'sunday',
-        ]
+        ];
         let dayIn = daysArray.includes(day.toLowerCase())
         if (!dayIn) {
             return handleResponse({
@@ -28,64 +27,54 @@ const addWorkSchedule = async (data, userData, res) => {
                 message: 'Please check the day.',
                 statusCode: 404,
             })
-        }
-        let dayOfWeek = await getDayOfWeekIndex(day)
-        let datefromDay = await dateFromDay(dayOfWeek)
+        };
+        let dayOfWeek = await getDayOfWeekIndex(day);
+        let datefromDay = await dateFromDay(dayOfWeek);
         let status = 1
-        let message
-        let workData
-        let time_slots
+        let message;
 
-        workData = await workScheduleModel.findOne({
-            where: { entity_id: entityId, day, doctor_id, startTime, endTime }, //entity_id
-        })
         let doctorData = await doctorModel.findOne({
             where: { status: 1, doctor_id },
-            attributes: ['consultation_time'],
+            attributes: ['doctor_id', 'consultation_time'],
         });
-        let entity = await entityModel.findOne({ where: { entity_id: entityId } }) //entity_id
+     
         if (!doctorData) {
             return handleResponse({
                 res,
                 message: 'Please enable your status to active.',
                 statusCode: 204,
             })
-        } else {
-            time_slots = await generateTimeSlots(
+        }; 
+        const entityData = await entityModel.findOne({ where: { entity_id: entityId }, attributes: ['account_no'] });
+        const doctorEntityData = await doctorEntityModel.findOne( { where: { doctorId: doctor_id, entityId } });
+        
+        if (!doctorEntityData) {
+            return handleResponse({
+                res,
+                message: 'Invalid input data',
+                statusCode: 204,
+            })
+        }; 
+
+        let workData = await workScheduleModel.findOne({
+            where: { entity_id: entityId, day, doctor_id, startTime, endTime }, 
+        });
+       
+        const consultation_time = doctorEntityData.consultation_time;
+              
+        const time_slots = await generateTimeSlots(
                 startTime,
                 endTime,
-                doctorData.consultation_time
-            )
+                consultation_time,
+        );
 
-            const currentDate = new Date(datefromDay);
-            const year = currentDate.getFullYear();
-            const month = String(currentDate.getMonth() + 1).padStart(2, '0') // Adding 1 to month as it's zero-based
-            const date = String(currentDate.getDate()).padStart(2, '0')
-            const formattedDate = `${year}-${month}-${date}`
-             
-            doctorEntityData = await doctorEntityModel.findOne({
-                where: { 
-                    doctorId: doctor_id,
-                    entityId,
-                }
-            });
-            if(!doctorEntityData) {
-                // return handleResponse({
-                //     res,
-                //     message: "Doctor is not registered with this entity",
-                //     statusCode: 400,
-                //     data: {
-                       
-                //     },
-                // })
-                        
-                doctorEntityData = await doctorEntityModel.create({
-                    doctorId: doctor_id,
-                    entityId: entityId,
-                });
-             }
-
-             await Promise.all(time_slots.map(async (ele) => {
+        const currentDate = new Date(datefromDay);
+        const year = currentDate.getFullYear();
+        const month = String(currentDate.getMonth() + 1).padStart(2, '0') // Adding 1 to month as it's zero-based
+        const date = String(currentDate.getDate()).padStart(2, '0')
+        const formattedDate = `${year}-${month}-${date}`
+        
+        await Promise.all(time_slots.map(async (ele) => {
 
                 let existingTimeSlot = await weeklyTimeSlots.findOne({
                     where: {
@@ -97,19 +86,17 @@ const addWorkSchedule = async (data, userData, res) => {
                     }
                 });
 
-
                 if (existingTimeSlot) {
                     errorMessages.push("This time slot already exists for this doctor");
                 } else {
-                    let newTimeSlot = new weeklyTimeSlots({
-                        date: formattedDate,
-                        day,
-                        time_slot: ele,
-                        doctor_id,
-                        doctorEntityId: doctorEntityData? doctorEntityData.doctorEntityId: null,
-    
-                   });
-                   let data = await newTimeSlot.save();
+                        let newTimeSlot = new weeklyTimeSlots({
+                            date: formattedDate,
+                            day,
+                            time_slot: ele,
+                            doctor_id,
+                            doctorEntityId: doctorEntityData? doctorEntityData.doctorEntityId: null,
+                        });
+                        await newTimeSlot.save();
                 }
              }));
 
@@ -131,7 +118,7 @@ const addWorkSchedule = async (data, userData, res) => {
                     day,
                     status,
                     doctor_id,
-                })
+                });
                 message = 'Succesfully added work schedule.'
                
             } else {
@@ -140,15 +127,15 @@ const addWorkSchedule = async (data, userData, res) => {
                 workData.status = status
                 workData.doctor_id = doctor_id
                 message = 'Successfully updated work schedule.'
-            }
-        }
-        let workSchedule = await workData.save()
-        if (entity.account_no) {
+            };
+        
+        let workSchedule = await workData.save();
+        if (entityData.account_no) {
             await entityModel.update(
                 { profile_completed: 1 },
                 { where: { entity_id: entityId } }
             )
-        } 
+        }; 
         return handleResponse({
             res,
             message,
@@ -169,7 +156,7 @@ const addWorkSchedule = async (data, userData, res) => {
             statusCode: 500,
         })
     }
-}
+};
 
 const addWork = async (data, userData, res) => {
     try {
@@ -212,7 +199,7 @@ const addWork = async (data, userData, res) => {
             statusCode: 422,
         })
     }
-}
+};
 
 const updateWorkScheduleStatus = async (workData, res) => {
     try {
@@ -243,7 +230,7 @@ const updateWorkScheduleStatus = async (workData, res) => {
             statusCode: 422,
         })
     }
-}
+};
 
 const getWorkSchedule = async (data, user, res) => {
     try {
@@ -405,7 +392,7 @@ const getSingleWorkSchedule = async (req, res) => {
                 booking_status: 0,
             },
           
-        })
+        });
 
         const customSort = (a, b) => {
             const timeA = new Date('1970-01-01 ' + a.time_slot);
@@ -437,15 +424,15 @@ const getSingleWorkSchedule = async (req, res) => {
             statusCode: 422,
         })
     }
-}
+};
 
 const generateTimeSlots = async (startTime, endTime, consultationTime) => {
     try {
-        console.log(startTime, endTime, consultationTime)
-        const currentDate = new Date()
-        const currentYear = currentDate.getFullYear()
-        const currentMonth = currentDate.getMonth() + 1 // Months are zero-based (0 for January)
-        const currentDay = currentDate.getDate()
+        console.log("startTime, endTime, consultationTime", startTime, endTime, consultationTime)
+        const currentDate = new Date();
+        const currentYear = currentDate.getFullYear();
+        const currentMonth = currentDate.getMonth() + 1 ;// Months are zero-based (0 for January)
+        const currentDay = currentDate.getDate();
         const startDateTime = `${currentYear}-${currentMonth
             .toString()
             .padStart(2, '0')}-${currentDay
