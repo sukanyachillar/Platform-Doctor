@@ -13,179 +13,6 @@ import paymentSplitModel from '../../../../models/paymentSplitModel.js';
 import doctorEntityModel from '../../../../models/doctorEntityModel.js';
 import { getEntityDetailsOfTheDr } from '../../../authentication/v1/services/authenticationService.js';
 
-const bookAppointment = async (req, res) => {
-    try {
-        const {
-            doctorId,
-            appointmentDate,
-            timeSlot,
-            customerName,
-            customerPhone,
-            amount,
-            paymentMethod,
-            entityId,
-        } = req.body;
-
-        const doctorProfile = await doctorProfileModel.findOne({
-            where: { doctor_id: doctorId },
-        });
-        const getEntity = await entityModel.findOne({
-            where: { entity_id: entityId }, // doctorProfile.entity_id
-        });
-        const existingTimeslot = await weeklyTimeSlotsModel.findOne({
-            where: {
-                time_slot: timeSlot,
-                doctor_id: doctorId,
-                date: appointmentDate,
-            },
-        });
-
-        if (!existingTimeslot) {
-            return handleResponse({
-                res,
-                message: 'Slot not found on this date',
-                statusCode: 404,
-            });
-        };
-
-        if (doctorProfile.status === 0) {
-            return handleResponse({
-                res,
-                message: 'Doctor not available',
-                statusCode: 404,
-            })
-        };
-
-        if (getEntity.status === 0) {
-            return handleResponse({
-                res,
-                message: 'Clinic is closed.',
-                statusCode: 404,
-            })
-        };
-
-        if (customerPhone.length !== 10) {
-            return handleResponse({
-                res,
-                message: 'Invalid Phone No.',
-                statusCode: 403,
-            })
-        };
-
-        if (!existingTimeslot) {
-            return handleResponse({
-                res,
-                message: 'Slot not found on this date',
-                statusCode: 404,
-            })
-        };
-        if (existingTimeslot.booking_status === 1) {
-            return handleResponse({
-                res,
-                message: 'Slot already booked',
-                statusCode: 400,
-            })
-        };
-
-        const doctorEntityData = await doctorEntityModel.findOne({
-            where: { 
-                doctorId: doctorId,
-                entityId,
-            },
-        });
-        // existingTimeslot.booking_status= 1;
-        if (existingTimeslot) {
-            await weeklyTimeSlotsModel.update(
-                {
-                    booking_status: 0,
-                },
-                {
-                    where: {
-                        time_slot: timeSlot,
-                        doctor_id: doctorId,
-                        date: appointmentDate,
-                        doctorEntityId: doctorEntityData.doctorEntityId,
-                    },
-                }
-            )
-        };
-
-        let data = await payment.createPaymentLink({
-            name: customerName,
-            phone: customerPhone,
-            amount: 1000,
-        });
-        if (data?.Error?.statusCode == 400)
-            return handleResponse({
-                res,
-                statusCode: '400',
-                message: 'Something went wrong',
-                data: {
-                    message: data?.Error?.error?.description,
-                },
-            });
-
-        const randomUUID = await generateUuid();
-        let newCustomer;
-        newCustomer = await userModel.findOne({
-            where: { phone: customerPhone },
-        });
-
-        if (!newCustomer) {
-            newCustomer = await userModel.create({
-                uuid: randomUUID,
-                userType: 1,
-                name: customerName,
-                phone: customerPhone,
-            });
-        };
-
-        const customerData = {
-            customerId: newCustomer.userId,
-            entityId: entityId,
-            departmentId: doctorProfile.department_id,
-            bookingType: 1,
-            amount,
-            bookingDate: new Date(),
-            appointmentDate,
-            orderId: data?.id,
-            workSlotId: existingTimeslot.time_slot_id,
-            patientName: customerName,
-            bookedPhoneNo: customerPhone,
-        };
-
-        const newBooking = new bookingModel(customerData);
-        const addedBooking = await newBooking.save();
-
-        // const { appCharge, doctorFee } = calcSplitAmt(entityId, doctorId, amount);
-        
-        await paymentModel.create({
-            bookingId: addedBooking.bookingId,
-            orderId: data?.id,
-            amount,
-        });
-
-        return handleResponse({
-            res,
-            statusCode: '200',
-            message: 'Appointment booked successfully',
-            data: {
-                orderId: data?.id,
-                amount: 1000,
-                bookingId: addedBooking.bookingId,
-            },
-        });
-    } catch (error) {
-        console.log(error)
-        return handleResponse({
-            res,
-            message: 'Error while booking appointment.',
-            statusCode: 422,
-        });
-    }
-};
-
-
 // const bookAppointment = async (req, res) => {
 //     try {
 //         const {
@@ -199,33 +26,19 @@ const bookAppointment = async (req, res) => {
 //             entityId,
 //         } = req.body;
 
-//         if (customerPhone.length !== 10) {
-//             return handleResponse({
-//                 res,
-//                 message: 'Invalid Phone No.',
-//                 statusCode: 403,
-//             });
-//         };
-
-//         const [ doctorProfile, getEntity, existingTimeslot, doctorEntityData ] = await Promise.all([
-            
-//             doctorProfileModel.findOne({ where: { doctor_id: doctorId } }),
-//             entityModel.findOne({ where: { entity_id: entityId } }),
-//             weeklyTimeSlotsModel.findOne({
-//                 where: {
-//                     time_slot: timeSlot,
-//                     doctor_id: doctorId,
-//                     date: appointmentDate,
-//                 },
-//             }),
-
-//             doctorEntityModel.findOne({
-//                 where: {
-//                     doctorId: doctorId,
-//                     entityId,
-//                 },
-//             }),
-//         ]);
+//         const doctorProfile = await doctorProfileModel.findOne({
+//             where: { doctor_id: doctorId },
+//         });
+//         const getEntity = await entityModel.findOne({
+//             where: { entity_id: entityId }, // doctorProfile.entity_id
+//         });
+//         const existingTimeslot = await weeklyTimeSlotsModel.findOne({
+//             where: {
+//                 time_slot: timeSlot,
+//                 doctor_id: doctorId,
+//                 date: appointmentDate,
+//             },
+//         });
 
 //         if (!existingTimeslot) {
 //             return handleResponse({
@@ -240,7 +53,7 @@ const bookAppointment = async (req, res) => {
 //                 res,
 //                 message: 'Doctor not available',
 //                 statusCode: 404,
-//             });
+//             })
 //         };
 
 //         if (getEntity.status === 0) {
@@ -248,99 +61,286 @@ const bookAppointment = async (req, res) => {
 //                 res,
 //                 message: 'Clinic is closed.',
 //                 statusCode: 404,
-//             });
+//             })
 //         };
 
+//         if (customerPhone.length !== 10) {
+//             return handleResponse({
+//                 res,
+//                 message: 'Invalid Phone No.',
+//                 statusCode: 403,
+//             })
+//         };
+
+//         if (!existingTimeslot) {
+//             return handleResponse({
+//                 res,
+//                 message: 'Slot not found on this date',
+//                 statusCode: 404,
+//             })
+//         };
 //         if (existingTimeslot.booking_status === 1) {
 //             return handleResponse({
 //                 res,
 //                 message: 'Slot already booked',
 //                 statusCode: 400,
-//             });
+//             })
 //         };
 
-//         await weeklyTimeSlotsModel.update(
-//             { booking_status: 0 },
-//             {
-//                 where: {
-//                     time_slot: timeSlot,
-//                     doctor_id: doctorId,
-//                     date: appointmentDate,
-//                     doctorEntityId: doctorEntityData?.doctorEntityId,
+//         const doctorEntityData = await doctorEntityModel.findOne({
+//             where: { 
+//                 doctorId: doctorId,
+//                 entityId,
+//             },
+//         });
+//         // existingTimeslot.booking_status= 1;
+//         if (existingTimeslot) {
+//             await weeklyTimeSlotsModel.update(
+//                 {
+//                     booking_status: 0,
 //                 },
-//             }
-//         );
+//                 {
+//                     where: {
+//                         time_slot: timeSlot,
+//                         doctor_id: doctorId,
+//                         date: appointmentDate,
+//                         doctorEntityId: doctorEntityData.doctorEntityId,
+//                     },
+//                 }
+//             )
+//         };
 
-//         const paymentData = await payment.createPaymentLink({
+//         let data = await payment.createPaymentLink({
 //             name: customerName,
 //             phone: customerPhone,
 //             amount: 1000,
 //         });
-
-//         if (paymentData?.Error?.statusCode === 400) {
+//         if (data?.Error?.statusCode == 400)
 //             return handleResponse({
 //                 res,
-//                 statusCode: 400,
-//                 message: 'Something went wrong in payment',
-//                 data: { message: paymentData?.Error?.error?.description },
+//                 statusCode: '400',
+//                 message: 'Something went wrong',
+//                 data: {
+//                     message: data?.Error?.error?.description,
+//                 },
 //             });
-//         };
 
-//         let newCustomer = await userModel.findOne({ where: { phone: customerPhone } });
-//         const capitalizedUserName = customerName.charAt(0).toUpperCase() + customerName.slice(1); 
+//         const randomUUID = await generateUuid();
+//         let newCustomer;
+//         newCustomer = await userModel.findOne({
+//             where: { phone: customerPhone },
+//         });
 
 //         if (!newCustomer) {
 //             newCustomer = await userModel.create({
-//                 uuid: await generateUuid(),
+//                 uuid: randomUUID,
 //                 userType: 1,
-//                 name: capitalizedUserName,
+//                 name: customerName,
 //                 phone: customerPhone,
 //             });
 //         };
 
 //         const customerData = {
 //             customerId: newCustomer.userId,
-//             entityId,
+//             entityId: entityId,
 //             departmentId: doctorProfile.department_id,
 //             bookingType: 1,
 //             amount,
 //             bookingDate: new Date(),
 //             appointmentDate,
-//             orderId: paymentData?.id,
+//             orderId: data?.id,
 //             workSlotId: existingTimeslot.time_slot_id,
 //             patientName: customerName,
 //             bookedPhoneNo: customerPhone,
 //         };
 
-//         const newBooking = await bookingModel.create(customerData);
+//         const newBooking = new bookingModel(customerData);
+//         const addedBooking = await newBooking.save();
 
-//         const paymentCreated = await paymentModel.create({
-//             bookingId: newBooking.bookingId,
-//             orderId: paymentData?.id,
+//         // const { appCharge, doctorFee } = calcSplitAmt(entityId, doctorId, amount);
+        
+//         await paymentModel.create({
+//             bookingId: addedBooking.bookingId,
+//             orderId: data?.id,
 //             amount,
 //         });
 
-//         // calculateAndSavePaymentSplit(amount, paymentCreated.paymentId, doctorId, entityId);
-
 //         return handleResponse({
 //             res,
-//             statusCode: 200,
+//             statusCode: '200',
 //             message: 'Appointment booked successfully',
 //             data: {
-//                 orderId: paymentData?.id,
+//                 orderId: data?.id,
 //                 amount: 1000,
-//                 bookingId: newBooking.bookingId,
+//                 bookingId: addedBooking.bookingId,
 //             },
 //         });
 //     } catch (error) {
-//         console.error(error);
+//         console.log(error)
 //         return handleResponse({
 //             res,
 //             message: 'Error while booking appointment.',
 //             statusCode: 422,
 //         });
-//     };
+//     }
 // };
+
+
+const bookAppointment = async (req, res) => {
+    try {
+        const {
+            doctorId,
+            appointmentDate,
+            timeSlot,
+            customerName,
+            customerPhone,
+            amount,
+            paymentMethod,
+            entityId,
+        } = req.body;
+
+        if (customerPhone.length !== 10) {
+            return handleResponse({
+                res,
+                message: 'Invalid Phone No.',
+                statusCode: 403,
+            });
+        };
+
+        const [ doctorProfile, getEntity, existingTimeslot, doctorEntityData ] = await Promise.all([
+            
+            doctorProfileModel.findOne({ where: { doctor_id: doctorId } }),
+            entityModel.findOne({ where: { entity_id: entityId } }),
+            weeklyTimeSlotsModel.findOne({
+                where: {
+                    time_slot: timeSlot,
+                    doctor_id: doctorId,
+                    date: appointmentDate,
+                },
+            }),
+
+            doctorEntityModel.findOne({
+                where: {
+                    doctorId: doctorId,
+                    entityId,
+                },
+            }),
+        ]);
+
+        if (!existingTimeslot) {
+            return handleResponse({
+                res,
+                message: 'Slot not found on this date',
+                statusCode: 404,
+            });
+        };
+
+        if (doctorProfile.status === 0) {
+            return handleResponse({
+                res,
+                message: 'Doctor not available',
+                statusCode: 404,
+            });
+        };
+
+        if (getEntity.status === 0) {
+            return handleResponse({
+                res,
+                message: 'Clinic is closed.',
+                statusCode: 404,
+            });
+        };
+
+        if (existingTimeslot.booking_status === 1) {
+            return handleResponse({
+                res,
+                message: 'Slot already booked',
+                statusCode: 400,
+            });
+        };
+
+        await weeklyTimeSlotsModel.update(
+            { booking_status: 0 },
+            {
+                where: {
+                    time_slot: timeSlot,
+                    doctor_id: doctorId,
+                    date: appointmentDate,
+                    doctorEntityId: doctorEntityData?.doctorEntityId,
+                },
+            }
+        );
+
+        const data = await payment.createPaymentLink({
+            name: customerName,
+            phone: customerPhone,
+            amount: 1000,
+        });
+
+        if (data?.Error?.statusCode === 400) {
+            return handleResponse({
+                res,
+                statusCode: 400,
+                message: 'Something went wrong in payment',
+                data: { message: data?.Error?.error?.description },
+            });
+        };
+
+        let newCustomer = await userModel.findOne({ where: { phone: customerPhone } });
+        const capitalizedUserName = customerName.charAt(0).toUpperCase() + customerName.slice(1); 
+
+        if (!newCustomer) {
+            newCustomer = await userModel.create({
+                uuid: await generateUuid(),
+                userType: 1,
+                name: capitalizedUserName,
+                phone: customerPhone,
+            });
+        };
+
+        const customerData = {
+            customerId: newCustomer.userId,
+            entityId,
+            departmentId: doctorProfile.department_id,
+            bookingType: 1,
+            amount,
+            bookingDate: new Date(),
+            appointmentDate,
+            orderId: data?.id,
+            workSlotId: existingTimeslot.time_slot_id,
+            patientName: customerName,
+            bookedPhoneNo: customerPhone,
+        };
+
+        const newBooking = await bookingModel.create(customerData);
+
+        const paymentCreated = await paymentModel.create({
+            bookingId: newBooking.bookingId,
+            orderId: data?.id,
+            amount,
+        });
+
+        // calculateAndSavePaymentSplit(amount, paymentCreated.paymentId, doctorId, entityId);
+
+        return handleResponse({
+            res,
+            statusCode: 200,
+            message: 'Appointment booked successfully',
+            data: {
+                orderId: data?.id,
+                amount: 1000,
+                bookingId: newBooking.bookingId,
+            },
+        });
+    } catch (error) {
+        console.error(error);
+        return handleResponse({
+            res,
+            message: 'Error while booking appointment.',
+            statusCode: 422,
+        });
+    };
+};
 
 
 // const calculateAndSavePaymentSplit = async (amountPaidByCustomer, paymentId, doctorId, entityId) => {
