@@ -898,7 +898,7 @@ const addNewDoctor = async (docData, image, res) => {
             redirection = true;
         } else {
             response = await addDoctorByClinic(docData, imageUrl, res);
-            redirection = false
+            redirection = false;
         };
 
         statusCode = response.success ? 200 : 404
@@ -998,6 +998,16 @@ const addIndvDoctor = async ({
            };
 
            const doctorId = addedDoctor? addedDoctor.doctor_id: existingDr.doctor_id;
+
+           const userExists = await userModel.findOne({ where: { phone: doctor_phone } });
+           if (!userExists) {
+               userModel.create({
+                   uuid: await generateUuid(),
+                   userType: 2,
+                   name: doctor_name,
+                   phone: doctor_phone,
+               });
+           };
 
            await doctorEntityModel.create({
                  doctorId: doctorId,
@@ -1130,6 +1140,16 @@ const addDoctorByClinic = async ({
             consultationCharge: consultation_charge,
             consultationTime: consultation_time,
         });
+
+        const userExists = await userModel.findOne({ where: { phone: doctor_phone } });
+        if (!userExists) {
+            userModel.create({
+                uuid: await generateUuid(),
+                userType: 2,
+                name: doctor_name,
+                phone: doctor_phone,
+            });
+        };
 
         return { 
                  entityId: entity_id, 
