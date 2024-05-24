@@ -965,10 +965,12 @@ const addIndvDoctor = async ({
         };
 
         let addedDoctor, addedIndvEntity;
+        const capitalizedEntityName = entityName.charAt(0).toUpperCase() + entityName.slice(1); 
+
         if (!existingIndvEntity) {
             const newIndvEntity = await new entityModel({
                 phone: doctor_phone,
-                entity_name: entityName,
+                entity_name: capitalizedEntityName,
                 business_type_id: 0,
                 entity_type : 2, // entity_type : businessData.businessId
                 description,
@@ -1258,8 +1260,9 @@ const viewDoctor = async ({ doctorId, entityId }, res) => {
 
 const updateDoctor = async (data, profileImage, res) => {
     try {
-        const { doctorId, entityId, updatedData } = data;
         const { 
+                doctorId, 
+                entityId,
                 doctor_name,
                 qualification,
                 email,
@@ -1269,17 +1272,19 @@ const updateDoctor = async (data, profileImage, res) => {
                 description,
                 gstNo,
                 newStatus,
-             } = updatedData;
+             } = data;
+
+             console.log("data", data)
 
         let imageUrl; 
 
         if (profileImage) {
             imageUrl = await DigitalOceanUtils.uploadObject (profileImage); 
         };
- 
+
+        
         const existingDoctor = await doctorModel.findOne({ where: { doctor_id: doctorId } });
         const existingEntity = await entityModel.findOne({ where: { entity_id: entityId } });
-
 
         if (!existingDoctor) {
             return handleResponse({
@@ -1648,15 +1653,17 @@ const customerHistory = async (req, res) => {
     
          if (image) {
             imageUrl = await DigitalOceanUtils.uploadObject (image); 
-        }
-        let existingEntity = await entityModel.findOne({ where: { phone } });
+         };
+        const capitalizedEntityName = entityName.charAt(0).toUpperCase() + entityName.slice(1); 
+
+         let existingEntity = await entityModel.findOne({ where: { phone } });
     
         if (existingEntity) {
           
           existingEntity = await existingEntity.update({
             entity_type: 1 || businessId,
             business_type_id: 1 || entityType,
-            entity_name: entityName,
+            entity_name: capitalizedEntityName,
             phone,
             location,
             imageUrl,
@@ -1688,7 +1695,7 @@ const customerHistory = async (req, res) => {
         const newEntity = await entityModel.create({
           entity_type: 1 || businessId,
           business_type_id: 1 ||entityType,
-          entity_name: entityName,
+          entity_name: capitalizedEntityName,
           phone,
           location,
           imageUrl,

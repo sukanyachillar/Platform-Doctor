@@ -311,7 +311,7 @@ const updateDoctor = async (req, res) => {
         return data;
     } catch (err) {
         console.log({ err })
-    }
+    };
 };
 const findDrByPhoneNo = async (req, res) => {
     try {

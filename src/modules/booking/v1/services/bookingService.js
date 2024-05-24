@@ -165,6 +165,8 @@ const bookAppointment = async (req, res) => {
             amount,
         });
 
+        calcAndSaveTheSplit()
+
         return handleResponse({
             res,
             statusCode: '200',
