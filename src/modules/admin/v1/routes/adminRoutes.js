@@ -27,7 +27,7 @@ router.post('/list-entity', adminController.listEntity) // meant list buisness f
 router.post('/transaction-history', adminController.transactionHistory);
 router.post('/add-doctor', upload.single('file'), adminController.addNewDoctor);
 router.post('/view-doctor', adminController.viewDoctor);
-router.post('/update-doctor', adminController.updateDoctor);
+router.post('/update-doctor', upload.single('file'), adminController.updateDoctor);
 router.post('/customer-listing', adminController.listAllCustomers);
 router.post('/add-bank', adminController.addBankDetails);
 router.post('/customer-history', adminController.customerHistory);

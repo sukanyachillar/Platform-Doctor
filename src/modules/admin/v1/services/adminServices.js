@@ -889,6 +889,7 @@ const transactionHistory = async (requestData, res) => {
 
 const addNewDoctor = async (docData, image, res) => {
     try {
+        console.log("docData", docData)
         let redirection, response, statusCode, imageUrl ;
         if (image) {
             imageUrl = await DigitalOceanUtils.uploadObject (image); 
@@ -1274,14 +1275,12 @@ const updateDoctor = async (data, profileImage, res) => {
                 newStatus,
              } = data;
 
-             console.log("data", data)
 
         let imageUrl; 
 
         if (profileImage) {
             imageUrl = await DigitalOceanUtils.uploadObject (profileImage); 
         };
-
         
         const existingDoctor = await doctorModel.findOne({ where: { doctor_id: doctorId } });
         const existingEntity = await entityModel.findOne({ where: { entity_id: entityId } });

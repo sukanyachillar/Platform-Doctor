@@ -33,8 +33,6 @@ const uploadObject = async (file) => {
 };
 
 
-
-
 const getPresignedUrl = async (objectKey, expirationInSeconds) => {
   try {
     const s3Client = new S3Client({
