@@ -21,6 +21,10 @@ const businessModel = sequelize.define('business', {
         type: DataTypes.INTEGER,
         allowNull: false,
     },
+    gstPercentage: { 
+        type: DataTypes.FLOAT,
+        allowNull: true,
+    },
     createdAt: {
         type: DataTypes.DATE,
         defaultValue: DataTypes.NOW,
@@ -31,6 +35,6 @@ const businessModel = sequelize.define('business', {
         defaultValue: DataTypes.NOW,
         allowNull: false,
     },
-})
+});
 
 export default businessModel;

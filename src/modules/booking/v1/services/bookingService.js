@@ -157,15 +157,11 @@ const bookAppointment = async (req, res) => {
         const newBooking = new bookingModel(customerData);
         const addedBooking = await newBooking.save();
 
-        // const { appCharge, doctorFee } = calcSplitAmt(entityId, doctorId, amount);
-        
         await paymentModel.create({
             bookingId: addedBooking.bookingId,
             orderId: data?.id,
             amount,
         });
-
-        calcAndSaveTheSplit()
 
         return handleResponse({
             res,

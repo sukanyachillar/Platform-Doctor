@@ -1,8 +1,8 @@
-import authenticationModel from '../../../../models/entityModel.js'
-import profileModel from '../../../../models/doctorModel.js'
-import deptModel from '../../../../models/departmentModel.js'
-import { handleResponse } from '../../../../utils/handlers.js'
-import { generateTokens, generateAdminTokens } from '../../../../utils/token.js'
+import authenticationModel from '../../../../models/entityModel.js';
+import profileModel from '../../../../models/doctorModel.js';
+import businessModel from '../../../../models/businessModel.js';
+import { handleResponse } from '../../../../utils/handlers.js';
+import { generateTokens, generateAdminTokens } from '../../../../utils/token.js';
 import { Op } from 'sequelize'
 // import upload from '../../../../middlewares/multerConfig.js';
 import awsUtils from '../../../../utils/aws.js';
@@ -12,12 +12,11 @@ import departmentModel from '../../../../models/departmentModel.js';
 import workScheduleModel from '../../../../models/workScheduleModel.js';
 import { generateUuid } from '../../../../utils/generateUuid.js';
 import doctorEntityModel from '../../../../models/doctorEntityModel.js';
-import userModel from '../../../../models/userModel.js'
-import doctorModel from '../../../../models/doctorModel.js'
-import tokenModel from '../../../../models/tokenModel.js'
+import userModel from '../../../../models/userModel.js';
+import doctorModel from '../../../../models/doctorModel.js';
+import tokenModel from '../../../../models/tokenModel.js';
 import { hashPassword, comparePasswords } from '../../../../utils/password.js';
 import { decrypt } from '../../../../utils/token.js';
-import adminServices from '../../../admin/v1/services/adminServices.js'
 
 const register = async (userData, res) => {
     try {
@@ -564,6 +563,17 @@ const getProfile = async (req, res) => {   // for APP
 const getProfileForCustomer = async ({ phone, encryptedPhone, entityId }, res) => {
 
     try {
+        const isValidEntity = await entityModel.findOne({ where: { entity_id: entityId }, attributes: ['entity_id'] });
+    
+        if (!isValidEntity) {
+            return handleResponse({
+                res,
+                statusCode: 400,
+                message: 'Invalid entity ID',
+                data: {},
+            });
+        };
+
         let decryptedPhone;
         let phoneNo;
         if (encryptedPhone) {
@@ -641,7 +651,11 @@ const getProfileForCustomer = async ({ phone, encryptedPhone, entityId }, res) =
             });
           
         };
-    
+
+        const consultationCharge =  getDoctor.doctorEntity ? getDoctor.doctorEntity.consultationCharge : 0;
+        
+        const amountDetails = await calcAmountDetails(entityId, consultationCharge); 
+
         return handleResponse({
             res,
             statusCode: 200,
@@ -652,12 +666,13 @@ const getProfileForCustomer = async ({ phone, encryptedPhone, entityId }, res) =
                 doctor_name: getDoctor.doctor_name,
                 qualification: getDoctor.qualification,
                 consultation_time: getDoctor.doctorEntity ? getDoctor.doctorEntity.consultationTime : null,
-                consultation_charge: getDoctor.doctorEntity ? getDoctor.doctorEntity.consultationCharge : null,
+                consultation_charge: consultationCharge || null,
                 doctor_id: getDoctor.doctor_id,
                 profileImageUrl: getDoctor.profileImageUrl,
                 description: getDoctor.description,
                 uniqueDays,
                 designation: getDoctor.department ? getDoctor.department.department_name : null,
+                amountDetails,
             },
         })
     } catch (error) {
@@ -668,6 +683,40 @@ const getProfileForCustomer = async ({ phone, encryptedPhone, entityId }, res) =
             statusCode: 422,
         })
     }
+};
+
+export const calcAmountDetails = async(entityId, consultationCharge) => {
+
+      const getEntity = await entityModel.findOne({ where: { entity_id: entityId }, 
+                                          attributes: ['entity_id', 'entity_type']});
+      const gstData = await businessModel.findOne({ where: { businessId: getEntity.entity_type }, 
+                                          attributes: ['gstPercentage']});
+
+      const appServiceCharge = parseFloat(process.env.APP_SERVICE_CHARGE) || 10;
+      const gstPercentage = parseFloat(gstData.gstPercentage);
+                                  
+      const drFeeWithoutTax = parseFloat(consultationCharge);
+      const gstAmount = drFeeWithoutTax * gstPercentage / 100;
+      const drFeeWithTax = drFeeWithoutTax + gstAmount;
+      const totalAmount = drFeeWithTax + appServiceCharge;
+                       
+      const roundedDrFeeWithoutTax = parseFloat(drFeeWithoutTax.toFixed(2));
+      const roundedGstAmount = parseFloat(gstAmount.toFixed(2));
+      const roundedDrFeeWithTax = parseFloat(drFeeWithTax.toFixed(2));
+      const roundedTotalAmount = parseFloat(totalAmount.toFixed(2));
+      const roundedAppServiceCharge = parseFloat(appServiceCharge.toFixed(2));
+                                  
+      const response = {
+                           consultationChargeWithoutTax: roundedDrFeeWithoutTax.toFixed(2),
+                           gstPercentage: gstPercentage.toFixed(2),
+                           gstAmount: roundedGstAmount.toFixed(2),
+                           consultationChargeWithTax: roundedDrFeeWithTax.toFixed(2),
+                           appServiceCharge: roundedAppServiceCharge.toFixed(2),
+                           totalAmount: roundedTotalAmount.toFixed(2),
+                       };
+                                  
+     return response;
+
 };
 
 const getGeneralSettings = async (req, res) => {

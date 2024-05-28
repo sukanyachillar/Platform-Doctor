@@ -889,7 +889,6 @@ const transactionHistory = async (requestData, res) => {
 
 const addNewDoctor = async (docData, image, res) => {
     try {
-        console.log("docData", docData)
         let redirection, response, statusCode, imageUrl ;
         if (image) {
             imageUrl = await DigitalOceanUtils.uploadObject (image); 
@@ -1671,7 +1670,7 @@ const customerHistory = async (req, res) => {
             gstNo,
         });
           
-          await entityAddressModel.update(
+        await entityAddressModel.update(
             {
               streetName,
               cityName,
