@@ -20,6 +20,16 @@ const getSingleEntityDetails = async (req, res)=> {
     }
   };
 
+  
+const amountDetails = async (req, res)=> {
+    try {
+        const data = await customerServices.amountDetails(req, res );
+        return data;
+    } catch (error) {
+        console.log({ err });
+    }
+  };
 
-export default { listDoctorsForCustomers, getSingleEntityDetails };
+
+export default { listDoctorsForCustomers, getSingleEntityDetails, amountDetails };
     

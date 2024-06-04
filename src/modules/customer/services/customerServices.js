@@ -11,6 +11,7 @@ import entityAddressModel from '../../../models/entityAddressModel.js';
 import DigitalOceanUtils from '../../../utils/DOFileUpload.js';
 import doctorEntityModel from '../../../models/doctorEntityModel.js';
 import adminServices from '../../admin/v1/services/adminServices.js';
+import { calcAmountDetails } from '../../authentication/v1/services/authenticationService.js';
 
 
 // const listDoctorsForCustomers = async (requestData, res) => {
@@ -373,4 +374,85 @@ const getSingleEntityDetails = async (req, res) => {
 
 };
 
-export default { listDoctorsForCustomers, getSingleEntityDetails };
+const amountDetails = async (req, res) => {
+
+    try {
+        const { entityId, doctorId } = req.body;
+
+        const isValidEntity = await entityModel.findOne({ where: { entity_id: entityId }, attributes: ['entity_id'] });
+    
+        if (!isValidEntity) {
+            return handleResponse({
+                res,
+                statusCode: 400,
+                message: 'Invalid entity ID',
+                data: {},
+            });
+        };
+        const isValidDr = await doctorModel.findOne({ where: { doctor_id: doctorId }, attributes: ['doctor_id'] });
+    
+        if (!isValidDr) {
+            return handleResponse({
+                res,
+                statusCode: 400,
+                message: 'Doctor Not found',
+                data: {},
+            });
+        };
+        const getDoctor = await doctorModel.findOne({
+            where: { doctor_id: isValidDr.doctor_id },
+            include: [
+               
+                {
+                    model: doctorEntityModel,
+                    attributes: ['consultationTime', 'consultationCharge', 'entityId'],
+                    where: { entityId, doctorId: isValidDr.doctor_id },
+                    include: [
+                        {
+                            model: entityModel,
+                            attributes: ['entity_name'],
+                        },
+                    ],
+                },
+            ],
+        });
+        if (!getDoctor) {
+            return handleResponse ({
+                res,
+                statusCode: 404,
+                message: 'Error while fetching doctor details',
+                data: {},
+            })
+        };
+        if (!getDoctor.doctorEntity) {
+            return handleResponse({
+                res,
+                statusCode: 500,
+                message: 'Doctor not assosiateed with this entity',
+                data: {},
+            });
+        };
+
+        const consultationCharge =  getDoctor.doctorEntity ? getDoctor.doctorEntity.consultationCharge : 0;
+
+        const amountDetails = await calcAmountDetails(entityId, consultationCharge);
+
+        return handleResponse({
+            res,
+            statusCode: 200,
+            message: 'Amount details fetched succusfully',
+            data: amountDetails,
+        }); 
+
+    } catch (error) {
+        return handleResponse({
+            res,
+            statusCode: 500,
+            message: 'Something went wrong',
+            data: {},
+        });
+    }
+};
+        
+
+export default { listDoctorsForCustomers, getSingleEntityDetails, amountDetails };
