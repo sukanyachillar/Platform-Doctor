@@ -443,8 +443,11 @@ const listBooking = async ({ doctorId, date, entityId }, res) => {
         if (bookingList.length === 0) {
             return handleResponse({
                 res,
-                statusCode: 404,
+                statusCode: 200,
                 message: 'No appointments found.',
+                data: {
+                       entityDetails: getEntities,
+                }
             });
         };
 
