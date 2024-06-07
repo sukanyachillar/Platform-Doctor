@@ -385,7 +385,7 @@ const listBooking = async ({ doctorId, date, entityId }, res) => {
         };
 
         const getDoctor = await doctorModel.findOne( { where: { doctor_id : doctorId }, 
-                                            attributes: ['doctor_id', 'doctor_phone'], } );
+                                            attributes: ['doctor_id', 'doctor_phone', 'doctor_name'], } );
 
         if (!getDoctor) {
             return handleResponse({
@@ -446,8 +446,14 @@ const listBooking = async ({ doctorId, date, entityId }, res) => {
                 statusCode: 200,
                 message: 'No appointments found.',
                 data: {
-                       entityDetails: getEntities,
-                }
+                    appointmentList: [],
+                    totalAppointments: 0,
+                    completedAppointments: 0,
+                    pendingAppointments: 0,
+                    appointmentDate: date,
+                    doctorName: getDoctor.doctor_name || '',
+                    entityDetails: getEntities,
+                },
             });
         };
 
