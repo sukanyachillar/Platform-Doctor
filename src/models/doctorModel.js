@@ -52,6 +52,11 @@ const doctorModel = sequelize.define('doctor', {
         allowNull: true,
         unique: false,
     },
+    bookingType: {
+        type: DataTypes.STRING,
+        allowNull: true,
+        unique: false,
+    },
     status: {
         type: DataTypes.INTEGER, // 1: active, 0: inactive
         allowNull: true,
