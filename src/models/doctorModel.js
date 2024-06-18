@@ -46,7 +46,11 @@ const doctorModel = sequelize.define('doctor', {
         allowNull: true,
         unique: false,
     },
-
+    tokens: {
+        type: DataTypes.INTEGER, 
+        allowNull: true,
+        unique: false,
+    },
     consultation_charge: {
         type: DataTypes.INTEGER,
         allowNull: true,

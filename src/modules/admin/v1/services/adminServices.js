@@ -953,6 +953,7 @@ const addIndvDoctor = async (
     paymentMethod,
     entityName,
     bookingType,
+    tokens,
   },
   imageUrl
 ) => {
@@ -1020,6 +1021,7 @@ const addIndvDoctor = async (
         profileImageUrl: imageUrl,
         gstNo,
         paymentMethod,
+        tokens,
       });
 
       if (!existingDr) {
@@ -1082,6 +1084,7 @@ const addDoctorByClinic = async (
     gstNo,
     paymentMethod,
     bookingType,
+    tokens,
   },
   imageUrl
 ) => {
@@ -1166,6 +1169,7 @@ const addDoctorByClinic = async (
       profileImageUrl: imageUrl,
       gstNo,
       paymentMethod,
+      tokens,
     });
 
     let addedDoctor;

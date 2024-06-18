@@ -22,6 +22,10 @@ const weeklyTimeSlotsModel = sequelize.define('weeklyTimeSlots', {
         type: DataTypes.STRING,
         allowNull: false,
     },
+    token_number: {
+        type: DataTypes.STRING,
+        allowNull: true,
+    },
     doctor_id: { // and entityid
         type: DataTypes.INTEGER,
         allowNull: false,
