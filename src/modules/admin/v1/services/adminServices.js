@@ -170,7 +170,7 @@ const departmentList = async (requestData, params, res) => {
   try {
     // let { clinicId } = requestData;
     const page = parseInt(params.page) || 1;
-    const pageSize = parseInt(params.limit) || 10;
+    const pageSize = parseInt(params.limit) || 100;
     const searchQuery = requestData.searchQuery || "";
     const offset = (page - 1) * pageSize;
 

@@ -9,8 +9,7 @@ import doctorEntityModel from "../../../../models/doctorEntityModel.js";
 const addWorkSchedule = async (data, userData, res) => {
   try {
     let { entity_id } = userData;
-    let { day, startTime, endTime, doctor_id, session, entityId } =
-      data;
+    let { day, startTime, endTime, doctor_id, session, entityId } = data;
     let errorMessages = [];
     let daysArray = [
       "monday",
@@ -36,7 +35,7 @@ const addWorkSchedule = async (data, userData, res) => {
 
     let doctorData = await doctorModel.findOne({
       where: { status: 1, doctor_id },
-      attributes: ["doctor_id", "consultation_time", "tokens","bookingType"],
+      attributes: ["doctor_id", "consultation_time", "tokens", "bookingType"],
     });
 
     if (!doctorData) {
@@ -366,7 +365,7 @@ const getSingleWorkSchedule = async (req, res) => {
     console.log("phoneNo", phoneNo);
     let doctorData = await doctorModel.findOne({
       where: { doctor_phone: phoneNo },
-      attributes: ["doctor_id", "entity_id"],
+      attributes: ["doctor_id", "entity_id", "bookingType"],
     });
     let getEntity = await entityModel.findOne({
       where: { entity_id: entityId, status: 0 },
@@ -392,12 +391,28 @@ const getSingleWorkSchedule = async (req, res) => {
     } else {
       doctorEntityId = null;
     }
+    let attbr = [
+      "time_slot_id",
+      "date",
+      "day",
+      "time_slot",
+      "doctor_id",
+      "booking_status",
+      "doctorEntityId",
+      "createdAt",
+      "updatedAt",
+    ];
+    if (doctorData?.bookingType === "token") {
+      attributes.push("token_number");
+    }
+
     let data = await weeklyTimeSlots.findAll({
       where: {
         date: formattedDate,
         doctor_id: doctorData.doctor_id,
         doctorEntityId: doctorEntityId,
       },
+      attributes: attbr,
       // order: [
       //     [Sequelize.fn('TIME_TO_SEC', Sequelize.fn('STR_TO_DATE', Sequelize.literal("CONCAT(date, ' ', time_slot)"), '%Y-%m-%d %h:%i %p')), 'ASC']
       // ],
@@ -409,6 +424,15 @@ const getSingleWorkSchedule = async (req, res) => {
         doctor_id: doctorData.doctor_id,
         booking_status: 0,
       },
+    });
+
+    const now = new Date();
+    const currentTime = now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: false });
+
+    // Filter out timeslots before the current time
+    data = data.filter(slot => {
+      const slotTime = new Date(`1970-01-01T${slot.time_slot}:00Z`);
+      return slot.date !== formattedDate || slotTime > now;
     });
 
     const customSort = (a, b) => {
@@ -431,6 +455,7 @@ const getSingleWorkSchedule = async (req, res) => {
         workSlots: sortedWorkSlots,
         // sortedWorkSlots,
         availableWorkSlots: availableWorkSlots.length,
+        type:doctorData?.bookingType
       },
     });
   } catch (error) {
