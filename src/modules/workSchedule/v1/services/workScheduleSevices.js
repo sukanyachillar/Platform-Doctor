@@ -391,7 +391,6 @@ const getSingleWorkSchedule = async (req, res) => {
     } else {
       doctorEntityId = null;
     }
-    //adding attributes
     let attbr = [
       "time_slot_id",
       "date",
@@ -429,12 +428,17 @@ const getSingleWorkSchedule = async (req, res) => {
     });
 
     const now = new Date();
-    const currentTime = now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: false });
+    data = data.filter((slot) => {
+      const slotDate = new Date(slot.date);
+      const slotTime = new Date(`${slot.date}T${slot.time_slot}`);
 
-    // Filter out timeslots before the current time
-    data = data.filter(slot => {
-      const slotTime = new Date(`1970-01-01T${slot.time_slot}:00Z`);
-      return slot.date !== formattedDate || slotTime > now;
+      // If the slot date is not the current date, keep it
+      if (slotDate.toDateString() !== now.toDateString()) {
+        return true;
+      }
+
+      // If the slot date is the current date, compare times
+      return slotTime > now;
     });
 
     const customSort = (a, b) => {
@@ -457,7 +461,7 @@ const getSingleWorkSchedule = async (req, res) => {
         workSlots: sortedWorkSlots,
         // sortedWorkSlots,
         availableWorkSlots: availableWorkSlots.length,
-        type:doctorData?.bookingType
+        type: doctorData?.bookingType,
       },
     });
   } catch (error) {
