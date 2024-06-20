@@ -391,6 +391,7 @@ const getSingleWorkSchedule = async (req, res) => {
     } else {
       doctorEntityId = null;
     }
+    //adding attributes
     let attbr = [
       "time_slot_id",
       "date",
@@ -402,8 +403,9 @@ const getSingleWorkSchedule = async (req, res) => {
       "createdAt",
       "updatedAt",
     ];
+
     if (doctorData?.bookingType === "token") {
-      attributes.push("token_number");
+      attbr.push("token_number");
     }
 
     let data = await weeklyTimeSlots.findAll({
