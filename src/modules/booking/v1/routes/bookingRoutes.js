@@ -18,7 +18,6 @@ router.post(
 );
 router.post(
   "/booking-cancel-doctor",
-  // verifyToken,
   bookingController.doctorCancelBooking
 );
 
