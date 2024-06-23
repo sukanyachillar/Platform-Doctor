@@ -48,7 +48,7 @@ const bookingConfirmationData = async (req, res) => {
 const doctorCancelBooking = async (req, res) => {
   try {
     let user;
-    if (req.user.userType) {
+    if (req.user) {
       user = req.user.userType
     } else {
       user = null
