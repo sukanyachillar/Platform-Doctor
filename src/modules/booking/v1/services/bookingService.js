@@ -867,7 +867,7 @@ const cancelBookingFromDoctor = async (userType, req, res) => {
             bookingStatus: 0,
           },
         });
-        console.log("BOOKINGDATA =>>", bookingData);
+        // console.log("BOOKINGDATA =>>", bookingData);
 
         if (!bookingData) {
           return { bookingId, status: "Booking not found" };

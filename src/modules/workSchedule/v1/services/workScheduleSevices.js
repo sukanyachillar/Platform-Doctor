@@ -429,17 +429,36 @@ const getSingleWorkSchedule = async (req, res) => {
 
     const now = new Date();
     data = data.filter((slot) => {
-      const slotDate = new Date(slot.date);
-      const slotTime = new Date(`${slot.date}T${slot.time_slot}`);
+      const timeSlot = slot.time_slot.trim().toLowerCase();
+      const [time, modifier] = timeSlot.split(" ");
 
-      // If the slot date is not the current date, keep it
-      if (slotDate.toDateString() !== now.toDateString()) {
-        return true;
+      let [slotHours, slotMinutes] = time.split(":").map(Number);
+
+      if (modifier === "pm" && slotHours !== 12) {
+        slotHours += 12;
+      } else if (modifier === "am" && slotHours === 12) {
+        slotHours = 0;
       }
 
-      // If the slot date is the current date, compare times
-      return slotTime > now;
+      const nowHours = now.getHours();
+      const nowMinutes = now.getMinutes();
+
+      // Debugging logs
+      console.log(`Current time: ${nowHours}:${nowMinutes}`);
+      console.log(`Slot time: ${slotHours}:${slotMinutes} (${slot.time_slot})`);
+
+      // Compare hours and then minutes
+      if (slotHours > nowHours) {
+        return true;
+      } else if (slotHours === nowHours && slotMinutes > nowMinutes) {
+        return true;
+      } else {
+        return false;
+      }
     });
+
+    // Debugging log
+    // console.log("Filtered data:", data);
 
     const customSort = (a, b) => {
       const timeA = new Date("1970-01-01 " + a.time_slot);
