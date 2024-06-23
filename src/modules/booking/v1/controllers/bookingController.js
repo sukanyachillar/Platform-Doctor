@@ -47,8 +47,14 @@ const bookingConfirmationData = async (req, res) => {
 
 const doctorCancelBooking = async (req, res) => {
   try {
+    let user;
+    if (req.user.userType) {
+      user = req.user.userType
+    } else {
+      user = null
+    }
     let response = await bookingService.cancelBookingFromDoctor(
-      req.user?.userType,
+      user,
       req.body,
       res
     );
