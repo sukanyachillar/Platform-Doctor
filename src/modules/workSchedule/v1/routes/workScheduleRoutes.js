@@ -1,3 +1,4 @@
+import cronJobs from '../../../../utils/cronJobs.js'
 import { verifyToken } from '../../../../utils/token.js'
 import workScheduleController from '../controllers/workScheduleController.js'
 
@@ -22,5 +23,6 @@ router.post(
 )
 router.post('/get-work-slots', workScheduleController.getWorkSlot)
 router.post('/addWork', verifyToken, workScheduleController.addWork)
+router.post('/cron-test',  cronJobs.timeSlotCron)
 
 export default router

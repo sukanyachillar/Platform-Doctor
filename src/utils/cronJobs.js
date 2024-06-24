@@ -149,11 +149,7 @@ const timeSlotCron = async () => {
         doctorData.tokens
       );
     } else {
-      timeslots = await generateTimeslots(
-        startTime,
-        endTime,
-        consultationTime
-      );
+      timeslots = await generateTimeslots(startTime, endTime, consultationTime);
     }
 
     // const timeslots =  generateTimeslots(startTime, endTime, consultationTime );
@@ -178,7 +174,7 @@ const timeSlotCron = async () => {
         },
       });
       if (!existingTimeslot) {
-        await weeklyTimeSlotsModel.create({
+        const slotCreatedRes = await weeklyTimeSlotsModel.create({
           date: formattedDate,
           day: record.day,
           time_slot: ele,
@@ -187,7 +183,9 @@ const timeSlotCron = async () => {
           doctorEntityId: doctorEntityData
             ? doctorEntityData.doctorEntityId
             : null,
+          token_number: doctorData?.bookingType == "token" ? index + 1 : null,
         });
+        // console.log("slotCreatedRes==>", slotCreatedRes);
       }
     }
   }
