@@ -579,9 +579,7 @@ const listBooking_admin = async (
           },
         ],
         where: {
-          bookingStatus: {
-            [Op.not]: 3,
-          },
+          bookingStatus:0,
           ...whereBookingCond,
           ...searchCondition,
         },
