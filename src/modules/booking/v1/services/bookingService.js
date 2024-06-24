@@ -535,9 +535,7 @@ const listBooking_admin = async (
 
     const totalCount = await bookingModel.count({
       where: {
-        bookingStatus: {
-          [Op.not]: 3,
-        },
+        bookingStatus: 0,
         ...whereBookingCond,
         ...searchCondition,
       },
