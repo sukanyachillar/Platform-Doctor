@@ -957,6 +957,10 @@ const addIndvDoctor = async (
   },
   imageUrl
 ) => {
+  if (!tokens || tokens.trim() === "") {
+    tokens = 0; // setting a default value
+  }
+
   try {
     let existingIndvEntity = await entityModel.findOne({
       where: { phone: doctor_phone },
@@ -1088,6 +1092,11 @@ const addDoctorByClinic = async (
   },
   imageUrl
 ) => {
+  
+  if (!tokens || tokens.trim() === "") {
+    tokens = 0; // setting a default value
+  }
+
   try {
     let existingDrwithClinic;
     const existingDr = await doctorModel.findOne({
