@@ -50,6 +50,7 @@ const doctorModel = sequelize.define('doctor', {
         type: DataTypes.INTEGER, 
         allowNull: true,
         unique: false,
+        defaultValue: 0,
     },
     consultation_charge: {
         type: DataTypes.INTEGER,
