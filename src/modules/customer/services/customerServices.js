@@ -136,7 +136,7 @@ import { calcAmountDetails } from '../../authentication/v1/services/authenticati
 //         return handleResponse({
 //             res,
 //             statusCode: '200',
-//             message : 'Dr list fetched succesfully',
+//             message : 'Dr list fetched successfully',
 //             data: {
 //                 response: response.records,
 //                 currentPage: page,

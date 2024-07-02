@@ -1062,7 +1062,7 @@ const addIndvDoctor = async (
 
     return {
       entityId: getEntity.entity_id,
-      message: "Individual doctor added succesfully",
+      message: "Individual doctor added successfully",
       success: true,
     };
   } catch (error) {

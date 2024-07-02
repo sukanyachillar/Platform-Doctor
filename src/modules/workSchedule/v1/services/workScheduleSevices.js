@@ -138,7 +138,7 @@ const addWorkSchedule = async (data, userData, res) => {
         status,
         doctor_id,
       });
-      message = "Succesfully added work schedule.";
+      message = "successfully added work schedule.";
     } else {
       workData.startTime = startTime;
       workData.endTime = endTime;

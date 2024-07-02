@@ -273,7 +273,7 @@ const addProfile = async (userData, user, image, res) => {
         return handleResponse({
             res,
             statusCode: 200,
-            message: 'Profile created succesfully',
+            message: 'Profile created successfully',
             data: {
                 entity_id: entityData.entity_id,
                 phone: entityData.phone,
@@ -347,7 +347,7 @@ const addProfile = async (userData, user, image, res) => {
 //                     seenDays.add(slot.dataValues.Day)
 //                 }
 //             })
-//             message = 'Profile fetched succesfully'
+//             message = 'Profile fetched successfully'
 //             statusCode = 200
 //             getDepartment = await departmentModel.findOne({
 //                 where: { department_id: userProfile.department_id },
@@ -523,7 +523,7 @@ const getProfile = async (req, res) => {   // for APP
 //                     seenDays.add(slot.dataValues.Day)
 //                 }
 //             })
-//             message = 'Profile fetched succesfully'
+//             message = 'Profile fetched successfully'
 //             statusCode = 200
 //             getDepartment = await departmentModel.findOne({
 //                 where: { department_id: userProfile.department_id },
