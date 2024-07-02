@@ -83,7 +83,7 @@ const register = async (userData, res) => {
             return handleResponse({
                 res,
                 statusCode: '200',
-                message: 'Succusfully loggedIn',
+                message: 'successfully loggedIn',
                 data: {
                     entity_id: userId, // doctorExists.entity_id,
                     phone: doctorExists.doctor_phone,
@@ -444,7 +444,7 @@ const getProfile = async (req, res) => {   // for APP
         return handleResponse({
             res,
             statusCode: 200,
-            message: 'Doctor Profile fetched succusfully.',
+            message: 'Doctor Profile fetched successfully.',
             data: {
                 // getDoctor,
                 phone: phone, 
@@ -659,7 +659,7 @@ const getProfileForCustomer = async ({ phone, encryptedPhone, entityId }, res) =
         return handleResponse({
             res,
             statusCode: 200,
-            message: "Doctor data fetched succusfully.",
+            message: "Doctor data fetched successfully.",
             data: {
                 entity_id: entityId,
                 phone: phoneNo,

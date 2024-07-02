@@ -1092,7 +1092,7 @@ const addDoctorByClinic = async (
   },
   imageUrl
 ) => {
-  
+
   if (!tokens || tokens.trim() === "") {
     tokens = 0; // setting a default value
   }
@@ -1209,7 +1209,7 @@ const addDoctorByClinic = async (
 
     return {
       entityId: entity_id,
-      message: "Doctor under the clinic added succusfully",
+      message: "Doctor under the clinic added successfully",
       success: true,
     };
   } catch (error) {
@@ -1982,7 +1982,7 @@ const updateClinicStatus = async (requestData, res) => {
     await entity.save();
     return handleResponse({
       res,
-      message: "Succusfully updated the status",
+      message: "successfully updated the status",
       statusCode: 200,
     });
   } catch (err) {
@@ -2009,7 +2009,7 @@ const getDeptDetails = async ({ department_id }, res) => {
     return handleResponse({
       res,
       statusCode: 200,
-      message: "Department data fetched succusfully",
+      message: "Department data fetched successfully",
       data: {
         department_id: dept.department_id,
         department_name: dept.department_name,
@@ -2068,7 +2068,7 @@ const listDeptByClinic = async ({ entityId }, res, type = 0) => {
 
     return handleResponse({
       res,
-      message: "Succusfully fetched departments",
+      message: "successfully fetched departments",
       statusCode: 200,
       data: {
         departmentNames,
@@ -2365,7 +2365,7 @@ const listClinicName = async (req, res) => {
     return handleResponse({
       res,
       statusCode: 200,
-      message: "Clinic name fetched succusfully",
+      message: "Clinic name fetched successfully",
       data: { clinicData: clinicName },
     });
   } catch (err) {

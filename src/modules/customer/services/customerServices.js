@@ -440,7 +440,7 @@ const amountDetails = async (req, res) => {
         return handleResponse({
             res,
             statusCode: 200,
-            message: 'Amount details fetched succusfully',
+            message: 'Amount details fetched successfully',
             data: amountDetails,
         }); 
 
