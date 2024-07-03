@@ -15,15 +15,14 @@ let refreshExpiry = config.REFRESH_EXPIRY;
 
 export const generateTokens = async (phone) => {
   try {
-      let encryptData = await encrypt(phone, process.env.CRYPTO_SECRET);
-      let accessToken = jwt.sign({ phone: encryptData }, accessTokenSecret, {
-                                   expiresIn: accessExpiry,
-      });
-      let refreshToken = jwt.sign({ phone: encryptData }, refreshTokenSecret, {
-                                    expiresIn: refreshExpiry,
-      });
-      return { accessToken, refreshToken };
-
+    let encryptData = await encrypt(phone, process.env.CRYPTO_SECRET);
+    let accessToken = jwt.sign({ phone: encryptData }, accessTokenSecret, {
+      expiresIn: accessExpiry,
+    });
+    let refreshToken = jwt.sign({ phone: encryptData }, refreshTokenSecret, {
+      expiresIn: refreshExpiry,
+    });
+    return { accessToken, refreshToken };
   } catch (err) {
     console.log({ err });
     return false;
@@ -36,52 +35,66 @@ export const verifyToken = async (req, res, next) => {
     let accessToken = authHeader.split(" ")[1];
 
     let verify = jwt.verify(accessToken, accessTokenSecret);
-    let encryptedPhone=verify.phone
+    let encryptedPhone = verify.phone;
     if (verify) {
-            let phone = await decrypt(verify.phone, process.env.CRYPTO_SECRET);
-            verify.phone = phone;
-            verify.encrypted = encryptedPhone;
-            let entity = await entityModel.findOne({ where: { phone }, attributes: ["entity_id"]});
- 
-            if (entity) {
-               let dataValues = entity.get();
-               verify.entity_id = dataValues.entity_id;
-               verify.userType = 'clinic';
+      let phone = await decrypt(verify.phone, process.env.CRYPTO_SECRET);
+      verify.phone = phone;
+      verify.encryptPh = encryptedPhone;
+      let entity = await entityModel.findOne({
+        where: { phone },
+        attributes: ["entity_id"],
+      });
 
-            } else {
-                   const doctorData = await doctorModel.findOne({ where: { doctor_phone: phone }, attributes: ["entity_id", "doctor_id"]});
-                   const doctorEntityData = await doctorEntityModel.findOne({ where: { doctorId: doctorData.doctor_id } });
-                   verify.entity_id = doctorEntityData ? doctorEntityData.entityId: null;
-                   verify.userType = 'doctor';
-            }
+      if (entity) {
+        let dataValues = entity.get();
+        verify.entity_id = dataValues.entity_id;
+        verify.userType = "clinic";
+      } else {
+        const doctorData = await doctorModel.findOne({
+          where: { doctor_phone: phone },
+          attributes: ["entity_id", "doctor_id"],
+        });
+        const doctorEntityData = await doctorEntityModel.findOne({
+          where: { doctorId: doctorData.doctor_id },
+        });
+        verify.entity_id = doctorEntityData ? doctorEntityData.entityId : null;
+        verify.userType = "doctor";
+      }
 
-            req.user = verify;
-            next();
+      req.user = verify;
+      next();
     }
   } catch (err) {
     console.log({ err });
+    if (err.name === "TokenExpiredError") {
+      return res
+        .status(403)
+        .json({ statusCode: 403, message: "Token expired" });
+    }
 
-    return res.status(403).json({ statusCode: 403, message: "Token expired1" });
+    return res
+      .status(403)
+      .json({ statusCode: 403, message: "Token expired !!!" });
   }
 };
 
 export const verifyRefreshToken = async (req, res) => {
   try {
-      let authHeader = req.headers.authorization;
-      let refreshToken = authHeader.split(" ")[1];
-      let verify = jwt.verify(refreshToken, refreshTokenSecret);
-      let accessToken;
-      if (verify) {
-         accessToken = jwt.sign({ phone: verify.phone }, accessTokenSecret, {
-         expiresIn: accessExpiry,
+    let authHeader = req.headers.authorization;
+    let refreshToken = authHeader.split(" ")[1];
+    let verify = jwt.verify(refreshToken, refreshTokenSecret);
+    let accessToken;
+    if (verify) {
+      accessToken = jwt.sign({ phone: verify.phone }, accessTokenSecret, {
+        expiresIn: accessExpiry,
       });
-      
+
       return res.status(200).json({
-          statusCode: 200,
-          message: "Successfully generated access token.",
-          data: {
-            accessToken,
-          },
+        statusCode: 200,
+        message: "Successfully generated access token.",
+        data: {
+          accessToken,
+        },
       });
     }
   } catch (err) {
@@ -105,9 +118,9 @@ export const decrypt = async (encryptedData, key) => {
 
 export const generateAdminTokens = async (email) => {
   try {
-      let encryptData = await encrypt(email, process.env.CRYPTO_SECRET);
-      let accessToken = jwt.sign({ email: encryptData }, accessTokenSecret, {
-                                 expiresIn: accessExpiry,
+    let encryptData = await encrypt(email, process.env.CRYPTO_SECRET);
+    let accessToken = jwt.sign({ email: encryptData }, accessTokenSecret, {
+      expiresIn: accessExpiry,
     });
     let refreshToken = jwt.sign({ email: encryptData }, refreshTokenSecret, {
       expiresIn: refreshExpiry,
