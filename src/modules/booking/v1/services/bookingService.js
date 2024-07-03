@@ -12,6 +12,7 @@ import { generateUuid } from "../../../../utils/generateUuid.js";
 import paymentSplitModel from "../../../../models/paymentSplitModel.js";
 import doctorEntityModel from "../../../../models/doctorEntityModel.js";
 import { getEntityDetailsOfTheDr } from "../../../authentication/v1/services/authenticationService.js";
+import { encrypt } from "../../../../utils/token.js";
 
 const bookAppointment = async (req, res) => {
   try {
@@ -577,7 +578,7 @@ const listBooking_admin = async (
           },
         ],
         where: {
-          bookingStatus:0,
+          bookingStatus: 0,
           ...whereBookingCond,
           ...searchCondition,
         },
@@ -737,6 +738,29 @@ const getBookingReport = async (req, res) => {
       statusCode: 200,
       message: "Successfully fetched booking report.",
       data: { bookingReport },
+    });
+  } catch (error) {
+    console.log({ error });
+    return handleResponse({
+      res,
+      statusCode: 500,
+      message: "Something went wrong",
+      data: {},
+    });
+  }
+};
+
+const generateBookingLink = async (userData, res) => {
+  const { phone, entity_id } = userData;
+  const encrypted = await encrypt(phone, process.env.CRYPTO_SECRET);
+  try {
+    const link = `http://139.59.76.214:8087/#/doctor?id=${encrypted}&entity=${entity_id}`;
+
+    return handleResponse({
+      res,
+      statusCode: 200,
+      message: "Successfully fetched booking link.",
+      data: link,
     });
   } catch (error) {
     console.log({ error });
@@ -1143,4 +1167,5 @@ export default {
   updateBookingStatus,
   listBooking_admin,
   cancelBookingFromDoctor,
+  generateBookingLink,
 };

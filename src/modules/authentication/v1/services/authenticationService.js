@@ -53,7 +53,7 @@ const register = async (userData, res) => {
                     refresh_token: tokens.refreshToken,
                     profile_completed: getUser.profile_completed,
                     status: getUser.status,
-                    entity_type: getUser.entity_type ?  getUser.entity_type : '',
+                    entity_type: getUser.entity_type ?  getUser.entity_type : null,
                     entityDetails: entityDetails,
                 },
             })

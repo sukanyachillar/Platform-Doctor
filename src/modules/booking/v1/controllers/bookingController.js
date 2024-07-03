@@ -20,7 +20,7 @@ const listBooking = async (req, res) => {
 
 const updateBookingStatus = async (req, res) => {
   try {
-    const updateData = await bookingService.updateBookingStatus(req, res);
+    const updateData = await bookingService.updateBookingStatus(req.user,req, res);
     return updateData;
   } catch (err) {
     console.log({ err });
@@ -39,6 +39,15 @@ const getBookingReport = async (req, res) => {
 const bookingConfirmationData = async (req, res) => {
   try {
     let response = await bookingService.bookingConfirmationData(req.body, res);
+    return response;
+  } catch (err) {
+    console.log(err);
+  }
+};
+const getBookingLink = async (req, res) => {
+  try {
+    console.log("USER==>",req.user);
+    let response = await bookingService.generateBookingLink(req.user, res);
     return response;
   } catch (err) {
     console.log(err);
@@ -83,5 +92,6 @@ export default {
   getBookingReport,
   bookingConfirmationData,
   doctorCancelBooking,
+  getBookingLink,
   // listAllCustomers,
 };

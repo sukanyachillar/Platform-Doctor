@@ -20,5 +20,9 @@ router.post(
   "/booking-cancel-doctor",
   bookingController.doctorCancelBooking
 );
+router.post(
+  "/get-booking-link",verifyToken,
+  bookingController.getBookingLink
+);
 
 export default router;

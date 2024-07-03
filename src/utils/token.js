@@ -36,9 +36,11 @@ export const verifyToken = async (req, res, next) => {
     let accessToken = authHeader.split(" ")[1];
 
     let verify = jwt.verify(accessToken, accessTokenSecret);
+    let encryptedPhone=verify.phone
     if (verify) {
             let phone = await decrypt(verify.phone, process.env.CRYPTO_SECRET);
             verify.phone = phone;
+            verify.encrypted = encryptedPhone;
             let entity = await entityModel.findOne({ where: { phone }, attributes: ["entity_id"]});
  
             if (entity) {
