@@ -752,9 +752,12 @@ const getBookingReport = async (req, res) => {
 
 const generateBookingLink = async (userData, res) => {
   const { encryptPh, entity_id } = userData;
-  // const encrypted = await encrypt(phone, process.env.CRYPTO_SECRET);
+
+  // Encode the parameters
+  const encodedId = encodeURIComponent(encryptPh);
+  const encodedEntity = encodeURIComponent(entity_id);
   try {
-    const link = `http://booking.chillarpayments.com/#/doctor?id=${encryptPh}&entity=${entity_id}`;
+    const link = `http://booking.chillarpayments.com/#/doctor?id=${encodedId}&entity=${encodedEntity}`;
 
     return handleResponse({
       res,
