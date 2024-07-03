@@ -106,88 +106,96 @@ async function getPreviousDayName() {
 
 const timeSlotCron = async () => {
   console.log("Inside crone");
-  const previousDateDay = await getPreviousDayName();
+  try {
+    const previousDateDay = await getPreviousDayName();
 
-  let previousDateData = await workScheduleModel.findAll({
-    where: { day: previousDateDay },
-  });
-
-  console.log("previousDateDay:", previousDateDay);
-  console.log("previousDateData:", previousDateData);
-
-  for (const record of previousDateData) {
-    // console.log("record", record);
-    const { doctor_id, entity_id } = record;
-    // const doctorData = await doctorModel.findOne({
-    //     attributes: [
-    //         'doctor_id',
-    //         'doctor_name',
-    //         'consultation_time',
-    //     ],
-    //     where: { doctor_id: record.doctor_id },
-
-    // })
-    const doctorEntityData = await doctorEntityModel.findOne({
-      where: { doctorId: doctor_id, entityId: entity_id },
+    let previousDateData = await workScheduleModel.findAll({
+      where: { day: previousDateDay },
     });
-    const doctorData = await doctorModel.findOne({
-      where: { doctor_id: doctor_id },
-    });
-    // console.log("doctorEntityData", doctorEntityData)
-    const startTime = record.startTime;
-    const endTime = record.endTime;
-    const consultationTime = doctorEntityData.consultationTime;
-    console.log("consultationTime", consultationTime);
-    console.log("startTime", startTime);
-    console.log("endTime", endTime);
-    let timeslots;
 
-    if (doctorData?.bookingType == "token") {
-      timeslots = await generateTokenBasedTimeSlots(
-        startTime,
-        endTime,
-        doctorData.tokens
-      );
-    } else {
-      timeslots = await generateTimeslots(startTime, endTime, consultationTime);
-    }
+    console.log("previousDateDay:", previousDateDay);
+    console.log("previousDateData:", previousDateData);
 
-    // const timeslots =  generateTimeslots(startTime, endTime, consultationTime );
-    console.log("timeslots", timeslots);
+    for (const record of previousDateData) {
+      // console.log("record", record);
+      const { doctor_id, entity_id } = record;
+      // const doctorData = await doctorModel.findOne({
+      //     attributes: [
+      //         'doctor_id',
+      //         'doctor_name',
+      //         'consultation_time',
+      //     ],
+      //     where: { doctor_id: record.doctor_id },
 
-    let index = await getDayOfWeekIndex(record.day);
-    const nextWeekDate = await dateFromDay(index);
-    const currentDate = new Date(nextWeekDate);
-    const year = currentDate.getFullYear();
-    const month = String(currentDate.getMonth() + 1).padStart(2, "0"); // Adding 1 to month as it's zero-based
-    const date = String(currentDate.getDate()).padStart(2, "0");
-    const formattedDate = `${year}-${month}-${date}`;
-
-    // console.log("formattedDate", formattedDate)
-
-    for (const ele of timeslots) {
-      const existingTimeslot = await weeklyTimeSlotsModel.findOne({
-        where: {
-          time_slot: ele,
-          doctor_id: record.doctor_id,
-          date: formattedDate,
-        },
+      // })
+      const doctorEntityData = await doctorEntityModel.findOne({
+        where: { doctorId: doctor_id, entityId: entity_id },
       });
-      if (!existingTimeslot) {
-        const slotCreatedRes = await weeklyTimeSlotsModel.create({
-          date: formattedDate,
-          day: record.day,
-          time_slot: ele,
-          doctor_id: record.doctor_id,
-          booking_status: 0, // Default value for availability
-          doctorEntityId: doctorEntityData
-            ? doctorEntityData.doctorEntityId
-            : null,
-          token_number: doctorData?.bookingType == "token" ? index + 1 : null,
+      const doctorData = await doctorModel.findOne({
+        where: { doctor_id: doctor_id },
+      });
+      // console.log("doctorEntityData", doctorEntityData)
+      const startTime = record.startTime;
+      const endTime = record.endTime;
+      const consultationTime = doctorEntityData?.consultationTime;
+      console.log("consultationTime", consultationTime);
+      console.log("startTime", startTime);
+      console.log("endTime", endTime);
+      let timeslots;
+
+      if (doctorData?.bookingType == "token") {
+        timeslots = await generateTokenBasedTimeSlots(
+          startTime,
+          endTime,
+          doctorData.tokens
+        );
+      } else {
+        timeslots = await generateTimeslots(
+          startTime,
+          endTime,
+          consultationTime
+        );
+      }
+
+      // const timeslots =  generateTimeslots(startTime, endTime, consultationTime );
+      console.log("timeslots", timeslots);
+
+      let index = await getDayOfWeekIndex(record.day);
+      const nextWeekDate = await dateFromDay(index);
+      const currentDate = new Date(nextWeekDate);
+      const year = currentDate.getFullYear();
+      const month = String(currentDate.getMonth() + 1).padStart(2, "0"); // Adding 1 to month as it's zero-based
+      const date = String(currentDate.getDate()).padStart(2, "0");
+      const formattedDate = `${year}-${month}-${date}`;
+
+      // console.log("formattedDate", formattedDate)
+
+      for (const ele of timeslots) {
+        const existingTimeslot = await weeklyTimeSlotsModel.findOne({
+          where: {
+            time_slot: ele,
+            doctor_id: record.doctor_id,
+            date: formattedDate,
+          },
         });
-        // console.log("slotCreatedRes==>", slotCreatedRes);
+        if (!existingTimeslot) {
+          const slotCreatedRes = await weeklyTimeSlotsModel.create({
+            date: formattedDate,
+            day: record.day,
+            time_slot: ele,
+            doctor_id: record.doctor_id,
+            booking_status: 0, // Default value for availability
+            doctorEntityId: doctorEntityData
+              ? doctorEntityData.doctorEntityId
+              : null,
+            token_number: doctorData?.bookingType == "token" ? index + 1 : null,
+          });
+          // console.log("slotCreatedRes==>", slotCreatedRes);
+        }
       }
     }
+  } catch (error) {
+    console.log("Crone ERROR==>", error);
   }
 };
 
