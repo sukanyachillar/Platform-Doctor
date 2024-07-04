@@ -34,6 +34,10 @@ const register = async (userData, res) => {
     
         const entityDetails = await getEntityDetailsOfTheDr(phone);
         if (getUser) {
+            const doctorData = await doctorModel.findOne({
+                where: { doctor_phone: phone },
+                attributes: [ "doctor_id"],
+              });
             userId = getUser.entity_id
             newToken = await new tokenModel({
                 userId,
@@ -49,6 +53,7 @@ const register = async (userData, res) => {
                 data: {
                     entity_id: getUser.entity_id,
                     phone: getUser.phone,
+                    doctor_id: doctorData.doctor_id,
                     access_token: tokens.accessToken,
                     refresh_token: tokens.refreshToken,
                     profile_completed: getUser.profile_completed,
