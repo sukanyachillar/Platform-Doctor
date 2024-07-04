@@ -837,7 +837,7 @@ const bookingConfirmationData = async (bookingData, res) => {
   }
 };
 
-const updateBookingStatus = async (req, res) => {
+const updateBookingStatus = async (userData,req, res) => {
   try {
     let { bookingId } = req.body;
     let { userType } = req.user;
