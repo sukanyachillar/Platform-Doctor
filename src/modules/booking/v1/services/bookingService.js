@@ -463,11 +463,13 @@ const listBooking = async ({ doctorId, date, entityId }, res) => {
       customerPhone: booking.bookedPhoneNo ? booking.bookedPhoneNo : "",
       bookingStatus: booking.bookingStatus,
     }));
+    console.log("APP==>",appointmentList);
 
     const completedAppointments = appointmentList.filter(
       (appointment) => appointment.bookingStatus === 1
     ).length;
-    const pendingAppointments = totalAppointments - completedAppointments;
+    let totalBooking=bookingList.length
+    const pendingAppointments = totalBooking - completedAppointments;
 
     return handleResponse({
       res,
@@ -475,7 +477,7 @@ const listBooking = async ({ doctorId, date, entityId }, res) => {
       message: "Appointment listing fetched successfully",
       data: {
         appointmentList,
-        totalAppointments,
+        totalBooking,
         completedAppointments,
         pendingAppointments,
         appointmentDate: date,
