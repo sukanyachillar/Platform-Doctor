@@ -169,6 +169,7 @@ const timeSlotCron = async () => {
       const formattedDate = `${year}-${month}-${date}`;
 
       // console.log("formattedDate", formattedDate)
+      let tokenNumber = 1;
 
       for (const ele of timeslots) {
         const existingTimeslot = await weeklyTimeSlotsModel.findOne({
@@ -188,8 +189,10 @@ const timeSlotCron = async () => {
             doctorEntityId: doctorEntityData
               ? doctorEntityData.doctorEntityId
               : null,
-            token_number: doctorData?.bookingType == "token" ? index + 1 : null,
+            token_number:
+              doctorData?.bookingType == "token" ? tokenNumber : null,
           });
+          tokenNumber++;
           // console.log("slotCreatedRes==>", slotCreatedRes);
         }
       }
