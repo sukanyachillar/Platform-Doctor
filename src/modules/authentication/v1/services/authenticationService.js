@@ -659,7 +659,7 @@ const getProfileForCustomer = async ({ phone, encryptedPhone, entityId }, res) =
 
         const consultationCharge =  getDoctor.doctorEntity ? getDoctor.doctorEntity.consultationCharge : 0;
         
-        const amountDetails = await calcAmountDetails(entityId, consultationCharge); 
+        // const amountDetails = await calcAmountDetails(entityId, consultationCharge); 
 
         return handleResponse({
             res,
@@ -677,7 +677,7 @@ const getProfileForCustomer = async ({ phone, encryptedPhone, entityId }, res) =
                 description: getDoctor.description,
                 uniqueDays,
                 designation: getDoctor.department ? getDoctor.department.department_name : null,
-                amountDetails,
+                // amountDetails,
             },
         })
     } catch (error) {
