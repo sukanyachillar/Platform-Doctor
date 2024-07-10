@@ -193,7 +193,7 @@ const timeSlotCron = async () => {
               doctorData?.bookingType == "token" ? tokenNumber : null,
           });
           tokenNumber++;
-          // console.log("slotCreatedRes==>", slotCreatedRes);
+          console.log("slotCreatedRes==>", slotCreatedRes);
         }
       }
     }
