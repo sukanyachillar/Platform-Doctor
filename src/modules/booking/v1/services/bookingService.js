@@ -653,7 +653,7 @@ const getBookingReport = async (req, res) => {
     const { doctorId, date } = req.body;
     const whereCondition = {
       appointmentDate: { [Op.eq]: new Date(date) },
-      bookingId: { [Op.ne]: 3 }
+      bookingStatus: { [Op.ne]: 3 }
     };
 
     const weeklyTimeSlotData = await weeklyTimeSlotsModel.findAll({
