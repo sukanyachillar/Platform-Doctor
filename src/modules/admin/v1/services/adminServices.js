@@ -1282,20 +1282,12 @@ const viewDoctor = async ({ doctorId, entityId }, res) => {
     const formattedResponse = {
       doctorId: getDoctor.doctor_id,
       doctorName: getDoctor.doctor_name,
-      department: getDoctor.department
-        ? getDoctor.department.department_name
-        : null,
-      entityName: getDoctor.doctorEntity
-        ? getDoctor.doctorEntity.entity.entity_name
-        : null,
+      department:  getDoctor.department?.department_name,
+      entityName: getDoctor.doctorEntity.entity?.entity_name,
       doctorPhone: getDoctor.doctor_phone,
       qualification: getDoctor.qualification,
-      consultationTime: getDoctor.doctorEntity
-        ? getDoctor.doctorEntity.consultationTime
-        : null,
-      consultationCharge: getDoctor.doctorEntity
-        ? getDoctor.doctorEntity.consultationCharge
-        : null,
+      consultationTime: getDoctor.doctorEntity?.consultationTime,
+      consultationCharge: getDoctor.doctorEntity?.consultationCharge,
       description: getDoctor.description,
       email: getDoctor.email,
       profileImageUrl: getDoctor.profileImageUrl,
