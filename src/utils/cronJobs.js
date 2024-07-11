@@ -86,6 +86,17 @@ const formatDate = (date) => {
   return `${year}-${month}-${day}`;
 };
 
+const getCurrentDateAndTimezone=()=> {
+  const currentDate = new Date();
+  const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+
+  console.log("Current Date:", currentDate);
+  console.log("Current Timezone:", timezone);
+}
+
+getCurrentDateAndTimezone();
+
+
 async function getPreviousDayName() {
   const daysOfWeek = [
     "Sunday",
@@ -106,7 +117,8 @@ async function getPreviousDayName() {
 
 const timeSlotCron = async () => {
   console.log("Inside crone");
-  try {
+  getCurrentDateAndTimezone()
+  try {   
     const previousDateDay = await getPreviousDayName();
 
     let previousDateData = await workScheduleModel.findAll({

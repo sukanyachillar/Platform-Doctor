@@ -110,12 +110,18 @@ const bookAppointment = async (req, res) => {
         }
       );
     }
+    let data;
+    data = await payment.createCashfreeOrderData();
 
-    let data = await payment.createPaymentLink({
-      name: customerName,
-      phone: customerPhone,
-      amount: 1000,
-    });
+    // if (process.env.PG == 0) {
+    //   data = await payment.createPaymentLink({
+    //     name: customerName,
+    //     phone: customerPhone,
+    //     amount: 1000,
+    //   });
+    // } else if (process.env.PG == 1) {
+    // }
+
     if (data?.Error?.statusCode == 400)
       return handleResponse({
         res,
@@ -149,7 +155,8 @@ const bookAppointment = async (req, res) => {
       amount,
       bookingDate: new Date(),
       appointmentDate,
-      orderId: data?.id,
+      // orderId: data?.id,
+      orderId: data,
       workSlotId: existingTimeslot.time_slot_id,
       patientName: customerName,
       bookedPhoneNo: customerPhone,
@@ -463,12 +470,12 @@ const listBooking = async ({ doctorId, date, entityId }, res) => {
       customerPhone: booking.bookedPhoneNo ? booking.bookedPhoneNo : "",
       bookingStatus: booking.bookingStatus,
     }));
-    console.log("APP==>",appointmentList);
+    console.log("APP==>", appointmentList);
 
     const completedAppointments = appointmentList.filter(
       (appointment) => appointment.bookingStatus === 1
     ).length;
-    let totalBooking=bookingList.length
+    let totalBooking = bookingList.length;
     const pendingAppointments = totalBooking - completedAppointments;
 
     return handleResponse({
@@ -653,7 +660,7 @@ const getBookingReport = async (req, res) => {
     const { doctorId, date } = req.body;
     const whereCondition = {
       appointmentDate: { [Op.eq]: new Date(date) },
-      bookingStatus: { [Op.ne]: 3 }
+      bookingStatus: { [Op.ne]: 3 },
     };
 
     const weeklyTimeSlotData = await weeklyTimeSlotsModel.findAll({
@@ -840,7 +847,7 @@ const bookingConfirmationData = async (bookingData, res) => {
   }
 };
 
-const updateBookingStatus = async (userData,req, res) => {
+const updateBookingStatus = async (userData, req, res) => {
   try {
     let { bookingId } = req.body;
     let { userType } = req.user;

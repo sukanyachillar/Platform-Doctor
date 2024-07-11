@@ -1269,7 +1269,7 @@ const viewDoctor = async ({ doctorId, entityId }, res) => {
         },
       ],
     });
-    console.log("getDoctor==>", getDoctor);
+    // console.log("getDoctor==>", getDoctor);
     if (!getDoctor) {
       return handleResponse({
         res,
