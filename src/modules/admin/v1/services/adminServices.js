@@ -1092,7 +1092,6 @@ const addDoctorByClinic = async (
   },
   imageUrl
 ) => {
-
   if (!tokens || tokens.trim() === "") {
     tokens = 0; // setting a default value
   }
@@ -1270,7 +1269,7 @@ const viewDoctor = async ({ doctorId, entityId }, res) => {
         },
       ],
     });
-
+    console.log("getDoctor==>", getDoctor);
     if (!getDoctor) {
       return handleResponse({
         res,
@@ -1282,7 +1281,7 @@ const viewDoctor = async ({ doctorId, entityId }, res) => {
     const formattedResponse = {
       doctorId: getDoctor.doctor_id,
       doctorName: getDoctor.doctor_name,
-      department:  getDoctor.department?.department_name,
+      department: getDoctor.department?.department_name,
       entityName: getDoctor.doctorEntity.entity?.entity_name,
       doctorPhone: getDoctor.doctor_phone,
       qualification: getDoctor.qualification,
