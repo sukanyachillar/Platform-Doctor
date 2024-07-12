@@ -13,6 +13,7 @@ import paymentSplitModel from "../../../../models/paymentSplitModel.js";
 import doctorEntityModel from "../../../../models/doctorEntityModel.js";
 import { getEntityDetailsOfTheDr } from "../../../authentication/v1/services/authenticationService.js";
 import { encrypt } from "../../../../utils/token.js";
+import paymentGatewayModel from "../../../../models/paymentGatewayModel.js";
 
 const bookAppointment = async (req, res) => {
   try {
@@ -110,17 +111,32 @@ const bookAppointment = async (req, res) => {
         }
       );
     }
-    let data;
-    data = await payment.createCashfreeOrderData();
 
-    // if (process.env.PG == 0) {
-    //   data = await payment.createPaymentLink({
-    //     name: customerName,
-    //     phone: customerPhone,
-    //     amount: 1000,
-    //   });
-    // } else if (process.env.PG == 1) {
-    // }
+    const pg = await paymentGatewayModel.findOne({
+      where: {
+        status: 1,
+      },
+      attributes: ["id", "name", "key1", "key2", "status"],
+    });
+    // console.log("PGdata=>", pg);
+
+    let data;
+
+    if (pg.id == 1) {
+      data = await payment.createPaymentLink({
+        name: customerName,
+        phone: customerPhone,
+        amount: amount,
+      });
+    } else if (pg.id == 2) {
+      data = await payment.createCashfreeOrderData({
+        name: customerName,
+        phone: customerPhone,
+        amount: amount,
+      });
+    }
+
+    // console.log("DATA=>", data);
 
     if (data?.Error?.statusCode == 400)
       return handleResponse({
@@ -156,7 +172,7 @@ const bookAppointment = async (req, res) => {
       bookingDate: new Date(),
       appointmentDate,
       // orderId: data?.id,
-      orderId: data,
+      orderId: data?.id,
       workSlotId: existingTimeslot.time_slot_id,
       patientName: customerName,
       bookedPhoneNo: customerPhone,
@@ -169,6 +185,7 @@ const bookAppointment = async (req, res) => {
       bookingId: addedBooking.bookingId,
       orderId: data?.id,
       amount,
+      paymentMethod: pg?.name,
     });
 
     return handleResponse({
@@ -177,8 +194,10 @@ const bookAppointment = async (req, res) => {
       message: "Appointment booked successfully",
       data: {
         orderId: data?.id,
-        amount: 1000,
+        amount: amount,
         bookingId: addedBooking.bookingId,
+        payment_session_id: data?.payment_session_id,
+        currentPg: pg.id,
       },
     });
   } catch (error) {

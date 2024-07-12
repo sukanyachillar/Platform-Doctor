@@ -1,6 +1,7 @@
 import Razorpay from "razorpay";
-import { nanoid } from "nanoid";
+import { nanoid, customAlphabet } from "nanoid";
 import { Cashfree } from "cashfree-pg";
+// import { customAlphabet }  from ("nanoid");
 
 const createPaymentLink = async (body) => {
   let reference_id = nanoid();
@@ -43,33 +44,53 @@ const createPaymentLink = async (body) => {
   }
 };
 
-const createCashfreeOrderData = async () => {
+const createCashfreeOrderData = async (body) => {
+  let { name, phone, amount } = body;
+
   Cashfree.XClientId = process.env.CASHFREE_APP;
   Cashfree.XClientSecret = process.env.CASHFREE_SECRET;
   Cashfree.XEnvironment = Cashfree.Environment.SANDBOX;
 
-  var request = {
+  const orderId = await createOrderId();
+  const customerId = await createCustomerId(name, phone);
+
+  let request = {
     // order_id:"123sadassa45",
-    order_amount: 1,
+    order_amount: amount,
     order_currency: "INR",
-    order_id: "order_346927455",
+    order_id: orderId,
     customer_details: {
-      customer_id: "walterwNrcMi",
-      customer_phone: "9999999999",
+      customer_id: customerId,
+      customer_phone: phone,
     },
     order_meta: {
-      return_url:
-        "https://www.cashfree.com/devstudio/preview/pg/web/checkout?order_id={order_id}",
+      // return_url: `http://localhost:50147/#/verify-payment?order_id=${orderId}`,
+      return_url: `https://booking.chillarpayments.com/#/verify-payment?order_id=${orderId}`,
     },
   };
-  Cashfree.PGCreateOrder("2022-09-01", request)
-    .then((response) => {
-      console.log("Order Created successfully:", response.data);
-      return response.data;
-    })
-    .catch((error) => {
-      console.error("Error:", error.response.data.message);
-    });
+
+
+  let createOrderRes;
+
+  try {
+    // Use await to wait for the promise to resolve
+    const response = await Cashfree.PGCreateOrder("2022-09-01", request);
+    console.log("Order Created successfully:", response.data);
+
+    // Assign the response to a variable
+     createOrderRes = {
+      cf_order_id: response.data.cf_order_id,
+      customer_id: response.data.customer_details.customer_id,
+      order_amount: response.data.order_amount,
+      id: response.data.order_id,
+      payment_session_id: response.data.payment_session_id,
+    };
+
+    return createOrderRes; // Return the created order data
+  } catch (error) {
+    console.error("Error:", error.response.data.message);
+    throw error.response.data.message; // Rethrow the error to propagate it
+  }
 };
 
 // const createCashfreePaymentLink = async (body) => {
@@ -115,6 +136,37 @@ const createCashfreeOrderData = async () => {
 //     return err;
 //   }
 // };
+
+const createOrderId = () => {
+  // generateOrderId.js
+
+  const alphabet =
+    "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+
+  const nanoid = customAlphabet(alphabet, 13); // 13 is the length of the ID
+
+  // Generate the order ID
+  const orderId = `DOC_${nanoid()}`;
+
+  return orderId;
+  // console.log("Generated Order ID:", orderId);
+};
+
+const createCustomerId = (name, phoneNumber) => {
+  const alphabet =
+    "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+  const nanoid = customAlphabet(alphabet, 8); // 8 is the length of the random part of the ID
+
+  // Sanitize and prepare the name and phone number parts
+  const sanitizedName = name.replace(/[^a-zA-Z0-9]/g, "").substring(0, 5); // Take up to 5 alphanumeric characters from the name
+  const sanitizedPhoneNumber = phoneNumber.replace(/[^0-9]/g, "").slice(-4); // Take the last 4 digits of the phone number
+
+  // Generate the customer ID
+  const randomPart = nanoid();
+  const customerId = `customer_${sanitizedName}${sanitizedPhoneNumber}${randomPart}`;
+
+  return customerId;
+};
 
 export default {
   createPaymentLink,
