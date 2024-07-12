@@ -1,4 +1,4 @@
-import authenticationModel from '../../../../models/entityModel.js';
+ import authenticationModel from '../../../../models/entityModel.js';
 import profileModel from '../../../../models/doctorModel.js';
 import businessModel from '../../../../models/businessModel.js';
 import { handleResponse } from '../../../../utils/handlers.js';
@@ -129,7 +129,7 @@ const register = async (userData, res) => {
         return handleResponse({
             res,
             message: 'Sorry error while registering.',
-            statusCode: 422,
+            statusCode: '422',
         })
     }
 };

@@ -117,7 +117,6 @@ async function getPreviousDayName() {
 
 const timeSlotCron = async () => {
   console.log("Inside crone");
-  getCurrentDateAndTimezone()
   try {   
     const previousDateDay = await getPreviousDayName();
 
