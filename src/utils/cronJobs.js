@@ -202,6 +202,7 @@ const timeSlotCron = async () => {
               : null,
             token_number:
               doctorData?.bookingType == "token" ? tokenNumber : null,
+              createdBy:"cron",
           });
           tokenNumber++;
           console.log("slotCreatedRes==>", slotCreatedRes);
