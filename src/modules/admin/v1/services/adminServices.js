@@ -1316,6 +1316,7 @@ const updateDoctor = async (data, profileImage, res) => {
   try {
     const {
       doctorId,
+      doctorPhone,
       entityId,
       doctor_name,
       qualification,
@@ -1394,6 +1395,7 @@ const updateDoctor = async (data, profileImage, res) => {
     await doctorModel.update(
       {
         doctor_name,
+        doctor_phone: doctorPhone,
         qualification,
         email,
         department_id,

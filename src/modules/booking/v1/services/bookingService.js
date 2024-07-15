@@ -680,7 +680,7 @@ const listBooking_admin = async (
 const getBookingReport = async (req, res) => {
   try {
     const { doctorId, date } = req.body;
-    console.log("DOC=>", doctorId);
+    // console.log("DOC=>", doctorId);
     const whereCondition = {
       appointmentDate: { [Op.eq]: new Date(date) },
       bookingStatus: { [Op.ne]: 3 },
@@ -715,7 +715,7 @@ const getBookingReport = async (req, res) => {
         "bookedPhoneNo",
       ],
     });
-    console.log("BL=>>", bookingList);
+    // console.log("BL=>>", bookingList);
 
     const customerIds = bookingList.map((booking) => booking.customerId);
     const userRecords = await userModel.findAll({
