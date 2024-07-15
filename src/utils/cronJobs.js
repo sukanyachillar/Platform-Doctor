@@ -115,19 +115,126 @@ async function getPreviousDayName() {
   return previousDayName;
 }
 
+function getTodayDayName() {
+  const daysOfWeek = [
+    "Sunday",
+    "Monday",
+    "Tuesday",
+    "Wednesday",
+    "Thursday",
+    "Friday",
+    "Saturday",
+  ];
+  const today = new Date();
+  const todayDayIndex = today.getDay();
+  const todayDayName = daysOfWeek[todayDayIndex];
+
+  return todayDayName;
+}
+
+
 const timeSlotCron = async () => {
   console.log("Inside crone");
   try {   
-    const previousDateDay = await getPreviousDayName();
+    // const previousDateDay = await getPreviousDayName();
+    const todaysDay = await getTodayDayName();
 
-    let previousDateData = await workScheduleModel.findAll({
-      where: { day: previousDateDay },
+    // let previousDateData = await workScheduleModel.findAll({
+    //   where: { day: previousDateDay },
+    // });
+    let todaysDateData = await workScheduleModel.findAll({
+      where: { day: todaysDay },
     });
 
-    console.log("previousDateDay:", previousDateDay);
-    console.log("previousDateData:", previousDateData);
+    // console.log("previousDateDay:", previousDateDay);
+    // console.log("previousDateData:", previousDateData);
 
-    for (const record of previousDateData) {
+    console.log("previousDateDay:", todaysDay);
+    console.log("previousDateData:", todaysDateData);
+
+    // for (const record of previousDateData) {
+    //   // console.log("record", record);
+    //   const { doctor_id, entity_id } = record;
+    //   // const doctorData = await doctorModel.findOne({
+    //   //     attributes: [
+    //   //         'doctor_id',
+    //   //         'doctor_name',
+    //   //         'consultation_time',
+    //   //     ],
+    //   //     where: { doctor_id: record.doctor_id },
+
+    //   // })
+    //   const doctorEntityData = await doctorEntityModel.findOne({
+    //     where: { doctorId: doctor_id, entityId: entity_id },
+    //   });
+    //   const doctorData = await doctorModel.findOne({
+    //     where: { doctor_id: doctor_id },
+    //   });
+    //   // console.log("doctorEntityData", doctorEntityData)
+    //   const startTime = record.startTime;
+    //   const endTime = record.endTime;
+    //   const consultationTime = doctorEntityData?.consultationTime;
+    //   console.log("consultationTime", consultationTime);
+    //   console.log("startTime", startTime);
+    //   console.log("endTime", endTime);
+    //   let timeslots;
+
+    //   if (doctorData?.bookingType == "token") {
+    //     timeslots = await generateTokenBasedTimeSlots(
+    //       startTime,
+    //       endTime,
+    //       doctorData.tokens
+    //     );
+    //   } else {
+    //     timeslots = await generateTimeslots(
+    //       startTime,
+    //       endTime,
+    //       consultationTime
+    //     );
+    //   }
+
+    //   // const timeslots =  generateTimeslots(startTime, endTime, consultationTime );
+    //   console.log("timeslots", timeslots);
+
+    //   let index = await getDayOfWeekIndex(record.day);
+    //   const nextWeekDate = await dateFromDay(index);
+    //   const currentDate = new Date(nextWeekDate);
+    //   const year = currentDate.getFullYear();
+    //   const month = String(currentDate.getMonth() + 1).padStart(2, "0"); // Adding 1 to month as it's zero-based
+    //   const date = String(currentDate.getDate()).padStart(2, "0");
+    //   const formattedDate = `${year}-${month}-${date}`;
+
+    //   // console.log("formattedDate", formattedDate)
+    //   let tokenNumber = 1;
+
+    //   for (const ele of timeslots) {
+    //     const existingTimeslot = await weeklyTimeSlotsModel.findOne({
+    //       where: {
+    //         time_slot: ele,
+    //         doctor_id: record.doctor_id,
+    //         date: formattedDate,
+    //       },
+    //     });
+    //     if (!existingTimeslot) {
+    //       const slotCreatedRes = await weeklyTimeSlotsModel.create({
+    //         date: formattedDate,
+    //         day: record.day,
+    //         time_slot: ele,
+    //         doctor_id: record.doctor_id,
+    //         booking_status: 0, // Default value for availability
+    //         doctorEntityId: doctorEntityData
+    //           ? doctorEntityData.doctorEntityId
+    //           : null,
+    //         token_number:
+    //           doctorData?.bookingType == "token" ? tokenNumber : null,
+    //           createdBy:"cron",
+    //       });
+    //       tokenNumber++;
+    //       console.log("slotCreatedRes==>", slotCreatedRes);
+    //     }
+    //   }
+    // }
+    for (const record of todaysDateData) {
       // console.log("record", record);
       const { doctor_id, entity_id } = record;
       // const doctorData = await doctorModel.findOne({
