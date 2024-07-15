@@ -1409,6 +1409,7 @@ const updateDoctor = async (data, profileImage, res) => {
 
     await doctorEntityModel.update(
       {
+        doctor_phone: doctorPhone,
         consultationTime: consultation_time,
         consultationCharge: consultation_charge,
         status: newStatus,
