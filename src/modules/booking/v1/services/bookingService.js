@@ -447,10 +447,11 @@ const listBooking = async ({ doctorId, date, entityId }, res) => {
           },
         ],
         where: {
-          bookingStatus: {
-            [Op.not]: 3,
-          },
-          ...whereBookingCond,
+          [Op.and]: [
+            { bookingStatus: { [Op.ne]: 4 } },
+            { bookingStatus: { [Op.not]: 3 } },
+            { ...whereBookingCond },
+          ],
         },
         include: [
           {
@@ -624,6 +625,8 @@ const listBooking_admin = async (
         offset: offset,
       }),
     ]);
+
+    console.log("BookingList==>", bookingList);
 
     if (bookingList.length === 0) {
       return handleResponse({
