@@ -575,6 +575,7 @@ const getProfileForCustomer = async (
       where: { entity_id: entityId },
       attributes: ["entity_id"],
     });
+    console.log("isValidEntity=>", isValidEntity);
 
     if (!isValidEntity) {
       return handleResponse({
@@ -598,6 +599,7 @@ const getProfileForCustomer = async (
       where: { doctor_phone: phoneNo },
       attributes: ["doctor_id"],
     });
+    console.log("isValidDr=>", isValidDr);
 
     if (!isValidDr) {
       return handleResponse({
@@ -628,6 +630,9 @@ const getProfileForCustomer = async (
         },
       ],
     });
+
+    console.log("getDoctor=>", getDoctor);
+    
 
     if (!getDoctor) {
       return handleResponse({
