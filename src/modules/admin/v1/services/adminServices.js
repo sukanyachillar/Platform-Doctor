@@ -1316,7 +1316,6 @@ const updateDoctor = async (data, profileImage, res) => {
   try {
     const {
       doctorId,
-      doctorPhone,
       entityId,
       doctor_name,
       qualification,
@@ -1382,41 +1381,6 @@ const updateDoctor = async (data, profileImage, res) => {
     const existingDoctorEntity = await doctorEntityModel.findOne({
       where: { doctorId: doctorId, entityId: entityId },
     });
-
-    const existingPhone = await doctorModel.findOne({
-      where: { phone: doctorPhone },
-      include: [
-        {
-          model: entityModel,
-          attributes: ["entity_id"],
-          required: true, // Use INNER JOIN to ensure both records exist
-          where: { phone: doctorPhone },
-        },
-      ],
-    });
-
-    if (existingPhone) {
-      await doctorModel.update(
-        {
-          doctor_name,
-          doctor_phone: doctorPhone,
-          qualification,
-          email,
-          department_id,
-          description,
-          gstNo,
-          profileImageUrl: imageUrl,
-          status: newStatus,
-        },
-        { where: { doctor_id: doctorId } }
-      );
-      await entityModel.update(
-        {
-          doctor_phone: doctorPhone,
-        },
-        { where: { phone: doctorPhone } }
-      );
-    }
 
     if (!existingDoctorEntity) {
       return handleResponse({
