@@ -680,14 +680,17 @@ const listBooking_admin = async (
 const getBookingReport = async (req, res) => {
   try {
     const { doctorId, date } = req.body;
+    console.log("DOC=>", doctorId);
     const whereCondition = {
       appointmentDate: { [Op.eq]: new Date(date) },
       bookingStatus: { [Op.ne]: 3 },
     };
 
     const weeklyTimeSlotData = await weeklyTimeSlotsModel.findAll({
-      date: date,
-      doctor_id: doctorId,
+      where: {
+        date: date,
+        doctor_id: doctorId,
+      },
     });
     const workSlotIds = weeklyTimeSlotData.map((slot) => slot.time_slot_id);
 
@@ -712,6 +715,7 @@ const getBookingReport = async (req, res) => {
         "bookedPhoneNo",
       ],
     });
+    console.log("BL=>>", bookingList);
 
     const customerIds = bookingList.map((booking) => booking.customerId);
     const userRecords = await userModel.findAll({

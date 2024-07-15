@@ -1254,7 +1254,7 @@ const viewDoctor = async ({ doctorId, entityId }, res) => {
       include: [
         {
           model: departmentModel,
-          attributes: ["department_name","department_id"],
+          attributes: ["department_name", "department_id"],
         },
         {
           model: doctorEntityModel,
