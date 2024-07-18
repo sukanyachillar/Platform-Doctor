@@ -210,6 +210,86 @@ const bookAppointment = async (req, res) => {
   }
 };
 
+const slotLock = async (req, res) => {
+  const { timeSlot, doctorId, appointmentDate,entityId } = req.body;
+  try {
+    const existingTimeslot = await weeklyTimeSlotsModel.findOne({
+      where: {
+        time_slot: timeSlot,
+        doctor_id: doctorId,
+        date: appointmentDate,
+      },
+    });
+
+    if (existingTimeslot.booking_status === 3) {
+      return handleResponse({
+        res,
+        message: "Slot already pending",
+        statusCode: 400,
+      });
+    }
+    
+    if (existingTimeslot.booking_status === 1) {
+      return handleResponse({
+        res,
+        message: "Slot already booked !",
+        statusCode: 400,
+      });
+    }
+
+    if (!existingTimeslot) {
+      return handleResponse({
+        res,
+        message: "Slot not found on this date",
+        statusCode: 404,
+      });
+    }
+
+    const doctorEntityData = await doctorEntityModel.findOne({
+      where: {
+        doctorId: doctorId,
+        entityId,
+      },
+    });
+
+    if (existingTimeslot) {
+      const [updateCount] = await weeklyTimeSlotsModel.update(
+        {
+          booking_status: 3,  //processing
+        },
+        {
+          where: {
+            time_slot: timeSlot,
+            doctor_id: doctorId,
+            date: appointmentDate,
+            doctorEntityId: doctorEntityData.doctorEntityId,
+          },
+        }
+      );
+      if (updateCount > 0) {
+        return handleResponse({
+          res,
+          message: "Slot allocation successful",
+          statusCode: 200,
+        });
+      } else {
+        return handleResponse({
+          res,
+          message: "Slot allocation failed !",
+          statusCode: 400,
+        });
+      }
+    }
+  } catch (error) {
+    console.log(error);
+    return handleResponse({
+      res,
+      message: "Error while allocating slot.",
+      statusCode: 422,
+    });
+  }
+};
+
 // const bookAppointment = async (req, res) => {
 //     try {
 //         const {
@@ -1200,6 +1280,7 @@ const cancelBookingFromDoctor = async (userType, req, res) => {
 
 export default {
   bookAppointment,
+  slotLock,
   listBooking,
   getBookingReport,
   bookingConfirmationData,

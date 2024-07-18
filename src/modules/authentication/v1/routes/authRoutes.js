@@ -10,6 +10,7 @@ const upload = multer({
 })
 
 import express from 'express';
+import apiLogger from '../../../../middlewares/apiLogger.js';
 
 const router = express.Router();
 

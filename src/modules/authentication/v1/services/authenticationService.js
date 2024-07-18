@@ -20,6 +20,7 @@ import doctorModel from "../../../../models/doctorModel.js";
 import tokenModel from "../../../../models/tokenModel.js";
 import { hashPassword, comparePasswords } from "../../../../utils/password.js";
 import { decrypt } from "../../../../utils/token.js";
+import outsideUserModel from "../../../../models/outsideUserModel.js";
 
 const register = async (userData, res) => {
   try {
@@ -63,7 +64,9 @@ const register = async (userData, res) => {
           refresh_token: tokens.refreshToken,
           profile_completed: getUser.profile_completed,
           status: getUser.status,
-          entity_type: getUser.entity_type ? getUser.entity_type : null,
+          entity_type: getUser.entity_type
+            ? parseInt(getUser.entity_type)
+            : null,
           entityDetails: entityDetails,
         },
       });
@@ -107,29 +110,38 @@ const register = async (userData, res) => {
         },
       });
     }
-    const newUser = new authenticationModel(userData);
-    const addedUser = await newUser.save();
-    newToken = await new tokenModel({
-      userId: addedUser.entity_id,
-      token,
-      createdAt: new Date(),
-      updatedAt: new Date(),
-    });
-    await newToken.save();
-    return handleResponse({
-      res,
-      statusCode: "200",
-      message: "User added",
-      data: {
-        entity_id: addedUser.entity_id,
-        phone: addedUser.phone,
-        profile_completed: addedUser.profile_completed,
-        status: addedUser.status,
-        entity_type: addedUser.entity_type ? addedUser.entity_type : "",
-        access_token: tokens.accessToken,
-        refresh_token: tokens.refreshToken,
-      },
-    });
+    if (!getUser && !doctorExists) {
+      // const newUser = new authenticationModel(userData);
+      // const addedUser = await newUser.save();
+      // newToken = await new tokenModel({
+      //   userId: addedUser.entity_id,
+      //   token,
+      //   createdAt: new Date(),
+      //   updatedAt: new Date(),
+      // });
+      // await newToken.save();
+      // return handleResponse({
+      //   res,
+      //   statusCode: "200",
+      //   message: "User added",
+      //   data: {
+      //     entity_id: addedUser.entity_id,
+      //     phone: addedUser.phone,
+      //     profile_completed: addedUser.profile_completed,
+      //     status: addedUser.status,
+      //     entity_type: addedUser.entity_type ? addedUser.entity_type : "",
+      //     access_token: tokens.accessToken,
+      //     refresh_token: tokens.refreshToken,
+      //   },
+      // });
+      const addedUser = await new outsideUserModel(userData);
+      await addedUser.save();
+      return handleResponse({
+        res,
+        statusCode: "200",
+        message: "Admin will contact you soon",
+      });
+    }
   } catch (error) {
     console.log({ "Error while registeration": error });
     return handleResponse({
@@ -632,7 +644,6 @@ const getProfileForCustomer = async (
     });
 
     console.log("getDoctor=>", getDoctor);
-    
 
     if (!getDoctor) {
       return handleResponse({

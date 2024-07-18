@@ -1,3 +1,4 @@
+import logger from '../../../../middlewares/apiLogger.js'
 import authenticationService from '../services/authenticationService.js'
 
 const register = async (req, res) => {

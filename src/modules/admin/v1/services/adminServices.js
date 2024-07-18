@@ -133,11 +133,11 @@ const updateDept = async (deptData, res) => {
   try {
     let { department_id, department_name, status } = deptData;
     let dept = await departmentModel.findByPk(department_id);
-    if (!dept) {
+    if (dept) {
       return handleResponse({
         res,
         statusCode: 404,
-        message: "Department not found.",
+        message: "Department already exists !",
       });
     }
 

@@ -15,6 +15,7 @@ import cron from 'node-cron';
 import currentConfig from './config.js'
 import Sequelize from './src/dbConnect.js';
 import cronJobs from './src/utils/cronJobs.js';
+import apiLogger from './src/middlewares/apiLogger.js';
 
 const app = express();
 global.appRoot = process.cwd();
@@ -62,6 +63,9 @@ cron.schedule('5 0 * * *', async () => {
 });
 
 // cronJobs.timeSlotCron();
+
+// ApiLogger middleware for logging all api's
+// app.use(apiLogger);
 
 app.get('/api', (req, res) => {
     res.status(200).json({
