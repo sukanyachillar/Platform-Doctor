@@ -195,6 +195,7 @@ const paymentUpdate = async (bookingData, res) => {
         attributes: ["token"],
       }),
       weeklyTimeSlotsModel.update(
+        // { booking_status: 0 },
         { booking_status: 1 },
         { where: { time_slot_id: timeSlot.workSlotId } }
       ),

@@ -14,6 +14,7 @@ import doctorEntityModel from "../../../../models/doctorEntityModel.js";
 import { getEntityDetailsOfTheDr } from "../../../authentication/v1/services/authenticationService.js";
 import { encrypt } from "../../../../utils/token.js";
 import paymentGatewayModel from "../../../../models/paymentGatewayModel.js";
+import PgFunctions from '../../../../utils/pg.js'
 
 const bookAppointment = async (req, res) => {
   try {
@@ -100,6 +101,7 @@ const bookAppointment = async (req, res) => {
       await weeklyTimeSlotsModel.update(
         {
           booking_status: 0,
+          // booking_status: 3,
         },
         {
           where: {
@@ -119,22 +121,29 @@ const bookAppointment = async (req, res) => {
       attributes: ["id", "name", "key1", "key2", "status"],
     });
     // console.log("PGdata=>", pg);
+    let orderIDFree=PgFunctions.createOrderId()
 
     let data;
+    data = {
+      id:orderIDFree,
+      payment_session_id:"pay@0000"
+    };
 
-    if (pg.id == 1) {
-      data = await payment.createPaymentLink({
-        name: customerName,
-        phone: customerPhone,
-        amount: amount,
-      });
-    } else if (pg.id == 2) {
-      data = await payment.createCashfreeOrderData({
-        name: customerName,
-        phone: customerPhone,
-        amount: amount,
-      });
-    }
+
+    //commented to disable PG redirection
+    // if (pg.id == 1) {
+    //   data = await payment.createPaymentLink({
+    //     name: customerName,
+    //     phone: customerPhone,
+    //     amount: amount,
+    //   });
+    // } else if (pg.id == 2) {
+    //   data = await payment.createCashfreeOrderData({
+    //     name: customerName,
+    //     phone: customerPhone,
+    //     amount: amount,
+    //   });
+    // }
 
     // console.log("DATA=>", data);
 
@@ -186,6 +195,7 @@ const bookAppointment = async (req, res) => {
       orderId: data?.id,
       amount,
       paymentMethod: pg?.name,
+      paymentStatus: 0,
     });
 
     return handleResponse({

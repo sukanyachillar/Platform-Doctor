@@ -171,4 +171,6 @@ const createCustomerId = (name, phoneNumber) => {
 export default {
   createPaymentLink,
   createCashfreeOrderData,
+  createOrderId,
+  createCustomerId,
 };

@@ -94,7 +94,7 @@ const addDept = async (deptData, res) => {
     let status = 1;
     let dept, message, statusCode;
     dept = await departmentModel.findOne({
-      where: { department_name }, // entity_id
+      where: { department_name },
     });
     message = "Department already exist.";
     statusCode = 422;
@@ -133,6 +133,16 @@ const updateDept = async (deptData, res) => {
   try {
     let { department_id, department_name, status } = deptData;
     let dept = await departmentModel.findByPk(department_id);
+    let isDept = await departmentModel.findOne({
+      where: { department_name },
+    });
+    if (isDept) {
+      return handleResponse({
+        res,
+        statusCode: 422,
+        message: "Department already exist !",
+      });
+    }
     if (!dept) {
       return handleResponse({
         res,
@@ -999,7 +1009,7 @@ const addIndvDoctor = async (
     if (!existingIndvEntity) {
       const newIndvEntity = await new entityModel({
         phone: doctor_phone,
-        entity_name: capitalizedEntityName,
+        entity_name: entityName ? capitalizedEntityName : null,
         business_type_id: 0,
         entity_type: 2, // entity_type : businessData.businessId
         description,

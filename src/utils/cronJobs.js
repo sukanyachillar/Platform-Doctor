@@ -1,5 +1,7 @@
+import bookingModel from "../models/bookingModel.js";
 import doctorEntityModel from "../models/doctorEntityModel.js";
 import doctorModel from "../models/doctorModel.js";
+import paymentModel from "../models/paymentModel.js";
 import weeklyTimeSlotsModel from "../models/weeklyTimeSlotsModel.js";
 import workScheduleModel from "../models/workScheduleModel.js";
 
@@ -86,16 +88,15 @@ const formatDate = (date) => {
   return `${year}-${month}-${day}`;
 };
 
-const getCurrentDateAndTimezone=()=> {
+const getCurrentDateAndTimezone = () => {
   const currentDate = new Date();
   const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
 
   console.log("Current Date:", currentDate);
   console.log("Current Timezone:", timezone);
-}
+};
 
 getCurrentDateAndTimezone();
-
 
 async function getPreviousDayName() {
   const daysOfWeek = [
@@ -131,11 +132,57 @@ function getTodayDayName() {
 
   return todayDayName;
 }
+const paymentVerifyCheck = async () => {
+  const oneHourAgo = new Date(Date.now() - 60 * 60 * 1000);
+  const fiveMinutesAgo = new Date(Date.now() - 10 * 60 * 1000);
 
+  try {
+    const [numberOfAffectedRows] = await paymentModel.update(
+      { paymentStatus: 2 },
+      {
+        where: {
+          paymentStatus: 0,
+          createdAt: {
+            [Op.between]: [oneHourAgo, fiveMinutesAgo],
+          },
+        },
+      }
+    );
+    if (numberOfAffectedRows) {
+      console.log("paymentVerifyCheck worked");
+    }
+  } catch (error) {
+    console.log("paymentVerifyCheckCrone ERROR==>", error);
+  }
+};
+
+const blockedSlotCheck = async () => {
+  const oneHourAgo = new Date(Date.now() - 60 * 60 * 1000);
+  const fiveMinutesAgo = new Date(Date.now() - 10 * 60 * 1000);
+
+  try {
+    const [numberOfAffectedRows] = await bookingModel.update(
+      { paymentStatus: 2 },
+      {
+        where: {
+          paymentStatus: 0,
+          createdAt: {
+            [Op.between]: [oneHourAgo, fiveMinutesAgo],
+          },
+        },
+      }
+    );
+    if (numberOfAffectedRows) {
+      console.log("paymentVerifyCheck worked");
+    }
+  } catch (error) {
+    console.log("paymentVerifyCheckCrone ERROR==>", error);
+  }
+};
 
 const timeSlotCron = async () => {
   console.log("Inside crone");
-  try {   
+  try {
     // const previousDateDay = await getPreviousDayName();
     const todaysDay = await getTodayDayName();
 
@@ -309,7 +356,7 @@ const timeSlotCron = async () => {
               : null,
             token_number:
               doctorData?.bookingType == "token" ? tokenNumber : null,
-              createdBy:"cron",
+            createdBy: "cron",
           });
           tokenNumber++;
           console.log("slotCreatedRes==>", slotCreatedRes);
@@ -358,4 +405,4 @@ const getDayOfWeekIndex = async (dayName) => {
   }
 };
 
-export default { timeSlotCron };
+export default { timeSlotCron, paymentVerifyCheck, blockedSlotCheck };
