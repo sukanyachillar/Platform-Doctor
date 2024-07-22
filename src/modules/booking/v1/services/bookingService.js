@@ -14,7 +14,7 @@ import doctorEntityModel from "../../../../models/doctorEntityModel.js";
 import { getEntityDetailsOfTheDr } from "../../../authentication/v1/services/authenticationService.js";
 import { encrypt } from "../../../../utils/token.js";
 import paymentGatewayModel from "../../../../models/paymentGatewayModel.js";
-import PgFunctions from '../../../../utils/pg.js'
+import PgFunctions from "../../../../utils/pg.js";
 
 const bookAppointment = async (req, res) => {
   try {
@@ -100,8 +100,8 @@ const bookAppointment = async (req, res) => {
     if (existingTimeslot) {
       await weeklyTimeSlotsModel.update(
         {
-          booking_status: 0,
-          // booking_status: 3,
+          // booking_status: 0,
+          booking_status: 3,
         },
         {
           where: {
@@ -121,14 +121,13 @@ const bookAppointment = async (req, res) => {
       attributes: ["id", "name", "key1", "key2", "status"],
     });
     // console.log("PGdata=>", pg);
-    let orderIDFree=PgFunctions.createOrderId()
+    let orderIDFree = PgFunctions.createOrderId();
 
     let data;
     data = {
-      id:orderIDFree,
-      payment_session_id:"pay@0000"
+      id: orderIDFree,
+      payment_session_id: "pay@0000",
     };
-
 
     //commented to disable PG redirection
     // if (pg.id == 1) {

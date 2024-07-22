@@ -33,7 +33,7 @@ const weeklyTimeSlotsModel = sequelize.define("weeklyTimeSlots", {
     allowNull: false,
   },
   booking_status: {
-    type: DataTypes.INTEGER, //1- booked 0-available,
+    type: DataTypes.INTEGER, // 0-open , 1- booked , 3-processing
     allowNull: false,
     defaultValue: 0,
   },
