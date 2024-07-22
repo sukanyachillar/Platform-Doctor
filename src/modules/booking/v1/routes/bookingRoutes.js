@@ -5,6 +5,7 @@ import express from "express";
 const router = express.Router();
 
 router.post("/bookAppointment", bookingController.bookAppointment);
+router.post("/slot-on-hold", bookingController.slotHoldForBooking);
 router.post("/listBooking", verifyToken, bookingController.listBooking); // based on date
 router.post(
   "/updateBooking",

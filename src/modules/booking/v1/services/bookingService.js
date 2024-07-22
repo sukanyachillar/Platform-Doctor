@@ -12,7 +12,7 @@ import { generateUuid } from "../../../../utils/generateUuid.js";
 import paymentSplitModel from "../../../../models/paymentSplitModel.js";
 import doctorEntityModel from "../../../../models/doctorEntityModel.js";
 import { getEntityDetailsOfTheDr } from "../../../authentication/v1/services/authenticationService.js";
-import { encrypt } from "../../../../utils/token.js";
+import { decrypt, encrypt } from "../../../../utils/token.js";
 import paymentGatewayModel from "../../../../models/paymentGatewayModel.js";
 import PgFunctions from "../../../../utils/pg.js";
 
@@ -124,25 +124,27 @@ const bookAppointment = async (req, res) => {
     let orderIDFree = PgFunctions.createOrderId();
 
     let data;
-    data = {
-      id: orderIDFree,
-      payment_session_id: "pay@0000",
-    };
+    
+    //Added for dummy data for payment FREE
+    // data = {
+    //   id: orderIDFree,
+    //   payment_session_id: "pay@0000",
+    // };
 
     //commented to disable PG redirection
-    // if (pg.id == 1) {
-    //   data = await payment.createPaymentLink({
-    //     name: customerName,
-    //     phone: customerPhone,
-    //     amount: amount,
-    //   });
-    // } else if (pg.id == 2) {
-    //   data = await payment.createCashfreeOrderData({
-    //     name: customerName,
-    //     phone: customerPhone,
-    //     amount: amount,
-    //   });
-    // }
+    if (pg.id == 1) {
+      data = await payment.createPaymentLink({
+        name: customerName,
+        phone: customerPhone,
+        amount: amount,
+      });
+    } else if (pg.id == 2) {
+      data = await payment.createCashfreeOrderData({
+        name: customerName,
+        phone: customerPhone,
+        amount: amount,
+      });
+    }
 
     // console.log("DATA=>", data);
 
@@ -214,6 +216,76 @@ const bookAppointment = async (req, res) => {
     return handleResponse({
       res,
       message: "Error while booking appointment.",
+      statusCode: 422,
+    });
+  }
+};
+
+const slotOnHold = async (req, res) => {
+  const { encryptedPhone, appointmentDate, timeSlot, entityId } = req.body;
+  const doctorPhone = await decrypt(encryptedPhone, process.env.CRYPTO_SECRET);
+  try {
+    const docData = await doctorProfileModel.findOne({
+      where: {
+        doctor_phone: doctorPhone,
+      },
+    });
+    if (!docData) {
+      return handleResponse({
+        res,
+        message: "No doctor found !",
+        statusCode: 404,
+      });
+    }
+    const existingTimeslot = await weeklyTimeSlotsModel.findOne({
+      where: {
+        time_slot: timeSlot,
+        doctor_id: docData.doctor_id,
+        date: appointmentDate,
+      },
+    });
+
+    if (!existingTimeslot) {
+      return handleResponse({
+        res,
+        message: "Slot not found on this date",
+        statusCode: 404,
+      });
+    }
+
+    const doctorEntityData = await doctorEntityModel.findOne({
+      where: {
+        doctorId: docData.doctor_id,
+        entityId,
+      },
+    });
+
+    const [updatedRows] = await weeklyTimeSlotsModel.update(
+      {
+        booking_status: 3,
+      },
+      {
+        where: {
+          time_slot: timeSlot,
+          doctor_id: docData.doctor_id,
+          date: appointmentDate,
+          doctorEntityId: doctorEntityData.doctorEntityId,
+        },
+      }
+    );
+
+    if (updatedRows > 0) {
+      return handleResponse({
+        res,
+        statusCode: 200,
+        message: "Slot on hold",
+      });
+    }
+  } catch (error) {
+    console.log(error);
+    return handleResponse({
+      res,
+      message: "Error while allocating slot.",
       statusCode: 422,
     });
   }
@@ -1216,4 +1288,5 @@ export default {
   listBooking_admin,
   cancelBookingFromDoctor,
   generateBookingLink,
+  slotOnHold,
 };

@@ -1,17 +1,17 @@
-import { DataTypes } from 'sequelize';
-import sequelize from '../dbConnect.js';
+import { DataTypes } from "sequelize";
+import sequelize from "../dbConnect.js";
 
-import weeklyTimeSlotsModel from './weeklyTimeSlotsModel.js';
+import weeklyTimeSlotsModel from "./weeklyTimeSlotsModel.js";
 
-const bookingModel = sequelize.define('booking', {
+const bookingModel = sequelize.define("booking", {
   bookingId: {
     type: DataTypes.INTEGER,
     primaryKey: true,
-    autoIncrement: true, 
+    autoIncrement: true,
     allowNull: false,
   },
   customerId: {
-    type: DataTypes.INTEGER, 
+    type: DataTypes.INTEGER,
     allowNull: true,
     unique: false,
   },
@@ -47,10 +47,10 @@ const bookingModel = sequelize.define('booking', {
     allowNull: false,
   },
   bookingStatus: {
-    type: DataTypes.INTEGER, //  0: booked, 1-completed, 2-cancelled 3-processing  4-doctor cancelled
+    type: DataTypes.INTEGER, //  0: booked, 1-completed, 2-cancelled (Failed payment) 3-processing  4-doctor cancelled
     allowNull: true,
     unique: false,
-    defaultValue: 3
+    defaultValue: 3,
   },
   // paymentStatus: {  // 0 payment initiated, 1.completed 2.cancelled
   //   type: DataTypes.INTEGER,
@@ -63,30 +63,30 @@ const bookingModel = sequelize.define('booking', {
   //   defaultValue: "Razorpay"
   // },
   workSlotId: {
-    type: DataTypes.INTEGER, 
+    type: DataTypes.INTEGER,
     allowNull: true,
     unique: false,
   },
   orderId: {
-    type: DataTypes.STRING, 
+    type: DataTypes.STRING,
     allowNull: true,
     unique: false,
   },
   transactionId: {
-    type: DataTypes.STRING, 
+    type: DataTypes.STRING,
     allowNull: true,
     unique: false,
   },
   statusUpdatedBy: {
-    type: DataTypes.STRING, 
+    type: DataTypes.STRING,
     allowNull: true,
   },
   patientName: {
-    type: DataTypes.STRING, 
+    type: DataTypes.STRING,
     allowNull: true,
   },
   bookedPhoneNo: {
-    type: DataTypes.STRING, 
+    type: DataTypes.STRING,
     allowNull: true,
     unique: false,
   },
@@ -100,16 +100,17 @@ const bookingModel = sequelize.define('booking', {
     defaultValue: DataTypes.NOW,
     allowNull: false,
   },
-  
 });
 
-bookingModel.belongsTo(weeklyTimeSlotsModel, { foreignKey: 'workSlotId' });
-bookingModel.associate = function(models) {
-    bookingModel.belongsTo(models.weeklyTimeSlotsModel, { foreignKey: 'workSlotId' });
-    bookingModel.belongsTo(models.weeklyTimeSlotsModel, { foreignKey: 'workSlotId' });
-    bookingModel.belongsTo(models.paymentModel, {foreignKey: 'bookingId'});
+bookingModel.belongsTo(weeklyTimeSlotsModel, { foreignKey: "workSlotId" });
+bookingModel.associate = function (models) {
+  bookingModel.belongsTo(models.weeklyTimeSlotsModel, {
+    foreignKey: "workSlotId",
+  });
+  bookingModel.belongsTo(models.weeklyTimeSlotsModel, {
+    foreignKey: "workSlotId",
+  });
+  bookingModel.belongsTo(models.paymentModel, { foreignKey: "bookingId" });
 };
 
 export default bookingModel;
-
-

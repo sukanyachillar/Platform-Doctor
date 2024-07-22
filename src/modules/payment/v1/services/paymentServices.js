@@ -187,7 +187,7 @@ const paymentUpdate = async (bookingData, res) => {
         { where: { orderId } }
       ),
     ]);
-    console.log("TTT=>",timeSlot);
+    console.log("TTT=>", timeSlot);
 
     const [registrationIds, updateTimeSlot] = await Promise.all([
       tokenModel.findAll({
@@ -251,6 +251,75 @@ const paymentUpdate = async (bookingData, res) => {
     return handleResponse({
       res,
       message: "Unable to update status.",
+      statusCode: 404,
+    });
+  }
+};
+
+const paymentFailUpdate = async (bookingData, res) => {
+  try {
+    const { orderId, paymentId } = bookingData;
+
+    const bookingDetails = await bookingModel.findOne({
+      attributes: ['bookingId', 'workSlotId'],
+      where: { orderId: orderId },
+    });
+
+    if (!bookingDetails) {
+      return handleResponse({
+        res,
+        message: "No bookings found !",
+        statusCode: 404,
+      });
+    }
+    const [bookingUpdate] = await bookingModel.update(
+      { bookingStatus: 2 },
+      { where: { orderId: orderId } }
+    );
+
+    if (!bookingUpdate > 0) {
+      return handleResponse({
+        res,
+        message: "Unable to update Booking status !",
+        statusCode: 404,
+      });
+    }
+
+    const [paymentUpdate] = await paymentModel.update(
+      { paymentStatus: 2, transactionId: paymentId },
+      { where: { orderId: orderId } }
+    );
+
+    if (!paymentUpdate > 0) {
+      return handleResponse({
+        res,
+        message: "Unable to update Payment status !",
+        statusCode: 404,
+      });
+    }
+
+    const [timeslotUpdate] = await weeklyTimeSlotsModel.update(
+      { booking_status: 0 },
+      { where: { time_slot_id: bookingDetails.workSlotId } }
+    );
+
+    if (!timeslotUpdate > 0) {
+      return handleResponse({
+        res,
+        message: "Unable to update time slot status !",
+        statusCode: 404,
+      });
+    }
+    return handleResponse({
+      res,
+      message: "Payment failed",
+      statusCode: 200,
+    });
+  } catch (error) {
+    console.log({ error });
+    return handleResponse({
+      res,
+      message: "Unable to update payment failed status.",
       statusCode: 404,
     });
   }
@@ -438,4 +507,5 @@ export default {
   paymentUpdate,
   transactionHistory,
   findPaymentGateway,
+  paymentFailUpdate,
 };

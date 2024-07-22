@@ -36,7 +36,7 @@ const createPaymentLink = async (body) => {
     //     body
     // )
     let response = await razorpay.orders.create(body);
-    console.log({ response });
+    console.log("RazorpayORDER=>",{ response });
     return response;
   } catch (err) {
     console.log({ Error: err });
@@ -64,8 +64,8 @@ const createCashfreeOrderData = async (body) => {
       customer_phone: phone,
     },
     order_meta: {
-      // return_url: `http://localhost:50147/#/verify-payment?order_id=${orderId}`,
-      return_url: `https://booking.chillarpayments.com/#/verify-payment?order_id=${orderId}`,
+      return_url: `http://localhost:4300/#/verify-payment?order_id=${orderId}`,
+      // return_url: `https://booking.chillarpayments.com/#/verify-payment?order_id=${orderId}`,
     },
   };
 

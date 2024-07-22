@@ -20,6 +20,15 @@ const paymentUpdate = async (req, res) => {
   }
 };
 
+const paymentFailed = async (req, res) => {
+  try {
+    let payment = await paymentService.paymentFailUpdate(req.body, res);
+    return payment;
+  } catch (err) {
+    console.log({ err });
+  }
+};
+
 const getPg = async (req, res) => {
   try {
     let payment = await paymentService.findPaymentGateway(req.body, res);
@@ -63,4 +72,4 @@ const paymentVerify = async (req, res) => {
   }
 };
 
-export default { paymentCapture, paymentUpdate, paymentVerify,getPg };
+export default { paymentCapture, paymentUpdate, paymentVerify,getPg ,paymentFailed};

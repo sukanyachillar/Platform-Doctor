@@ -9,6 +9,15 @@ const bookAppointment = async (req, res) => {
   }
 };
 
+const slotHoldForBooking = async (req, res) => {
+  try {
+    const bookinResponse = await bookingService.slotOnHold(req, res);
+    return bookinResponse;
+  } catch (error) {
+    console.log("error", error);
+  }
+};
+
 const listBooking = async (req, res) => {
   try {
     const listBookingResponse = await bookingService.listBooking(req.body, res);
@@ -87,6 +96,7 @@ const doctorCancelBooking = async (req, res) => {
 
 export default {
   bookAppointment,
+  slotHoldForBooking,
   updateBookingStatus,
   listBooking,
   getBookingReport,
