@@ -63,9 +63,13 @@ cron.schedule("5 0 * * *", async () => {
   cronJobs.timeSlotCron();
 });
 
-// cron.schedule("*/10 * * * *", async () => {
-//   await cronJobs.paymentVerifyCheck();
-// });
+cron.schedule("*/10 * * * *", async () => {
+  await cronJobs.paymentVerifyCheck();
+});
+
+cron.schedule("*/10 * * * *", async () => {
+  await cronJobs.blockedSlotCheck();
+});
 
 // cronJobs.timeSlotCron();
 

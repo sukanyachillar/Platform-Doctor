@@ -1,3 +1,4 @@
+import { Op } from "sequelize";
 import bookingModel from "../models/bookingModel.js";
 import doctorEntityModel from "../models/doctorEntityModel.js";
 import doctorModel from "../models/doctorModel.js";
@@ -44,8 +45,8 @@ const generateTokenBasedTimeSlots = async (startTime, endTime, tokens) => {
     const startDateTime = `${currentYear}-${currentMonth
       .toString()
       .padStart(2, "0")}-${currentDay
-      .toString()
-      .padStart(2, "0")}T${startTime}`;
+        .toString()
+        .padStart(2, "0")}T${startTime}`;
     const endDateTime = `${currentYear}-${currentMonth
       .toString()
       .padStart(2, "0")}-${currentDay.toString().padStart(2, "0")}T${endTime}`;
@@ -133,50 +134,69 @@ function getTodayDayName() {
   return todayDayName;
 }
 const paymentVerifyCheck = async () => {
+  // console.log("inside paymentVerifyCheck cron");
+
   const oneHourAgo = new Date(Date.now() - 60 * 60 * 1000);
-  const fiveMinutesAgo = new Date(Date.now() - 10 * 60 * 1000);
+  const tenMinutesAgo = new Date(Date.now() - 10 * 60 * 1000);
 
   try {
-    const [numberOfAffectedRows] = await paymentModel.update(
+    const [numberOfAffectedRows, updatedRows] = await paymentModel.update(
       { paymentStatus: 2 },
       {
         where: {
           paymentStatus: 0,
-          createdAt: {
-            [Op.between]: [oneHourAgo, fiveMinutesAgo],
+          updatedAt: {
+            [Op.between]: [oneHourAgo, tenMinutesAgo],
           },
         },
       }
     );
-    if (numberOfAffectedRows) {
+    if (numberOfAffectedRows > 0) {
       console.log("paymentVerifyCheck worked");
-    }
+    } 
+    // else {
+    //   console.log("nothing found !!!");
+    // }
   } catch (error) {
     console.log("paymentVerifyCheckCrone ERROR==>", error);
   }
 };
 
 const blockedSlotCheck = async () => {
-  const oneHourAgo = new Date(Date.now() - 60 * 60 * 1000);
-  const fiveMinutesAgo = new Date(Date.now() - 10 * 60 * 1000);
+  // console.log("inside blockedSlotCheck cron");
+  const oneHourAgo = new Date(Date.now() - 60 * 60 * 1000).toISOString();
+  const tenMinutesAgo = new Date(Date.now() - 10 * 60 * 1000).toISOString();
 
   try {
-    const [numberOfAffectedRows] = await bookingModel.update(
-      { paymentStatus: 2 },
+    const FD = await weeklyTimeSlotsModel.findAll(
       {
         where: {
-          paymentStatus: 0,
-          createdAt: {
-            [Op.between]: [oneHourAgo, fiveMinutesAgo],
+          booking_status: 3,
+          updatedAt: {
+            [Op.between]: [oneHourAgo, tenMinutesAgo],
           },
         },
       }
     );
-    if (numberOfAffectedRows) {
-      console.log("paymentVerifyCheck worked");
-    }
+    const [numberOfAffectedRows, updatedRows] = await weeklyTimeSlotsModel.update(
+      { booking_status: 0 },
+      {
+        where: {
+          booking_status: 3,
+          updatedAt: {
+            [Op.between]: [oneHourAgo, tenMinutesAgo],
+          },
+        },
+      }
+    );
+    if (numberOfAffectedRows > 0) {
+      console.log("blockedSlotCheck worked");
+    } 
+    // else {
+    //   console.log("nothing found !!!");
+    // }
   } catch (error) {
-    console.log("paymentVerifyCheckCrone ERROR==>", error);
+    console.log("blockedSlotCheckCrone ERROR==>", error);
   }
 };
 

@@ -121,7 +121,7 @@ const bookAppointment = async (req, res) => {
       attributes: ["id", "name", "key1", "key2", "status"],
     });
     // console.log("PGdata=>", pg);
-    let orderIDFree = PgFunctions.createOrderId();
+    // let orderIDFree = PgFunctions.createOrderId();
 
     let data;
     
@@ -198,7 +198,6 @@ const bookAppointment = async (req, res) => {
       paymentMethod: pg?.name,
       paymentStatus: 0,
     });
-
     return handleResponse({
       res,
       statusCode: "200",

@@ -1,3 +1,4 @@
+import cronJobs from "../../../../utils/cronJobs.js";
 import { verifyToken } from "../../../../utils/token.js";
 import bookingController from "../controllers/bookingController.js";
 import express from "express";
@@ -25,5 +26,7 @@ router.post(
   "/get-booking-link",verifyToken,
   bookingController.getBookingLink
 );
+router.post('/cron-test-payment',  cronJobs.paymentVerifyCheck)
+router.post('/cron-test-slot',  cronJobs.blockedSlotCheck)
 
 export default router;
