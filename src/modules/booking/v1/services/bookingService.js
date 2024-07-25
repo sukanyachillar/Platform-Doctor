@@ -4,7 +4,7 @@ import weeklyTimeSlotsModel from "../../../../models/weeklyTimeSlotsModel.js";
 import entityModel from "../../../../models/entityModel.js";
 import bookingModel from "../../../../models/bookingModel.js";
 import payment from "../../../../utils/pg.js";
-import { Op } from "sequelize";
+import { Op, where } from "sequelize";
 import doctorModel from "../../../../models/doctorModel.js";
 import paymentModel from "../../../../models/paymentModel.js";
 import userModel from "../../../../models/userModel.js";
@@ -15,6 +15,7 @@ import { getEntityDetailsOfTheDr } from "../../../authentication/v1/services/aut
 import { decrypt, encrypt } from "../../../../utils/token.js";
 import paymentGatewayModel from "../../../../models/paymentGatewayModel.js";
 import PgFunctions from "../../../../utils/pg.js";
+import bookingFeeModel from "../../../../models/bookingFeeModel.js";
 
 const bookAppointment = async (req, res) => {
   try {
@@ -24,10 +25,16 @@ const bookAppointment = async (req, res) => {
       timeSlot,
       customerName,
       customerPhone,
-      amount,
+      // amount,
       paymentMethod,
       entityId,
     } = req.body;
+
+    const bookingFee = await bookingFeeModel.findOne({
+      where: { status: 1 }, attributes: ["fee"]
+    })
+    const amount =await bookingFee.fee;
+
 
     const doctorProfile = await doctorProfileModel.findOne({
       where: { doctor_id: doctorId },
@@ -114,39 +121,43 @@ const bookAppointment = async (req, res) => {
       );
     }
 
-    const pg = await paymentGatewayModel.findOne({
-      where: {
-        status: 1,
-      },
-      attributes: ["id", "name", "key1", "key2", "status"],
-    });
-    // console.log("PGdata=>", pg);
-    // let orderIDFree = PgFunctions.createOrderId();
-
+    let orderIDFree;
     let data;
-    
-    //Added for dummy data for payment FREE
-    // data = {
-    //   id: orderIDFree,
-    //   payment_session_id: "pay@0000",
-    // };
+    let pg;
+    if (amount === 0) {
+      pg={
+        id:null,
+        name:"FREE"
+      };
+      orderIDFree = PgFunctions.createOrderId();
+      data = {
+        id: orderIDFree,
+        payment_session_id: "pay@0000",
+      };
+    } else {
+       pg = await paymentGatewayModel.findOne({
+        where: {
+          status: 1,
+        },
+        attributes: ["id", "name", "key1", "key2", "status"],
+      });
 
-    //commented to disable PG redirection
-    if (pg.id == 1) {
-      data = await payment.createPaymentLink({
-        name: customerName,
-        phone: customerPhone,
-        amount: amount,
-      });
-    } else if (pg.id == 2) {
-      data = await payment.createCashfreeOrderData({
-        name: customerName,
-        phone: customerPhone,
-        amount: amount,
-      });
+      if (pg.id == 1) {
+        data = await payment.createPaymentLink({
+          name: customerName,
+          phone: customerPhone,
+          amount: amount,
+        });
+      } else if (pg.id == 2) {
+        data = await payment.createCashfreeOrderData({
+          name: customerName,
+          phone: customerPhone,
+          amount: amount,
+        });
+      }
+
     }
 
-    // console.log("DATA=>", data);
 
     if (data?.Error?.statusCode == 400)
       return handleResponse({
@@ -1060,18 +1071,16 @@ const cancelBookingFromDoctor = async (userType, req, res) => {
     }
 
     if (notFoundBookings.length > 0) {
-      message += ` ${
-        notFoundBookings.length
-      } bookings not found: ${notFoundBookings
-        .map((b) => b.bookingId)
-        .join(", ")}.`;
+      message += ` ${notFoundBookings.length
+        } bookings not found: ${notFoundBookings
+          .map((b) => b.bookingId)
+          .join(", ")}.`;
     }
     if (failedUpdates.length > 0) {
-      message += ` ${
-        failedUpdates.length
-      } bookings failed to update: ${failedUpdates
-        .map((b) => b.bookingId)
-        .join(", ")}.`;
+      message += ` ${failedUpdates.length
+        } bookings failed to update: ${failedUpdates
+          .map((b) => b.bookingId)
+          .join(", ")}.`;
     }
 
     return handleResponse({

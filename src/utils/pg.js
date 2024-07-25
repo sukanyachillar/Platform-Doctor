@@ -24,7 +24,7 @@ const createPaymentLink = async (body) => {
     //     callback_method: "get"
     // }   //Uncomment for payment link
     let body = {
-      amount: 1000,
+      amount: amount,
       currency: "INR",
       receipt: reference_id,
     };
@@ -64,8 +64,8 @@ const createCashfreeOrderData = async (body) => {
       customer_phone: phone,
     },
     order_meta: {
-      // return_url: `http://localhost:4200/#/verify-payment?order_id=${orderId}`,
-      return_url: `https://booking.chillarpayments.com/#/verify-payment?order_id=${orderId}`,
+      return_url: `http://localhost:4200/#/verify-payment?order_id=${orderId}`,
+      // return_url: `https://booking.chillarpayments.com/#/verify-payment?order_id=${orderId}`,
     },
   };
 
