@@ -12,6 +12,8 @@ import DigitalOceanUtils from '../../../utils/DOFileUpload.js';
 import doctorEntityModel from '../../../models/doctorEntityModel.js';
 import adminServices from '../../admin/v1/services/adminServices.js';
 import { calcAmountDetails } from '../../authentication/v1/services/authenticationService.js';
+import { decrypt } from '../../../utils/token.js';
+import bookingFeeModel from '../../../models/bookingFeeModel.js';
 
 
 // const listDoctorsForCustomers = async (requestData, res) => {
@@ -174,7 +176,7 @@ const listDoctorsForCustomers = async (requestData, res) => {
         };
 
         if (statusCheck) whereCondition[Op.and].push({ status: 1 });
-  
+
         // if (entityId) {
         //     whereCondition['$doctorEntities.entity.entity_id$'] = entityId;
         // };
@@ -183,7 +185,7 @@ const listDoctorsForCustomers = async (requestData, res) => {
         //     whereCondition['$doctorEntities.entity.entity_type$'] = entityType;
         // }
 
-        if (entityId) entityWhereCond = { entity_id : entityId };
+        if (entityId) entityWhereCond = { entity_id: entityId };
 
         if (searchQuery) {
             whereCondition[Op.or] = [
@@ -223,13 +225,13 @@ const listDoctorsForCustomers = async (requestData, res) => {
                             attributes: ['entity_name', 'entity_id', 'entity_type'],
                             where: entityWhereCond,
                             required: true,
-                          
+
                         },
                     ],
                 },
-            
+
             ],
-            
+
             limit: pageSize,
             offset: offset,
         });
@@ -254,14 +256,14 @@ const listDoctorsForCustomers = async (requestData, res) => {
                     doctor_phone_encrypted: encryptedPhone,
                     department_name: record.department ? record.department.department_name : '',
                     entity_name: record.doctorEntity ? record.doctorEntity.entity.entity_name : '',
-                    encryptedPhone: encryptedPhone, 
+                    encryptedPhone: encryptedPhone,
                 };
             })),
             currentPage: page,
             totalPages,
             totalCount: count,
         };
-        
+
         return handleResponse({
             res,
             statusCode: 200,
@@ -293,14 +295,14 @@ const getSingleEntityDetails = async (req, res) => {
                     model: stateModel,
                 }, {
                     model: districtModel,
-                }, 
-                // {
-                //     model: pincodeModel,
-                // }
-            ],
+                },
+                    // {
+                    //     model: pincodeModel,
+                    // }
+                ],
             }],
         });
-        
+
         if (!entityDetails) {
             return handleResponse({
                 res,
@@ -310,16 +312,16 @@ const getSingleEntityDetails = async (req, res) => {
             });
         };
 
-        const { 
-                entity_name,
-                phone,
-                email, 
-                entityAddress, 
-                imageUrl, 
-                description, 
-                status,
-                gstNo, 
-            } = entityDetails;
+        const {
+            entity_name,
+            phone,
+            email,
+            entityAddress,
+            imageUrl,
+            description,
+            status,
+            gstNo,
+        } = entityDetails;
 
         let streetName, cityName, districtName, stateName, pincode, stateId;
         if (entityAddress) {
@@ -329,11 +331,11 @@ const getSingleEntityDetails = async (req, res) => {
             districtName = district && district.districtName ? district.districtName : "";
             const state = entityAddress.state;
             stateName = state && state.stateName ? state.stateName : "";
-            pincode = entityAddress.pincode? entityAddress.pincode: "";
+            pincode = entityAddress.pincode ? entityAddress.pincode : "";
             // pincodeValue = pincode ? pincode.pincodeValue : "";
-            stateId = entityAddress.stateId? entityAddress.stateId: "";
+            stateId = entityAddress.stateId ? entityAddress.stateId : "";
         };
-        
+
         const entityResponse = {
             entityName: entity_name ? entity_name : "",
             phone: phone ? phone : "",
@@ -344,10 +346,10 @@ const getSingleEntityDetails = async (req, res) => {
             cityName: cityName ? cityName : "",
             district: districtName ? districtName : "",
             state: stateName ? stateName : "",
-            pincode: pincode? pincode: "",
-            stateId: stateId? stateId: "",
+            pincode: pincode ? pincode : "",
+            stateId: stateId ? stateId : "",
             status,
-            gstNo, 
+            gstNo,
         };
 
         const departmentList = await adminServices.listDeptByClinic({ entityId }, res, 1)
@@ -367,7 +369,7 @@ const getSingleEntityDetails = async (req, res) => {
             statusCode: 500,
             message: 'Something went wrong',
             data: {
-                
+
             },
         })
     }
@@ -377,20 +379,11 @@ const getSingleEntityDetails = async (req, res) => {
 const amountDetails = async (req, res) => {
 
     try {
-        const { entityId, doctorId } = req.body;
+        const { entityId, encryptedPhone } = req.body;
+        const doctorPhone = await decrypt(encryptedPhone, process.env.CRYPTO_SECRET);
 
-        const isValidEntity = await entityModel.findOne({ where: { entity_id: entityId }, attributes: ['entity_id'] });
-    
-        if (!isValidEntity) {
-            return handleResponse({
-                res,
-                statusCode: 400,
-                message: 'Invalid entity ID',
-                data: {},
-            });
-        };
-        const isValidDr = await doctorModel.findOne({ where: { doctor_id: doctorId }, attributes: ['doctor_id'] });
-    
+        const isValidDr = await doctorModel.findOne({ where: { doctor_phone: doctorPhone }, attributes: ['doctor_id'] });
+
         if (!isValidDr) {
             return handleResponse({
                 res,
@@ -399,10 +392,21 @@ const amountDetails = async (req, res) => {
                 data: {},
             });
         };
+        const isValidEntity = await entityModel.findOne({ where: { entity_id: entityId }, attributes: ['entity_id'] });
+
+        if (!isValidEntity) {
+            return handleResponse({
+                res,
+                statusCode: 400,
+                message: 'Invalid entity ID',
+                data: {},
+            });
+        };
+
         const getDoctor = await doctorModel.findOne({
             where: { doctor_id: isValidDr.doctor_id },
             include: [
-               
+
                 {
                     model: doctorEntityModel,
                     attributes: ['consultationTime', 'consultationCharge', 'entityId'],
@@ -417,10 +421,22 @@ const amountDetails = async (req, res) => {
             ],
         });
         if (!getDoctor) {
-            return handleResponse ({
+            return handleResponse({
                 res,
                 statusCode: 404,
                 message: 'Error while fetching doctor details',
+                data: {},
+            })
+        };
+        const bookingFee = await bookingFeeModel.findOne({
+            where: { status: 1 },
+            attributes: ['bookingFeeId', 'fee']
+        });
+        if (!bookingFee) {
+            return handleResponse({
+                res,
+                statusCode: 404,
+                message: 'Booking Fee Error',
                 data: {},
             })
         };
@@ -433,18 +449,20 @@ const amountDetails = async (req, res) => {
             });
         };
 
-        const consultationCharge =  getDoctor.doctorEntity ? getDoctor.doctorEntity.consultationCharge : 0;
+        const consultationCharge = getDoctor.doctorEntity ? getDoctor.doctorEntity.consultationCharge : 0;
 
-        const amountDetails = await calcAmountDetails(entityId, consultationCharge);
+        // const amountDetails = await calcAmountDetails(entityId, consultationCharge);
+        const amountDetails = { consultationCharge ,bookingFee:parseInt(bookingFee.fee)};
 
         return handleResponse({
             res,
             statusCode: 200,
             message: 'Amount details fetched successfully',
             data: amountDetails,
-        }); 
+        });
 
     } catch (error) {
+        console.log(error)
         return handleResponse({
             res,
             statusCode: 500,
@@ -453,6 +471,6 @@ const amountDetails = async (req, res) => {
         });
     }
 };
-        
+
 
 export default { listDoctorsForCustomers, getSingleEntityDetails, amountDetails };
