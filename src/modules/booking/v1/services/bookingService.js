@@ -47,6 +47,7 @@ const bookAppointment = async (req, res) => {
         time_slot: timeSlot,
         doctor_id: doctorId,
         date: appointmentDate,
+        booking_status:3
       },
     });
 
