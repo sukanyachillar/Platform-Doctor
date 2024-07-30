@@ -192,6 +192,7 @@ const bookAppointment = async (req, res) => {
       amount,
       bookingDate: new Date(),
       appointmentDate,
+      bookingStatus:3,
       // orderId: data?.id,
       orderId: data?.id,
       workSlotId: existingTimeslot.time_slot_id,
