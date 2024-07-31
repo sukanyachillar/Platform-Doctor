@@ -10,6 +10,10 @@ const sequelize = new Sequelize('doctorapp', process.env.MYSQL_USER, '', {
     password: process.env.MYSQL_PASSWORD,
     // database: currentConfig.MYSQL_DATABASE,
     logging: false, // Set to true to log SQL queries (optional)
+    define: {
+        charset: 'utf8mb4',
+        collate: 'utf8mb4_general_ci'
+    },
 });
 
 // const sequelize = new Sequelize('platform_doctor', 'root', '', {
