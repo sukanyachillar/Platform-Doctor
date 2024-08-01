@@ -543,6 +543,49 @@ const generateTimeSlots = async (startTime, endTime, consultationTime) => {
   }
 };
 
+// const generateTokenBasedTimeSlots = async (startTime, endTime, tokens) => {
+//   try {
+//     console.log("startTime, endTime, tokens", startTime, endTime, tokens);
+
+//     const currentDate = new Date();
+//     const currentYear = currentDate.getFullYear();
+//     const currentMonth = currentDate.getMonth() + 1;
+//     const currentDay = currentDate.getDate();
+
+//     const startDateTime = `${currentYear}-${currentMonth
+//       .toString()
+//       .padStart(2, "0")}-${currentDay
+//       .toString()
+//       .padStart(2, "0")}T${startTime}`;
+//     const endDateTime = `${currentYear}-${currentMonth
+//       .toString()
+//       .padStart(2, "0")}-${currentDay.toString().padStart(2, "0")}T${endTime}`;
+
+//     const start = new Date(startDateTime);
+//     const end = new Date(endDateTime);
+
+//     const totalTime = (end - start) / 60000;
+
+//     const consultationTime = totalTime / tokens;
+
+//     const timeSlots = [];
+//     let current = new Date(start);
+
+//     while (current < end) {
+//       const formattedTime = current.toLocaleTimeString([], {
+//         hour: "2-digit",
+//         minute: "2-digit",
+//       });
+//       timeSlots.push(formattedTime);
+//       current.setMinutes(current.getMinutes() + consultationTime);
+//     }
+
+//     return timeSlots;
+//   } catch (error) {
+//     console.log({ error });
+//   }
+// };
+
 const generateTokenBasedTimeSlots = async (startTime, endTime, tokens) => {
   try {
     console.log("startTime, endTime, tokens", startTime, endTime, tokens);
@@ -552,32 +595,29 @@ const generateTokenBasedTimeSlots = async (startTime, endTime, tokens) => {
     const currentMonth = currentDate.getMonth() + 1;
     const currentDay = currentDate.getDate();
 
-    const startDateTime = `${currentYear}-${currentMonth
-      .toString()
-      .padStart(2, "0")}-${currentDay
-      .toString()
-      .padStart(2, "0")}T${startTime}`;
-    const endDateTime = `${currentYear}-${currentMonth
-      .toString()
-      .padStart(2, "0")}-${currentDay.toString().padStart(2, "0")}T${endTime}`;
+    // Parse start and end times correctly with AM/PM
+    const startDateTime = new Date(`${currentYear}-${currentMonth.toString().padStart(2, "0")}-${currentDay.toString().padStart(2, "0")} ${startTime}`);
+    const endDateTime = new Date(`${currentYear}-${currentMonth.toString().padStart(2, "0")}-${currentDay.toString().padStart(2, "0")} ${endTime}`);
 
-    const start = new Date(startDateTime);
-    const end = new Date(endDateTime);
+    const totalTime = (endDateTime - startDateTime) / 60000; // Total time in minutes
 
-    const totalTime = (end - start) / 60000;
-
-    const consultationTime = totalTime / tokens;
+    const consultationTime = totalTime / tokens; // Time per token in minutes
 
     const timeSlots = [];
-    let current = new Date(start);
+    let current = new Date(startDateTime);
 
-    while (current < end) {
+    for (let i = 0; i < tokens; i++) {
       const formattedTime = current.toLocaleTimeString([], {
         hour: "2-digit",
         minute: "2-digit",
       });
       timeSlots.push(formattedTime);
-      current.setMinutes(current.getMinutes() + consultationTime);
+      
+      // Increment current time by consultationTime, rounding to avoid floating point issues
+      current.setMinutes(current.getMinutes() + Math.floor(consultationTime));
+      if (consultationTime % 1 !== 0) {
+        current.setSeconds(current.getSeconds() + 30);
+      }
     }
 
     return timeSlots;
