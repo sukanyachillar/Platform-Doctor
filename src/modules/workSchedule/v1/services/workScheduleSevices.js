@@ -308,21 +308,21 @@ const getWorkSchedule = async (data, user, res) => {
           daySchedule.length > 0
             ? daySchedule
             : [
-                {
-                  day,
-                  status: dayStatus,
-                  startTime: null,
-                  endTime: null,
-                  work_schedule_id: null,
-                  entity_id: parseInt(user?.entity_id),
-                  session: null,
-                  doctor_id: Number(doctor_id),
-                  created_date_time: null,
-                  update_date_time: null,
-                  createdAt: null,
-                  updatedAt: null,
-                },
-              ],
+              {
+                day,
+                status: dayStatus,
+                startTime: null,
+                endTime: null,
+                work_schedule_id: null,
+                entity_id: parseInt(user?.entity_id),
+                session: null,
+                doctor_id: Number(doctor_id),
+                created_date_time: null,
+                update_date_time: null,
+                createdAt: null,
+                updatedAt: null,
+              },
+            ],
       });
     });
 
@@ -399,6 +399,7 @@ const getSingleWorkSchedule = async (req, res) => {
       "doctor_id",
       "booking_status",
       "doctorEntityId",
+      "status",
       "createdAt",
       "updatedAt",
     ];
@@ -418,6 +419,17 @@ const getSingleWorkSchedule = async (req, res) => {
       //     [Sequelize.fn('TIME_TO_SEC', Sequelize.fn('STR_TO_DATE', Sequelize.literal("CONCAT(date, ' ', time_slot)"), '%Y-%m-%d %h:%i %p')), 'ASC']
       // ],
     });
+    if (data.length > 0 && data[0].status === 0) {
+      return handleResponse({
+        res,
+        statusCode: 200,
+        message: "Doctor not available today",
+        data: {
+          workSlots: [],
+          isDocUnavailable:true
+        },
+      });
+    }
     console.log({ formattedDate });
     let availableWorkSlots = await weeklyTimeSlots.findAll({
       where: {
@@ -520,8 +532,8 @@ const generateTimeSlots = async (startTime, endTime, consultationTime) => {
     const startDateTime = `${currentYear}-${currentMonth
       .toString()
       .padStart(2, "0")}-${currentDay
-      .toString()
-      .padStart(2, "0")}T${startTime}`;
+        .toString()
+        .padStart(2, "0")}T${startTime}`;
     const endDateTime = `${currentYear}-${currentMonth
       .toString()
       .padStart(2, "0")}-${currentDay.toString().padStart(2, "0")}T${endTime}`;
@@ -612,7 +624,7 @@ const generateTokenBasedTimeSlots = async (startTime, endTime, tokens) => {
         minute: "2-digit",
       });
       timeSlots.push(formattedTime);
-      
+
       // Increment current time by consultationTime, rounding to avoid floating point issues
       current.setMinutes(current.getMinutes() + Math.floor(consultationTime));
       if (consultationTime % 1 !== 0) {

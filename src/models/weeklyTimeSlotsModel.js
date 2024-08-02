@@ -41,6 +41,12 @@ const weeklyTimeSlotsModel = sequelize.define("weeklyTimeSlots", {
     type: DataTypes.INTEGER,
     allowNull: true,
   },
+  status: {
+    type: DataTypes.INTEGER, // 1: active, 0: inactive
+    allowNull: true,
+    unique: false,
+    defaultValue: 1,
+},
   createdBy: {
     type: DataTypes.STRING,
     allowNull: true,
