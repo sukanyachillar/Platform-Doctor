@@ -6,6 +6,178 @@ import { handleResponse } from "../../../../utils/handlers.js";
 import { decrypt } from "../../../../utils/token.js";
 import doctorEntityModel from "../../../../models/doctorEntityModel.js";
 
+//Workschedule on weekely basis
+// const addWorkSchedule = async (data, userData, res) => {
+//   try {
+//     let { entity_id } = userData;
+//     let { day, startTime, endTime, doctor_id, session, entityId } = data;
+//     let errorMessages = [];
+//     let daysArray = [
+//       "monday",
+//       "tuesday",
+//       "wednesday",
+//       "thursday",
+//       "friday",
+//       "saturday",
+//       "sunday",
+//     ];
+//     let dayIn = daysArray.includes(day.toLowerCase());
+//     if (!dayIn) {
+//       return handleResponse({
+//         res,
+//         message: "Please check the day.",
+//         statusCode: 404,
+//       });
+//     }
+//     let dayOfWeek = await getDayOfWeekIndex(day);
+//     let datefromDay = await dateFromDay(dayOfWeek);
+//     let status = 1;
+//     let message;
+
+//     let doctorData = await doctorModel.findOne({
+//       where: { status: 1, doctor_id },
+//       attributes: ["doctor_id", "consultation_time", "tokens", "bookingType"],
+//     });
+
+//     if (!doctorData) {
+//       return handleResponse({
+//         res,
+//         message: "Please enable your status to active.",
+//         statusCode: 204,
+//       });
+//     }
+//     const entityData = await entityModel.findOne({
+//       where: { entity_id: entityId },
+//       attributes: ["account_no"],
+//     });
+//     const doctorEntityData = await doctorEntityModel.findOne({
+//       where: { doctorId: doctor_id, entityId },
+//     });
+
+//     if (!doctorEntityData) {
+//       return handleResponse({
+//         res,
+//         message: "Invalid input data",
+//         statusCode: 204,
+//       });
+//     }
+
+//     let workData = await workScheduleModel.findOne({
+//       where: { entity_id: entityId, day, doctor_id, startTime, endTime },
+//     });
+
+//     const consultation_time = doctorEntityData.consultationTime;
+
+//     let time_slots;
+
+//     if (doctorData?.bookingType == "token") {
+//       time_slots = await generateTokenBasedTimeSlots(
+//         startTime,
+//         endTime,
+//         doctorData.tokens
+//       );
+//     } else {
+//       time_slots = await generateTimeSlots(
+//         startTime,
+//         endTime,
+//         consultation_time
+//       );
+//     }
+
+//     const currentDate = new Date(datefromDay);
+//     const year = currentDate.getFullYear();
+//     const month = String(currentDate.getMonth() + 1).padStart(2, "0"); // Adding 1 to month as it's zero-based
+//     const date = String(currentDate.getDate()).padStart(2, "0");
+//     const formattedDate = `${year}-${month}-${date}`;
+
+//     await Promise.all(
+//       time_slots.map(async (ele, index) => {
+//         let existingTimeSlot = await weeklyTimeSlots.findOne({
+//           where: {
+//             date: formattedDate,
+//             day: day,
+//             time_slot: ele,
+//             doctor_id: doctor_id,
+//             // doctorEntityId: doctorEntityData ? doctorEntityData.doctorEntityId : null
+//           },+
+//         });
+
+//         if (existingTimeSlot) {
+//           errorMessages.push("This time slot already exists for this doctor");
+//         } else {
+//           let newTimeSlot = new weeklyTimeSlots({
+//             date: formattedDate,
+//             day,
+//             time_slot: ele,
+//             doctor_id,
+//             doctorEntityId: doctorEntityData
+//               ? doctorEntityData.doctorEntityId
+//               : null,
+//             token_number: doctorData?.bookingType == "token" ? index + 1 : null,
+//           });
+//           await newTimeSlot.save();
+//         }
+//       })
+//     );
+
+//     if (errorMessages.length > 0) {
+//       return handleResponse({
+//         res,
+//         message: "This time slot already exists for this doctor",
+//         statusCode: 422,
+//         data: {},
+//       });
+//     }
+//     if (!workData) {
+//       workData = new workScheduleModel({
+//         entity_id: entityId,
+//         day,
+//         session,
+//         endTime,
+//         startTime,
+//         day,
+//         status,
+//         doctor_id,
+//       });
+//       message = "successfully added work schedule.";
+//     } else {
+//       workData.startTime = startTime;
+//       workData.endTime = endTime;
+//       workData.status = status;
+//       workData.doctor_id = doctor_id;
+//       message = "Successfully updated work schedule.";
+//     }
+
+//     let workSchedule = await workData.save();
+//     if (entityData.account_no) {
+//       await entityModel.update(
+//         { profile_completed: 1 },
+//         { where: { entity_id: entityId } }
+//       );
+//     }
+//     return handleResponse({
+//       res,
+//       message,
+//       statusCode: 200,
+//       data: {
+//         day: workSchedule.day,
+//         session: workSchedule.session,
+//         startTime: workSchedule.startTime,
+//         endTime: workSchedule.endTime,
+//         doctor_id: workSchedule.doctor_id,
+//       },
+//     });
+//   } catch (error) {
+//     console.log({ error });
+//     return handleResponse({
+//       res,
+//       message: "Error while adding work Schedule",
+//       statusCode: 500,
+//     });
+//   }
+// };
+
+//Workschedule on 4weeks basis
 const addWorkSchedule = async (data, userData, res) => {
   try {
     let { entity_id } = userData;
@@ -31,7 +203,7 @@ const addWorkSchedule = async (data, userData, res) => {
     let dayOfWeek = await getDayOfWeekIndex(day);
     let datefromDay = await dateFromDay(dayOfWeek);
     let status = 1;
-    let message;
+    let message = "";
 
     let doctorData = await doctorModel.findOne({
       where: { status: 1, doctor_id },
@@ -68,6 +240,7 @@ const addWorkSchedule = async (data, userData, res) => {
     const consultation_time = doctorEntityData.consultationTime;
 
     let time_slots;
+    let slotsAdded = false;
 
     if (doctorData?.bookingType == "token") {
       time_slots = await generateTokenBasedTimeSlots(
@@ -83,50 +256,50 @@ const addWorkSchedule = async (data, userData, res) => {
       );
     }
 
-    const currentDate = new Date(datefromDay);
-    const year = currentDate.getFullYear();
-    const month = String(currentDate.getMonth() + 1).padStart(2, "0"); // Adding 1 to month as it's zero-based
-    const date = String(currentDate.getDate()).padStart(2, "0");
-    const formattedDate = `${year}-${month}-${date}`;
+    for (let i = 0; i < 4; i++) {
+      const currentDate = new Date(datefromDay);
+      currentDate.setDate(currentDate.getDate() + i * 7);
+      const year = currentDate.getFullYear();
+      const month = String(currentDate.getMonth() + 1).padStart(2, "0");
+      const date = String(currentDate.getDate()).padStart(2, "0");
+      const formattedDate = `${year}-${month}-${date}`;
 
-    await Promise.all(
-      time_slots.map(async (ele, index) => {
-        let existingTimeSlot = await weeklyTimeSlots.findOne({
-          where: {
-            date: formattedDate,
-            day: day,
-            time_slot: ele,
-            doctor_id: doctor_id,
-            // doctorEntityId: doctorEntityData ? doctorEntityData.doctorEntityId : null
-          },
-        });
-
-        if (existingTimeSlot) {
-          errorMessages.push("This time slot already exists for this doctor");
-        } else {
-          let newTimeSlot = new weeklyTimeSlots({
-            date: formattedDate,
-            day,
-            time_slot: ele,
-            doctor_id,
-            doctorEntityId: doctorEntityData
-              ? doctorEntityData.doctorEntityId
-              : null,
-            token_number: doctorData?.bookingType == "token" ? index + 1 : null,
+      await Promise.all(
+        time_slots.map(async (ele, index) => {
+          let existingTimeSlot = await weeklyTimeSlots.findOne({
+            where: {
+              date: formattedDate,
+              day: day,
+              time_slot: ele,
+              doctor_id: doctor_id,
+            },
           });
-          await newTimeSlot.save();
-        }
-      })
-    );
 
-    if (errorMessages.length > 0) {
-      return handleResponse({
-        res,
-        message: "This time slot already exists for this doctor",
-        statusCode: 422,
-        data: {},
-      });
+          if (existingTimeSlot) {
+            errorMessages.push(
+              `This time slot already exists for this doctor on ${formattedDate}`
+            );
+          } else {
+            let newTimeSlot = new weeklyTimeSlots({
+              date: formattedDate,
+              day,
+              time_slot: ele,
+              doctor_id,
+              doctorEntityId: doctorEntityData
+                ? doctorEntityData.doctorEntityId
+                : null,
+              token_number:
+                doctorData?.bookingType == "token" ? index + 1 : null,
+            });
+            const result = await newTimeSlot.save();
+            if (result) {
+              message = `This time slot is added for this doctor on ${formattedDate}`
+            }
+          }
+        })
+      );
     }
+
     if (!workData) {
       workData = new workScheduleModel({
         entity_id: entityId,
@@ -154,9 +327,20 @@ const addWorkSchedule = async (data, userData, res) => {
         { where: { entity_id: entityId } }
       );
     }
+    if (errorMessages.length > 0 && message != "") {
+      return handleResponse({
+        res,
+        message: errorMessages.join(", "),
+        statusCode: 422,
+        data: {},
+      });
+    }
     return handleResponse({
       res,
-      message,
+      message:
+        errorMessages.length > 0
+          ? errorMessages.join(", ") + ". " + message
+          : message,
       statusCode: 200,
       data: {
         day: workSchedule.day,
@@ -308,21 +492,21 @@ const getWorkSchedule = async (data, user, res) => {
           daySchedule.length > 0
             ? daySchedule
             : [
-              {
-                day,
-                status: dayStatus,
-                startTime: null,
-                endTime: null,
-                work_schedule_id: null,
-                entity_id: parseInt(user?.entity_id),
-                session: null,
-                doctor_id: Number(doctor_id),
-                created_date_time: null,
-                update_date_time: null,
-                createdAt: null,
-                updatedAt: null,
-              },
-            ],
+                {
+                  day,
+                  status: dayStatus,
+                  startTime: null,
+                  endTime: null,
+                  work_schedule_id: null,
+                  entity_id: parseInt(user?.entity_id),
+                  session: null,
+                  doctor_id: Number(doctor_id),
+                  created_date_time: null,
+                  update_date_time: null,
+                  createdAt: null,
+                  updatedAt: null,
+                },
+              ],
       });
     });
 
@@ -426,7 +610,7 @@ const getSingleWorkSchedule = async (req, res) => {
         message: "Doctor not available today",
         data: {
           workSlots: [],
-          isDocUnavailable:true
+          isDocUnavailable: true,
         },
       });
     }
@@ -532,8 +716,8 @@ const generateTimeSlots = async (startTime, endTime, consultationTime) => {
     const startDateTime = `${currentYear}-${currentMonth
       .toString()
       .padStart(2, "0")}-${currentDay
-        .toString()
-        .padStart(2, "0")}T${startTime}`;
+      .toString()
+      .padStart(2, "0")}T${startTime}`;
     const endDateTime = `${currentYear}-${currentMonth
       .toString()
       .padStart(2, "0")}-${currentDay.toString().padStart(2, "0")}T${endTime}`;
@@ -608,8 +792,16 @@ const generateTokenBasedTimeSlots = async (startTime, endTime, tokens) => {
     const currentDay = currentDate.getDate();
 
     // Parse start and end times correctly with AM/PM
-    const startDateTime = new Date(`${currentYear}-${currentMonth.toString().padStart(2, "0")}-${currentDay.toString().padStart(2, "0")} ${startTime}`);
-    const endDateTime = new Date(`${currentYear}-${currentMonth.toString().padStart(2, "0")}-${currentDay.toString().padStart(2, "0")} ${endTime}`);
+    const startDateTime = new Date(
+      `${currentYear}-${currentMonth.toString().padStart(2, "0")}-${currentDay
+        .toString()
+        .padStart(2, "0")} ${startTime}`
+    );
+    const endDateTime = new Date(
+      `${currentYear}-${currentMonth.toString().padStart(2, "0")}-${currentDay
+        .toString()
+        .padStart(2, "0")} ${endTime}`
+    );
 
     const totalTime = (endDateTime - startDateTime) / 60000; // Total time in minutes
 

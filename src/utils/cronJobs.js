@@ -45,8 +45,8 @@ const generateTokenBasedTimeSlots = async (startTime, endTime, tokens) => {
     const startDateTime = `${currentYear}-${currentMonth
       .toString()
       .padStart(2, "0")}-${currentDay
-        .toString()
-        .padStart(2, "0")}T${startTime}`;
+      .toString()
+      .padStart(2, "0")}T${startTime}`;
     const endDateTime = `${currentYear}-${currentMonth
       .toString()
       .padStart(2, "0")}-${currentDay.toString().padStart(2, "0")}T${endTime}`;
@@ -153,7 +153,7 @@ const paymentVerifyCheck = async () => {
     );
     if (numberOfAffectedRows > 0) {
       console.log("paymentVerifyCheck worked");
-    } 
+    }
     // else {
     //   console.log("nothing found !!!");
     // }
@@ -168,30 +168,29 @@ const blockedSlotCheck = async () => {
   const tenMinutesAgo = new Date(Date.now() - 10 * 60 * 1000).toISOString();
 
   try {
-    const FD = await weeklyTimeSlotsModel.findAll(
-      {
-        where: {
-          booking_status: 3,
-          updatedAt: {
-            [Op.between]: [oneHourAgo, tenMinutesAgo],
-          },
+    const FD = await weeklyTimeSlotsModel.findAll({
+      where: {
+        booking_status: 3,
+        updatedAt: {
+          [Op.between]: [oneHourAgo, tenMinutesAgo],
         },
-      }
-    );
-    const [numberOfAffectedRows, updatedRows] = await weeklyTimeSlotsModel.update(
-      { booking_status: 0 },
-      {
-        where: {
-          booking_status: 3,
-          updatedAt: {
-            [Op.between]: [oneHourAgo, tenMinutesAgo],
+      },
+    });
+    const [numberOfAffectedRows, updatedRows] =
+      await weeklyTimeSlotsModel.update(
+        { booking_status: 0 },
+        {
+          where: {
+            booking_status: 3,
+            updatedAt: {
+              [Op.between]: [oneHourAgo, tenMinutesAgo],
+            },
           },
-        },
-      }
-    );
+        }
+      );
     if (numberOfAffectedRows > 0) {
       console.log("blockedSlotCheck worked");
-    } 
+    }
     // else {
     //   console.log("nothing found !!!");
     // }
@@ -217,7 +216,7 @@ const timeSlotCron = async () => {
     // console.log("previousDateData:", previousDateData);
 
     console.log("previousDateDay:", todaysDay);
-    console.log("previousDateData:", todaysDateData);
+    // console.log("todaysDateData:", todaysDateData);
 
     // for (const record of previousDateData) {
     //   // console.log("record", record);
@@ -343,7 +342,7 @@ const timeSlotCron = async () => {
       }
 
       // const timeslots =  generateTimeslots(startTime, endTime, consultationTime );
-      console.log("timeslots", timeslots);
+      console.log("timeslots==>", timeslots);
 
       let index = await getDayOfWeekIndex(record.day);
       const nextWeekDate = await dateFromDay(index);
@@ -370,7 +369,7 @@ const timeSlotCron = async () => {
             day: record.day,
             time_slot: ele,
             doctor_id: record.doctor_id,
-            booking_status: 0, // Default value for availability
+            booking_status: 0,
             doctorEntityId: doctorEntityData
               ? doctorEntityData.doctorEntityId
               : null,
@@ -378,7 +377,9 @@ const timeSlotCron = async () => {
               doctorData?.bookingType == "token" ? tokenNumber : null,
             createdBy: "cron",
           });
-          tokenNumber++;
+          if (doctorData?.bookingType == "token") {
+            tokenNumber++;
+          }
           console.log("slotCreatedRes==>", slotCreatedRes);
         }
       }
@@ -396,6 +397,7 @@ const dateFromDay = async (day) => {
     if (daysToAdd <= 0) {
       daysToAdd += 7;
     }
+    daysToAdd += 28; //for the 5th occurance of the same day
     const nextDate = new Date(currentDate);
     nextDate.setDate(currentDate.getDate() + daysToAdd);
     return nextDate;
