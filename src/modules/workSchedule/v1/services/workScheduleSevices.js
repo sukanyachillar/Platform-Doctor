@@ -5,6 +5,7 @@ import workScheduleModel from "../../../../models/workScheduleModel.js";
 import { handleResponse } from "../../../../utils/handlers.js";
 import { decrypt } from "../../../../utils/token.js";
 import doctorEntityModel from "../../../../models/doctorEntityModel.js";
+import { Op } from "sequelize";
 
 //Workschedule on weekely basis
 // const addWorkSchedule = async (data, userData, res) => {
@@ -293,7 +294,7 @@ const addWorkSchedule = async (data, userData, res) => {
             });
             const result = await newTimeSlot.save();
             if (result) {
-              message = `This time slot is added for this doctor on ${formattedDate}`
+              message = `This time slot is added for this doctor on ${formattedDate}`;
             }
           }
         })
@@ -356,6 +357,60 @@ const addWorkSchedule = async (data, userData, res) => {
       res,
       message: "Error while adding work Schedule",
       statusCode: 500,
+    });
+  }
+};
+
+const listWorkSchedule = async (req, res) => {
+  let { doctorId, entityId, search } = req.body;
+  let { page, limit } = req.query;
+  page = parseInt(page) || 1;
+  const pageSize = parseInt(limit) || 10;
+  const offset = (page - 1) * pageSize;
+  try {
+    let whereCondition = {
+      doctor_id: doctorId,
+      entity_id: entityId,
+      [Op.or]: [
+        { day: { [Op.like]: `%${search}%` } },
+        { startTime: { [Op.like]: `%${search}%` } },
+        { session: { [Op.like]: `%${search}%` } },
+        { endTime: { [Op.like]: `%${search}%` } },
+        { status: { [Op.like]: `%${search}%` } },
+        { created_date_time: { [Op.like]: `%${search}%` } },
+        { update_date_time: { [Op.like]: `%${search}%` } },
+      ],
+    };
+
+    let workScheduleData = await workScheduleModel.findAll({
+      where: whereCondition,
+      limit: pageSize,
+      offset: offset,
+    });
+    if (workScheduleData.length > 0) {
+      return handleResponse({
+        res,
+        data: {
+          workScheduleList: workScheduleData,
+          totalCount: workScheduleData.length,
+        },
+        message: "Successfully fetched workschedule list",
+        statusCode: 200,
+      });
+    } else {
+      return handleResponse({
+        res,
+        data: workScheduleData,
+        message: "No workschedules found !",
+        statusCode: 200,
+      });
+    }
+  } catch (error) {
+    console.log({ error });
+    return handleResponse({
+      res,
+      message: "Error while fetching data.",
+      statusCode: 422,
     });
   }
 };
@@ -875,4 +930,5 @@ export default {
   generateTimeSlots,
   addWork,
   getSingleWorkSchedule,
+  listWorkSchedule,
 };

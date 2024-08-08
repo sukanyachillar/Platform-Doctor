@@ -21,6 +21,10 @@ router.post(
     verifyToken,
     workScheduleController.getWorkSchedule
 )
+router.post(
+    '/list-work-schedule',
+    workScheduleController.listWorkSchedule
+)
 router.post('/get-work-slots', workScheduleController.getWorkSlot)
 router.post('/addWork', verifyToken, workScheduleController.addWork)
 router.post('/cron-test',  cronJobs.timeSlotCron)
