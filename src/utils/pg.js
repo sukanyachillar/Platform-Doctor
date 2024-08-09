@@ -49,7 +49,7 @@ const createCashfreeOrderData = async (body) => {
 
   Cashfree.XClientId = process.env.CASHFREE_APP;
   Cashfree.XClientSecret = process.env.CASHFREE_SECRET;
-  Cashfree.XEnvironment = Cashfree.Environment.SANDBOX;
+  Cashfree.XEnvironment = Cashfree.Environment.PRODUCTION;
 
   const orderId = await createOrderId();
   const customerId = await createCustomerId(name, phone);

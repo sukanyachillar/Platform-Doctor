@@ -12,6 +12,10 @@ router.post(
     workScheduleController.addWorkSchedule
 )
 router.post(
+    '/create-work-schedule-admin',
+    workScheduleController.addWorkScheduleFromAdmin
+)
+router.post(
     '/update-work-status',
     verifyToken,
     workScheduleController.updateWorkScheduleStatus

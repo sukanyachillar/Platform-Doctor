@@ -14,6 +14,18 @@ const addWorkSchedule = async (req, res) => {
   }
 };
 
+const addWorkScheduleFromAdmin = async (req, res) => {
+  try {
+    const workSchedule = await workScheduleSevices.addWorkScheduleFromAdmin(
+      req.body,
+      res
+    );
+    return workSchedule;
+  } catch (error) {
+    console.log({ error });
+  }
+};
+
 const addWork = async (req, res) => {
   try {
     const workSchedule = await workScheduleSevices.addWork(
@@ -85,4 +97,5 @@ export default {
   getWorkSlot,
   addWork,
   listWorkSchedule,
+  addWorkScheduleFromAdmin
 };
