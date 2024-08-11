@@ -44,7 +44,7 @@ const paymentVerify = async (req, res) => {
     const options = {
       method: "GET",
       // url: `https://sandbox.cashfree.com/pg/orders/${orderId}`,
-      url: `https://api.cashfree.com/pg/orders/{order_id}`,
+      url: `https://api.cashfree.com/pg/orders/${orderId}`,
       headers: {
         accept: "application/json",
         "x-api-version": "2023-08-01",
