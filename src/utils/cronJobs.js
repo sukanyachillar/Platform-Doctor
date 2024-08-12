@@ -45,8 +45,8 @@ const generateTokenBasedTimeSlots = async (startTime, endTime, tokens) => {
     const startDateTime = `${currentYear}-${currentMonth
       .toString()
       .padStart(2, "0")}-${currentDay
-      .toString()
-      .padStart(2, "0")}T${startTime}`;
+        .toString()
+        .padStart(2, "0")}T${startTime}`;
     const endDateTime = `${currentYear}-${currentMonth
       .toString()
       .padStart(2, "0")}-${currentDay.toString().padStart(2, "0")}T${endTime}`;
@@ -199,126 +199,220 @@ const blockedSlotCheck = async () => {
   }
 };
 
+// const timeSlotCron = async () => {
+//   console.log("Inside crone");
+//   try {
+//     // const previousDateDay = await getPreviousDayName();
+//     const todaysDay = await getTodayDayName();
+
+//     // let previousDateData = await workScheduleModel.findAll({
+//     //   where: { day: previousDateDay },
+//     // });
+//     let todaysDateData = await workScheduleModel.findAll({
+//       where: { day: todaysDay },
+//     });
+
+//     // console.log("previousDateDay:", previousDateDay);
+//     // console.log("previousDateData:", previousDateData);
+
+//     console.log("previousDateDay:", todaysDay);
+//     // console.log("todaysDateData:", todaysDateData);
+
+//     // for (const record of previousDateData) {
+//     //   // console.log("record", record);
+//     //   const { doctor_id, entity_id } = record;
+//     //   // const doctorData = await doctorModel.findOne({
+//     //   //     attributes: [
+//     //   //         'doctor_id',
+//     //   //         'doctor_name',
+//     //   //         'consultation_time',
+//     //   //     ],
+//     //   //     where: { doctor_id: record.doctor_id },
+
+//     //   // })
+//     //   const doctorEntityData = await doctorEntityModel.findOne({
+//     //     where: { doctorId: doctor_id, entityId: entity_id },
+//     //   });
+//     //   const doctorData = await doctorModel.findOne({
+//     //     where: { doctor_id: doctor_id },
+//     //   });
+//     //   // console.log("doctorEntityData", doctorEntityData)
+//     //   const startTime = record.startTime;
+//     //   const endTime = record.endTime;
+//     //   const consultationTime = doctorEntityData?.consultationTime;
+//     //   console.log("consultationTime", consultationTime);
+//     //   console.log("startTime", startTime);
+//     //   console.log("endTime", endTime);
+//     //   let timeslots;
+
+//     //   if (doctorData?.bookingType == "token") {
+//     //     timeslots = await generateTokenBasedTimeSlots(
+//     //       startTime,
+//     //       endTime,
+//     //       doctorData.tokens
+//     //     );
+//     //   } else {
+//     //     timeslots = await generateTimeslots(
+//     //       startTime,
+//     //       endTime,
+//     //       consultationTime
+//     //     );
+//     //   }
+
+//     //   // const timeslots =  generateTimeslots(startTime, endTime, consultationTime );
+//     //   console.log("timeslots", timeslots);
+
+//     //   let index = await getDayOfWeekIndex(record.day);
+//     //   const nextWeekDate = await dateFromDay(index);
+//     //   const currentDate = new Date(nextWeekDate);
+//     //   const year = currentDate.getFullYear();
+//     //   const month = String(currentDate.getMonth() + 1).padStart(2, "0"); // Adding 1 to month as it's zero-based
+//     //   const date = String(currentDate.getDate()).padStart(2, "0");
+//     //   const formattedDate = `${year}-${month}-${date}`;
+
+//     //   // console.log("formattedDate", formattedDate)
+//     //   let tokenNumber = 1;
+
+//     //   for (const ele of timeslots) {
+//     //     const existingTimeslot = await weeklyTimeSlotsModel.findOne({
+//     //       where: {
+//     //         time_slot: ele,
+//     //         doctor_id: record.doctor_id,
+//     //         date: formattedDate,
+//     //       },
+//     //     });
+//     //     if (!existingTimeslot) {
+//     //       const slotCreatedRes = await weeklyTimeSlotsModel.create({
+//     //         date: formattedDate,
+//     //         day: record.day,
+//     //         time_slot: ele,
+//     //         doctor_id: record.doctor_id,
+//     //         booking_status: 0, // Default value for availability
+//     //         doctorEntityId: doctorEntityData
+//     //           ? doctorEntityData.doctorEntityId
+//     //           : null,
+//     //         token_number:
+//     //           doctorData?.bookingType == "token" ? tokenNumber : null,
+//     //           createdBy:"cron",
+//     //       });
+//     //       tokenNumber++;
+//     //       console.log("slotCreatedRes==>", slotCreatedRes);
+//     //     }
+//     //   }
+//     // }
+//     for (const record of todaysDateData) {
+//       // console.log("record", record);
+//       const { doctor_id, entity_id } = record;
+//       // const doctorData = await doctorModel.findOne({
+//       //     attributes: [
+//       //         'doctor_id',
+//       //         'doctor_name',
+//       //         'consultation_time',
+//       //     ],
+//       //     where: { doctor_id: record.doctor_id },
+
+//       // })
+//       const doctorEntityData = await doctorEntityModel.findOne({
+//         where: { doctorId: doctor_id, entityId: entity_id },
+//       });
+//       const doctorData = await doctorModel.findOne({
+//         where: { doctor_id: doctor_id },
+//       });
+//       // console.log("doctorEntityData", doctorEntityData)
+//       const startTime = record.startTime;
+//       const endTime = record.endTime;
+//       const consultationTime = doctorEntityData?.consultationTime;
+//       console.log("consultationTime", consultationTime);
+//       console.log("startTime", startTime);
+//       console.log("endTime", endTime);
+//       let timeslots;
+
+//       if (doctorData?.bookingType == "token") {
+//         timeslots = await generateTokenBasedTimeSlots(
+//           startTime,
+//           endTime,
+//           doctorData.tokens
+//         );
+//       } else {
+//         timeslots = await generateTimeslots(
+//           startTime,
+//           endTime,
+//           consultationTime
+//         );
+//       }
+
+//       // const timeslots =  generateTimeslots(startTime, endTime, consultationTime );
+//       console.log("timeslots==>", timeslots);
+
+//       let index = await getDayOfWeekIndex(record.day);
+//       const nextWeekDate = await dateFromDay(index);
+//       const currentDate = new Date(nextWeekDate);
+//       const year = currentDate.getFullYear();
+//       const month = String(currentDate.getMonth() + 1).padStart(2, "0"); // Adding 1 to month as it's zero-based
+//       const date = String(currentDate.getDate()).padStart(2, "0");
+//       const formattedDate = `${year}-${month}-${date}`;
+
+//       // console.log("formattedDate", formattedDate)
+//       let tokenNumber = 1;
+
+//       for (const ele of timeslots) {
+//         const existingTimeslot = await weeklyTimeSlotsModel.findOne({
+//           where: {
+//             time_slot: ele,
+//             doctor_id: record.doctor_id,
+//             date: formattedDate,
+//           },
+//         });
+//         if (!existingTimeslot) {
+//           const slotCreatedRes = await weeklyTimeSlotsModel.create({
+//             date: formattedDate,
+//             day: record.day,
+//             time_slot: ele,
+//             doctor_id: record.doctor_id,
+//             booking_status: 0,
+//             doctorEntityId: doctorEntityData
+//               ? doctorEntityData.doctorEntityId
+//               : null,
+//             token_number:
+//               doctorData?.bookingType == "token" ? tokenNumber : null,
+//             createdBy: "cron",
+//           });
+//           if (doctorData?.bookingType == "token") {
+//             tokenNumber++;
+//           }
+//           console.log("slotCreatedRes==>", slotCreatedRes);
+//         }
+//       }
+//     }
+//   } catch (error) {
+//     console.log("Crone ERROR==>", error);
+//   }
+// };
+
 const timeSlotCron = async () => {
-  console.log("Inside crone");
+  console.log("Inside cron");
   try {
-    // const previousDateDay = await getPreviousDayName();
+    // Get today's day name
     const todaysDay = await getTodayDayName();
 
-    // let previousDateData = await workScheduleModel.findAll({
-    //   where: { day: previousDateDay },
-    // });
+    // Fetch the work schedule for today
     let todaysDateData = await workScheduleModel.findAll({
       where: { day: todaysDay },
     });
 
-    // console.log("previousDateDay:", previousDateDay);
-    // console.log("previousDateData:", previousDateData);
+    console.log("todaysDay:", todaysDay);
 
-    console.log("previousDateDay:", todaysDay);
-    // console.log("todaysDateData:", todaysDateData);
-
-    // for (const record of previousDateData) {
-    //   // console.log("record", record);
-    //   const { doctor_id, entity_id } = record;
-    //   // const doctorData = await doctorModel.findOne({
-    //   //     attributes: [
-    //   //         'doctor_id',
-    //   //         'doctor_name',
-    //   //         'consultation_time',
-    //   //     ],
-    //   //     where: { doctor_id: record.doctor_id },
-
-    //   // })
-    //   const doctorEntityData = await doctorEntityModel.findOne({
-    //     where: { doctorId: doctor_id, entityId: entity_id },
-    //   });
-    //   const doctorData = await doctorModel.findOne({
-    //     where: { doctor_id: doctor_id },
-    //   });
-    //   // console.log("doctorEntityData", doctorEntityData)
-    //   const startTime = record.startTime;
-    //   const endTime = record.endTime;
-    //   const consultationTime = doctorEntityData?.consultationTime;
-    //   console.log("consultationTime", consultationTime);
-    //   console.log("startTime", startTime);
-    //   console.log("endTime", endTime);
-    //   let timeslots;
-
-    //   if (doctorData?.bookingType == "token") {
-    //     timeslots = await generateTokenBasedTimeSlots(
-    //       startTime,
-    //       endTime,
-    //       doctorData.tokens
-    //     );
-    //   } else {
-    //     timeslots = await generateTimeslots(
-    //       startTime,
-    //       endTime,
-    //       consultationTime
-    //     );
-    //   }
-
-    //   // const timeslots =  generateTimeslots(startTime, endTime, consultationTime );
-    //   console.log("timeslots", timeslots);
-
-    //   let index = await getDayOfWeekIndex(record.day);
-    //   const nextWeekDate = await dateFromDay(index);
-    //   const currentDate = new Date(nextWeekDate);
-    //   const year = currentDate.getFullYear();
-    //   const month = String(currentDate.getMonth() + 1).padStart(2, "0"); // Adding 1 to month as it's zero-based
-    //   const date = String(currentDate.getDate()).padStart(2, "0");
-    //   const formattedDate = `${year}-${month}-${date}`;
-
-    //   // console.log("formattedDate", formattedDate)
-    //   let tokenNumber = 1;
-
-    //   for (const ele of timeslots) {
-    //     const existingTimeslot = await weeklyTimeSlotsModel.findOne({
-    //       where: {
-    //         time_slot: ele,
-    //         doctor_id: record.doctor_id,
-    //         date: formattedDate,
-    //       },
-    //     });
-    //     if (!existingTimeslot) {
-    //       const slotCreatedRes = await weeklyTimeSlotsModel.create({
-    //         date: formattedDate,
-    //         day: record.day,
-    //         time_slot: ele,
-    //         doctor_id: record.doctor_id,
-    //         booking_status: 0, // Default value for availability
-    //         doctorEntityId: doctorEntityData
-    //           ? doctorEntityData.doctorEntityId
-    //           : null,
-    //         token_number:
-    //           doctorData?.bookingType == "token" ? tokenNumber : null,
-    //           createdBy:"cron",
-    //       });
-    //       tokenNumber++;
-    //       console.log("slotCreatedRes==>", slotCreatedRes);
-    //     }
-    //   }
-    // }
     for (const record of todaysDateData) {
-      // console.log("record", record);
       const { doctor_id, entity_id } = record;
-      // const doctorData = await doctorModel.findOne({
-      //     attributes: [
-      //         'doctor_id',
-      //         'doctor_name',
-      //         'consultation_time',
-      //     ],
-      //     where: { doctor_id: record.doctor_id },
 
-      // })
+      // Fetch doctor and entity data
       const doctorEntityData = await doctorEntityModel.findOne({
         where: { doctorId: doctor_id, entityId: entity_id },
       });
       const doctorData = await doctorModel.findOne({
         where: { doctor_id: doctor_id },
       });
-      // console.log("doctorEntityData", doctorEntityData)
+
       const startTime = record.startTime;
       const endTime = record.endTime;
       const consultationTime = doctorEntityData?.consultationTime;
@@ -341,18 +435,39 @@ const timeSlotCron = async () => {
         );
       }
 
-      // const timeslots =  generateTimeslots(startTime, endTime, consultationTime );
       console.log("timeslots==>", timeslots);
 
-      let index = await getDayOfWeekIndex(record.day);
-      const nextWeekDate = await dateFromDay(index);
-      const currentDate = new Date(nextWeekDate);
-      const year = currentDate.getFullYear();
-      const month = String(currentDate.getMonth() + 1).padStart(2, "0"); // Adding 1 to month as it's zero-based
-      const date = String(currentDate.getDate()).padStart(2, "0");
+      // Calculate the date 28 days from today
+      let dateAfter28Days = new Date();
+      dateAfter28Days.setDate(dateAfter28Days.getDate() + 28);
+      console.log({dateAfter28Days});
+
+      // Find the target day index
+      const targetDayIndex = getDayOfWeekIndex(record.day);
+
+      // Find the day index for the date 28 days from today
+      const dayIndexAfter28Days = dateAfter28Days.getDay();
+      console.log({dayIndexAfter28Days});
+
+
+      // Calculate the number of days to the next target day of the week
+      let daysUntilTargetDay = (targetDayIndex - dayIndexAfter28Days + 7) % 7;
+      if (daysUntilTargetDay === 0) {
+        daysUntilTargetDay = 7; // Move to the next occurrence of the same day
+      }
+
+      // Calculate the date of the same day of the week after 28 days
+      dateAfter28Days.setDate(dateAfter28Days.getDate() + daysUntilTargetDay);
+      const nextSameDayOfWeekDate = new Date(dateAfter28Days);
+
+      // Format the date as needed
+      const year = nextSameDayOfWeekDate.getFullYear();
+      const month = String(nextSameDayOfWeekDate.getMonth() + 1).padStart(2, "0");
+      const date = String(nextSameDayOfWeekDate.getDate()).padStart(2, "0");
       const formattedDate = `${year}-${month}-${date}`;
 
-      // console.log("formattedDate", formattedDate)
+      console.log("formattedDate==>", formattedDate);
+
       let tokenNumber = 1;
 
       for (const ele of timeslots) {
@@ -369,7 +484,7 @@ const timeSlotCron = async () => {
             day: record.day,
             time_slot: ele,
             doctor_id: record.doctor_id,
-            booking_status: 0,
+            booking_status: 0, // Default value for availability
             doctorEntityId: doctorEntityData
               ? doctorEntityData.doctorEntityId
               : null,
@@ -385,9 +500,16 @@ const timeSlotCron = async () => {
       }
     }
   } catch (error) {
-    console.log("Crone ERROR==>", error);
+    console.log("Cron ERROR==>", error);
   }
 };
+
+// const getDayOfWeekIndex = (dayName) => {
+//   const daysArray = ["sunday", "monday", "tuesday", "wednesday", "thursday", "friday", "saturday"];
+//   return daysArray.indexOf(dayName.toLowerCase());
+// };
+
+
 
 const dateFromDay = async (day) => {
   try {

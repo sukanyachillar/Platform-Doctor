@@ -562,17 +562,23 @@ const listWorkSchedule = async (req, res) => {
       ],
     };
 
-    let workScheduleData = await workScheduleModel.findAll({
+    let   { count, rows: workScheduleData } = await workScheduleModel.findAndCountAll({
       where: whereCondition,
       limit: pageSize,
       offset: offset,
     });
-    if (workScheduleData.length > 0) {
+
+    const workScheduleListWithSerial = workScheduleData.map((item, index) => ({
+      SlNo: offset + index + 1,
+      ...item.dataValues,  // Include all existing fields of workScheduleData
+    }));
+
+    if (count > 0) {
       return handleResponse({
         res,
         data: {
-          workScheduleList: workScheduleData,
-          totalCount: workScheduleData.length,
+          workScheduleList: workScheduleListWithSerial,
+          totalCount: count,
         },
         message: "Successfully fetched workschedule list",
         statusCode: 200,
