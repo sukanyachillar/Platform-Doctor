@@ -202,12 +202,18 @@ const departmentList = async (requestData, params, res) => {
 
     const totalPages = Math.ceil(count / pageSize);
     if (data) {
+
+      const dataWithSerialNumbers = data.map((item, index) => ({
+        ...item.toJSON(),
+        sl_no: offset + index + 1,
+      }));
+
       return handleResponse({
         res,
         message: "Successfully fetched data",
         statusCode: 200,
         data: {
-          data,
+          data:dataWithSerialNumbers,
           currentPage: page,
           totalPages,
           totalCount: count,
@@ -418,12 +424,12 @@ const listDoctors_admin = async (requestParams, requestData, res) => {
     const pageSize = parseInt(requestParams.limit) || 10;
     const searchQuery = requestData.searchQuery || "";
     const offset = (page - 1) * pageSize;
-    let whereCondition = {};
+    let where = {};
     const entityType = requestData.entityType;
     let entityWhereCond = {};
 
     if (searchQuery) {
-      whereCondition[Op.or] = [
+      where[Op.or] = [
         { doctor_name: { [Op.like]: `%${searchQuery}%` } },
         { doctor_phone: { [Op.like]: `%${searchQuery}%` } },
         { "$department.department_name$": { [Op.like]: `%${searchQuery}%` } },
@@ -447,7 +453,7 @@ const listDoctors_admin = async (requestParams, requestData, res) => {
         "profileImageUrl",
         "department_id",
       ],
-      where: whereCondition,
+      where,
       include: [
         {
           model: departmentModel,
@@ -475,7 +481,8 @@ const listDoctors_admin = async (requestParams, requestData, res) => {
     const totalPages = Math.ceil(count / pageSize);
 
     const formattedResponse = {
-      records: records.map((record) => ({
+      records: records.map((record,index) => ({
+        sl_no: offset + index + 1,
         doctorId: record.doctor_id,
         doctorName: record.doctor_name,
         department: record.department.department_name,

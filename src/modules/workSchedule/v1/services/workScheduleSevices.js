@@ -416,9 +416,21 @@ const addWorkScheduleFromAdmin = async (body, res) => {
       });
     }
 
-    let workData = await workScheduleModel.findOne({
-      where: { entity_id: entityId, day, doctor_id, startTime, endTime },
+    let workExists = await workScheduleModel.findOne({
+      where: { entity_id: entityId, day,session, doctor_id },
     });
+    if (workExists) {
+      return handleResponse({
+        res,
+        message: "Work schedule already exists for this day for this session ",
+        statusCode: 409,
+      });
+    }
+
+    let workData = await workScheduleModel.findOne({
+      where: { entity_id: entityId, day,session, doctor_id, startTime, endTime },
+    });
+    
 
     const consultation_time = doctorEntityData.consultationTime;
 
@@ -499,11 +511,11 @@ const addWorkScheduleFromAdmin = async (body, res) => {
       });
       message = "successfully added work schedule.";
     } else {
-      workData.startTime = startTime;
-      workData.endTime = endTime;
-      workData.status = status;
-      workData.doctor_id = doctor_id;
-      message = "Successfully updated work schedule.";
+      // workData.startTime = startTime;
+      // workData.endTime = endTime;
+      // workData.status = status;
+      // workData.doctor_id = doctor_id;
+      // message = "Successfully updated work schedule.";
     }
 
     let workSchedule = await workData.save();
@@ -514,7 +526,7 @@ const addWorkScheduleFromAdmin = async (body, res) => {
       );
     }
     if (errorMessages.length > 0 && message == "") {
-     
+
     }
     return handleResponse({
       res,
@@ -562,7 +574,7 @@ const listWorkSchedule = async (req, res) => {
       ],
     };
 
-    let   { count, rows: workScheduleData } = await workScheduleModel.findAndCountAll({
+    let { count, rows: workScheduleData } = await workScheduleModel.findAndCountAll({
       where: whereCondition,
       limit: pageSize,
       offset: offset,
@@ -586,7 +598,7 @@ const listWorkSchedule = async (req, res) => {
     } else {
       return handleResponse({
         res,
-        data: {workScheduleList:workScheduleData},
+        data: { workScheduleList: workScheduleData },
         message: "No workschedules found !",
         statusCode: 200,
       });
@@ -733,21 +745,21 @@ const getWorkSchedule = async (data, user, res) => {
           daySchedule.length > 0
             ? daySchedule
             : [
-                {
-                  day,
-                  status: dayStatus,
-                  startTime: null,
-                  endTime: null,
-                  work_schedule_id: null,
-                  entity_id: parseInt(user?.entity_id),
-                  session: null,
-                  doctor_id: Number(doctor_id),
-                  created_date_time: null,
-                  update_date_time: null,
-                  createdAt: null,
-                  updatedAt: null,
-                },
-              ],
+              {
+                day,
+                status: dayStatus,
+                startTime: null,
+                endTime: null,
+                work_schedule_id: null,
+                entity_id: parseInt(user?.entity_id),
+                session: null,
+                doctor_id: Number(doctor_id),
+                created_date_time: null,
+                update_date_time: null,
+                createdAt: null,
+                updatedAt: null,
+              },
+            ],
       });
     });
 
@@ -957,8 +969,8 @@ const generateTimeSlots = async (startTime, endTime, consultationTime) => {
     const startDateTime = `${currentYear}-${currentMonth
       .toString()
       .padStart(2, "0")}-${currentDay
-      .toString()
-      .padStart(2, "0")}T${startTime}`;
+        .toString()
+        .padStart(2, "0")}T${startTime}`;
     const endDateTime = `${currentYear}-${currentMonth
       .toString()
       .padStart(2, "0")}-${currentDay.toString().padStart(2, "0")}T${endTime}`;
