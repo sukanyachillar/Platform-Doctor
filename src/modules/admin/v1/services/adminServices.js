@@ -1016,7 +1016,7 @@ const addIndvDoctor = async (
     if (!existingIndvEntity) {
       const newIndvEntity = await new entityModel({
         phone: doctor_phone,
-        entity_name: entityName ? capitalizedEntityName : null,
+        entity_name: entityName ? capitalizedEntityName : "",
         business_type_id: 0,
         entity_type: 2, // entity_type : businessData.businessId
         description,
