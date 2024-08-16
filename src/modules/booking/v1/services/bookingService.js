@@ -33,7 +33,7 @@ const bookAppointment = async (req, res) => {
     const bookingFee = await bookingFeeModel.findOne({
       where: { status: 1 }, attributes: ["fee"]
     })
-    const amount =await bookingFee.fee;
+    const amount = await bookingFee.fee;
 
 
     const doctorProfile = await doctorProfileModel.findOne({
@@ -47,7 +47,7 @@ const bookAppointment = async (req, res) => {
         time_slot: timeSlot,
         doctor_id: doctorId,
         date: appointmentDate,
-        booking_status:3
+        booking_status: 3
       },
     });
 
@@ -126,9 +126,9 @@ const bookAppointment = async (req, res) => {
     let data;
     let pg;
     if (amount === 0) {
-      pg={
-        id:null,
-        name:"FREE"
+      pg = {
+        id: null,
+        name: "FREE"
       };
       orderIDFree = PgFunctions.createOrderId();
       data = {
@@ -136,7 +136,7 @@ const bookAppointment = async (req, res) => {
         payment_session_id: "pay@0000",
       };
     } else {
-       pg = await paymentGatewayModel.findOne({
+      pg = await paymentGatewayModel.findOne({
         where: {
           status: 1,
         },
@@ -193,7 +193,7 @@ const bookAppointment = async (req, res) => {
       amount,
       bookingDate: new Date(),
       appointmentDate,
-      bookingStatus:3,
+      bookingStatus: 3,
       // orderId: data?.id,
       orderId: data?.id,
       workSlotId: existingTimeslot.time_slot_id,
@@ -729,12 +729,18 @@ const listBooking_admin = async (
       });
     }
 
-    const appointmentList = bookingList.map((booking) => ({
+    let appointmentList = bookingList
+    .map((booking) => ({
       bookingId: booking.bookingId,
       timeSlot: booking.weeklyTimeSlot.time_slot,
       customerName: booking.patientName ? booking.patientName : "",
       customerPhone: booking.bookedPhoneNo ? booking.bookedPhoneNo : "",
       bookingStatus: booking.bookingStatus,
+    }))
+    .sort((a, b) => a.timeSlot.localeCompare(b.timeSlot))
+    .map((booking, index) => ({
+      ...booking,
+      slNo: offset + index + 1
     }));
 
     const completedAppointments = appointmentList.filter(

@@ -20,6 +20,7 @@ import doctorModel from "../../../../models/doctorModel.js";
 import tokenModel from "../../../../models/tokenModel.js";
 import { hashPassword, comparePasswords } from "../../../../utils/password.js";
 import { decrypt } from "../../../../utils/token.js";
+import guestUserModel from "../../../../models/guestUserModel.js";
 
 const register = async (userData, res) => {
   try {
@@ -107,29 +108,45 @@ const register = async (userData, res) => {
         },
       });
     }
-    const newUser = new authenticationModel(userData);
-    const addedUser = await newUser.save();
-    newToken = await new tokenModel({
-      userId: addedUser.entity_id,
-      token,
-      createdAt: new Date(),
-      updatedAt: new Date(),
-    });
-    await newToken.save();
-    return handleResponse({
-      res,
-      statusCode: "200",
-      message: "User added",
-      data: {
-        entity_id: addedUser.entity_id,
-        phone: addedUser.phone,
-        profile_completed: addedUser.profile_completed,
-        status: addedUser.status,
-        entity_type: addedUser.entity_type ? addedUser.entity_type : "",
-        access_token: tokens.accessToken,
-        refresh_token: tokens.refreshToken,
-      },
-    });
+    if (!getUser || !doctorExists) {
+      const existingGuestUser = await guestUserModel.findOne({
+        where: { phone },
+      });
+      if (!existingGuestUser) {
+        const newGuestUser = new guestUserModel(userData);
+        await newGuestUser.save();
+      }
+      return handleResponse({
+        res,
+        statusCode: "200",
+        message: "Admin will contact you soon !",
+        data: { phone },
+      });
+
+    }
+    // const newUser = new authenticationModel(userData);
+    // const addedUser = await newUser.save();
+    // newToken = await new tokenModel({
+    //   userId: addedUser.entity_id,
+    //   token,
+    //   createdAt: new Date(),
+    //   updatedAt: new Date(),
+    // });
+    // await newToken.save();
+    // return handleResponse({
+    //   res,
+    //   statusCode: "200",
+    //   message: "User added",
+    //   data: {
+    //     entity_id: addedUser.entity_id,
+    //     phone: addedUser.phone,
+    //     profile_completed: addedUser.profile_completed,
+    //     status: addedUser.status,
+    //     entity_type: addedUser.entity_type ? addedUser.entity_type : "",
+    //     access_token: tokens.accessToken,
+    //     refresh_token: tokens.refreshToken,
+    //   },
+    // });
   } catch (error) {
     console.log({ "Error while registeration": error });
     return handleResponse({
@@ -146,7 +163,7 @@ export const getEntityDetailsOfTheDr = async (doctorPhone, type = 0) => {
       where: { doctor_phone: doctorPhone },
     });
 
-    const entities = await doctorEntityModel.findAll({
+    const entities = doctor ? await doctorEntityModel.findAll({
       where: { doctorId: doctor.doctor_id },
       include: [
         {
@@ -154,9 +171,9 @@ export const getEntityDetailsOfTheDr = async (doctorPhone, type = 0) => {
           attributes: ["entity_id", "entity_name", "entity_type", "phone"],
         },
       ],
-    });
+    }) : null
 
-    let entityDetails = entities.map((entity) => ({
+    let entityDetails = entities?.map((entity) => ({
       entityId: entity.entity.entity_id,
       entityName: entity.entity.entity_name,
       phone: entity.entity.phone,
@@ -164,7 +181,7 @@ export const getEntityDetailsOfTheDr = async (doctorPhone, type = 0) => {
     }));
 
     if (type === 1) {
-      entityDetails = entities.map((entity) => ({
+      entityDetails = entities?.map((entity) => ({
         entityId: entity.entity.entity_id,
         entityName: entity.entity.entity_name,
         entityPhone: entity.entity.phone,
@@ -632,7 +649,7 @@ const getProfileForCustomer = async (
     });
 
     console.log("getDoctor=>", getDoctor);
-    
+
 
     if (!getDoctor) {
       return handleResponse({
@@ -790,23 +807,23 @@ const getGeneralSettings = async (req, res) => {
         addStaff: getEntity
           ? getEntity.add_staff
           : doctorEntity
-          ? doctorEntity.add_staff
-          : "",
+            ? doctorEntity.add_staff
+            : "",
         addService: getEntity
           ? getEntity.add_service
           : doctorEntity
-          ? doctorEntity.add_service
-          : "",
+            ? doctorEntity.add_service
+            : "",
         entityStatus: getEntity
           ? getEntity.status
           : doctorEntity
-          ? doctorEntity.status
-          : "",
+            ? doctorEntity.status
+            : "",
         profile_completed: getEntity
           ? getEntity.profile_completed
           : doctorEntity
-          ? doctorEntity.profile_completed
-          : "",
+            ? doctorEntity.profile_completed
+            : "",
         entityDetails: getEntities,
       },
     });

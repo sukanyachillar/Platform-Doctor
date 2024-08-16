@@ -213,7 +213,7 @@ const departmentList = async (requestData, params, res) => {
         message: "Successfully fetched data",
         statusCode: 200,
         data: {
-          data:dataWithSerialNumbers,
+          data: dataWithSerialNumbers,
           currentPage: page,
           totalPages,
           totalCount: count,
@@ -481,7 +481,7 @@ const listDoctors_admin = async (requestParams, requestData, res) => {
     const totalPages = Math.ceil(count / pageSize);
 
     const formattedResponse = {
-      records: records.map((record,index) => ({
+      records: records.map((record, index) => ({
         sl_no: offset + index + 1,
         doctorId: record.doctor_id,
         doctorName: record.doctor_name,
@@ -2226,11 +2226,13 @@ const bookingReport_admin = async (requestParams, requestData, res) => {
 
     let bookingCondition = {};
 
-    if (reportStatus === 0)
-      bookingCondition = { bookingStatus: { [Op.not]: 3 } };
-    if (reportStatus === 1) bookingCondition = { bookingStatus: 1 };
-    if (reportStatus === 2)
-      whereCondition = { date: { [Op.lt]: new Date() }, booking_status: 1 };
+    if (reportStatus == 0) {
+      bookingCondition = { bookingStatus: 0 }
+    } else if (reportStatus == 1) {
+      bookingCondition = { bookingStatus: 1 }
+    } else if (reportStatus == 2) {
+      bookingCondition = { bookingStatus: 2 };
+    }
     if (entityId) bookingCondition = { ...bookingCondition, entityId };
     if (doctorId) whereCondition = { ...whereCondition, doctor_id: doctorId };
 
@@ -2284,14 +2286,25 @@ const bookingReport_admin = async (requestParams, requestData, res) => {
       });
 
     const totalPages = Math.ceil(count / pageSize);
-    const modifiedBookingReport = bookingReport.map((booking) => {
+    console.log({bookingReport});
+    
+    const modifiedBookingReport = bookingReport.map((booking, index) => {
+      let appointmentDate = new Date(booking.booking.dataValues.appointmentDate);
+
+      let formattedAppointmentDate = appointmentDate.toLocaleDateString('en-IN', {
+        timeZone: 'Asia/Kolkata',
+        day: '2-digit',
+        month: '2-digit',
+        year: 'numeric',
+      });
       return {
+        slNo: offset + index + 1,
         time_slot_id: booking.dataValues.time_slot_id,
         doctor_id: booking.dataValues.doctor_id,
         bookingId: booking.booking.dataValues.bookingId,
         amount: booking.booking.dataValues.amount,
         bookingStatus: booking.booking.dataValues.bookingStatus,
-        appointmentDate: booking.booking.dataValues.appointmentDate,
+        appointmentDate: formattedAppointmentDate,
         orderId: booking.booking.dataValues.orderId,
         customerId: booking.booking.dataValues.customerId,
         patientName: booking.booking.dataValues.patientName,
