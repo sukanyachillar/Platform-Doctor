@@ -9,6 +9,9 @@ import admin from "firebase-admin";
 import serviceAccount from "../../../../utils/chillarprototype-firebase-adminsdk-7wsnl-aff859ec9b.json" assert { type: "json" };
 import tokenModel from "../../../../models/tokenModel.js";
 import paymentGatewayModel from "../../../../models/paymentGatewayModel.js";
+import Razorpay from "razorpay";
+import pgFn from '../../../../utils/pg.js'
+
 
 const paymentStatusCapture = async (req, res) => {
   try {
@@ -502,10 +505,123 @@ const transactionHistory = async (requestData, res) => {
   }
 };
 
+const getPgReport = async (requestData, res) => {
+  try {
+    const { startDate, endDate, pg } = requestData;
+    const page = parseInt(requestData.page) || 1;
+    const pageSize = parseInt(requestData.limit) || 10;
+    const searchQuery = requestData.searchQuery || "";
+    const offset = (page - 1) * pageSize;
+
+    let report = [];
+
+    if (pg == 1) {
+      report = await pgFn.getPgReportOfRazorpay(startDate, endDate)
+    } else if (pg == 2) {
+      report = await pgFn.getPgReportOfCashfree(startDate, endDate)
+    }
+
+    // console.log({report});
+
+    // Search functionality
+    const filteredItems = searchQuery
+      ? report
+        .filter(item =>
+          Object.values(item).some(value =>
+            value ? value.toString().toLowerCase().includes(searchQuery.toLowerCase()) : false
+          )
+        )
+        .map((item, index) => ({
+          slNo: index + 1,
+          ...item,
+        }))
+      : report.map((item, index) => ({
+        slNo: index + 1,
+        ...item,
+      }));
+
+
+    // Pagination functionality
+    const totalCount = filteredItems?.length;
+
+    const paginatedReport = filteredItems?.slice(offset, offset + pageSize);
+    const totalPages = Math.ceil(totalCount / pageSize);
+
+    if (paginatedReport?.length !== 0) {
+      return handleResponse({
+        res,
+        message: "Successfully fetched Pg Report",
+        statusCode: 200,
+        data: {
+          report: paginatedReport,
+          totalCount,
+          totalPages,
+          currentPage: page
+        }
+      });
+    } else {
+      return handleResponse({
+        res,
+        message: "No data found",
+        statusCode: 404,
+        data: {}
+      });
+    }
+
+
+
+  } catch (err) {
+    console.log({ err });
+    return handleResponse({
+      res,
+      message: "Something went wrong !",
+      statusCode: 500
+    });
+  }
+};
+
+
+const paymentVerify = async (req, res) => {
+  const { orderId } = req.body;
+  try {
+    const options = {
+      method: "GET",
+      // url: `https://sandbox.cashfree.com/pg/orders/${orderId}`,
+      url: `https://api.cashfree.com/pg/orders/${orderId}`,
+      headers: {
+        accept: "application/json",
+        "x-api-version": "2023-08-01",
+        "x-client-id": process.env.CASHFREE_APP,
+        "x-client-secret": process.env.CASHFREE_SECRET,
+      },
+    };
+
+    axios
+      .request(options)
+      .then(function (response) {
+        console.log("GETorders==>", response.data);
+        const data = response.data;
+        return handleResponse({
+          res,
+          message: "verify status",
+          statusCode: 200,
+          data,
+        });
+      })
+      .catch(function (error) {
+        console.error(error);
+      });
+  } catch (err) {
+    console.log({ err });
+  }
+};
+
 export default {
   paymentStatusCapture,
   paymentUpdate,
   transactionHistory,
   findPaymentGateway,
   paymentFailUpdate,
+  getPgReport,
+  paymentVerify
 };

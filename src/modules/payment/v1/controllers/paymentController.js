@@ -37,40 +37,22 @@ const getPg = async (req, res) => {
     console.log({ err });
   }
 };
-
-const paymentVerify = async (req, res) => {
-  const { orderId } = req.body;
+const getPgReport = async (req, res) => {
   try {
-    const options = {
-      method: "GET",
-      // url: `https://sandbox.cashfree.com/pg/orders/${orderId}`,
-      url: `https://api.cashfree.com/pg/orders/${orderId}`,
-      headers: {
-        accept: "application/json",
-        "x-api-version": "2023-08-01",
-        "x-client-id": process.env.CASHFREE_APP,
-        "x-client-secret": process.env.CASHFREE_SECRET,
-      },
-    };
-
-    axios
-      .request(options)
-      .then(function (response) {
-        console.log("GETorders==>",response.data);
-        const data = response.data;
-        return handleResponse({
-          res,
-          message: "verify status",
-          statusCode: 200,
-          data,
-        });
-      })
-      .catch(function (error) {
-        console.error(error);
-      });
+    let paymentReport = await paymentService.getPgReport(req.body, res);
+    return paymentReport;
   } catch (err) {
     console.log({ err });
   }
 };
 
-export default { paymentCapture, paymentUpdate, paymentVerify,getPg ,paymentFailed};
+const paymentVerify = async (req, res) => {
+  try {
+    let paymentVerify = await paymentService.paymentVerify(req.body, res);
+    return paymentVerify;
+  } catch (err) {
+    console.log({ err });
+  }
+};
+
+export default { paymentCapture, paymentUpdate, paymentVerify,getPg ,paymentFailed,getPgReport};

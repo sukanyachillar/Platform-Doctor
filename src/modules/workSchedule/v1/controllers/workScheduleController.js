@@ -89,6 +89,23 @@ const getWorkSlot = async (req, res) => {
     });
   }
 };
+const docAvailability = async (req, res) => {
+  try {
+    let docAvailData = await workScheduleSevices.docAvail(
+      req.body,
+      req.user,
+      res
+    );
+    return docAvailData;
+  } catch (err) {
+    console.log({ err });
+    return handleResponse({
+      res,
+      message: "Error. Please try again later",
+      statusCode: 404,
+    });
+  }
+};
 
 export default {
   updateWorkScheduleStatus,
@@ -97,5 +114,6 @@ export default {
   getWorkSlot,
   addWork,
   listWorkSchedule,
-  addWorkScheduleFromAdmin
+  addWorkScheduleFromAdmin,
+  docAvailability
 };

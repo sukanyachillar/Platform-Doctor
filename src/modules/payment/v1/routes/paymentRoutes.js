@@ -8,5 +8,6 @@ router.post('/payment-update',paymentController.paymentUpdate);
 router.post('/payment-failed',paymentController.paymentFailed);
 router.post('/payment-verify',paymentController.paymentVerify);
 router.post('/get-pg',paymentController.getPg);
+router.post('/get-pg-report',paymentController.getPgReport);
 
 export default router

@@ -1,6 +1,7 @@
 import Razorpay from "razorpay";
 import { nanoid, customAlphabet } from "nanoid";
 import { Cashfree } from "cashfree-pg";
+import axios from "axios";
 // import { customAlphabet }  from ("nanoid");
 
 const createPaymentLink = async (body) => {
@@ -36,7 +37,7 @@ const createPaymentLink = async (body) => {
     //     body
     // )
     let response = await razorpay.orders.create(body);
-    console.log("RazorpayORDER=>",{ response });
+    console.log("RazorpayORDER=>", { response });
     return response;
   } catch (err) {
     console.log({ Error: err });
@@ -78,7 +79,7 @@ const createCashfreeOrderData = async (body) => {
     console.log("Order Created successfully:", response.data);
 
     // Assign the response to a variable
-     createOrderRes = {
+    createOrderRes = {
       cf_order_id: response.data.cf_order_id,
       customer_id: response.data.customer_details.customer_id,
       order_amount: response.data.order_amount,
@@ -93,49 +94,6 @@ const createCashfreeOrderData = async (body) => {
   }
 };
 
-// const createCashfreePaymentLink = async (body) => {
-//   let referenceId = nanoid();
-//   let { name, phone, amount } = body;
-
-//   try {
-//     let headers = {
-//       "Content-Type": "application/json",
-//       "x-client-id": process.env.CASHFREE_APP_ID,
-//       "x-client-secret": process.env.CASHFREE_SECRET_KEY,
-//     };
-
-//     let data = {
-//       order_id: referenceId,
-//       order_amount: amount,
-//       order_currency: "INR",
-//       customer_details: {
-//         customer_name: name,
-//         customer_email: "your@email.com", // Use actual email
-//         customer_phone: phone,
-//       },
-//       order_note: "Appointment Booking",
-//       return_url: "https://example-callback-url.com/",
-//       notify_url: "https://example-notify-url.com/",
-//     };
-
-//     let response = await axios.post(
-//       "https://api.cashfree.com/pg/orders",
-//       data,
-//       { headers }
-//     );
-
-//     if (response.data.status === "OK") {
-//       let paymentLink = response.data.payment_link;
-//       console.log({ paymentLink });
-//       return paymentLink;
-//     } else {
-//       throw new Error("Failed to create payment link");
-//     }
-//   } catch (err) {
-//     console.log({ Error: err });
-//     return err;
-//   }
-// };
 
 const createOrderId = () => {
   // generateOrderId.js
@@ -168,9 +126,92 @@ const createCustomerId = (name, phoneNumber) => {
   return customerId;
 };
 
+const getPgReportOfRazorpay = async (startDt, endDt) => {
+  const start = new Date(startDt)
+  const end = new Date(endDt)
+  const startDate = Math.floor(start.getTime() / 1000);
+  const endDate = Math.floor(end.getTime() / 1000);
+
+  try {
+    const razorpay = new Razorpay({
+      key_id: process.env.RAZORPAY_KEY,
+      key_secret: process.env.RAZORPAY_SECRET,
+    });
+    const payments = await razorpay.payments.all({
+      from: startDate,
+      to: endDate,
+    });
+    const paymentData = payments?.items.map((data, index) => ({
+      paymentId: data.id,
+      amount:data.amount,
+      status:data.status,
+      currency:data.currency,
+      order_id:data.order_id,
+      method:data.method,
+      bank:data.bank,
+      wallet:data.wallet,
+      vpa:data.vpa,
+      email:data.email,
+      contact:data.contact,
+      description:data.description,
+      bankTransactionId:data.acquirer_data.bank_transaction_id,
+      errorCode:data.error_code,
+      errorDescription:data.error_description,
+      errorSource:data.error_source,
+      errorStep:data.error_step,
+      errorReason:data.error_reason,
+    }))
+    return paymentData;
+  } catch (error) {
+    console.log("getPgReportOfRazorpayERROR::>", error);
+    return error;
+  }
+}
+
+const getPgReportOfCashfree = async (startDt, endDt) => {
+  const start = new Date(startDt)
+  const end = new Date(endDt)
+  const startDate = Math.floor(start.getTime() / 1000);
+  const endDate = Math.floor(end.getTime() / 1000);
+  try {
+
+
+
+    const auth = await axios.post(`https://sandbox.cashfree.com/gc/authorize`, {}, {
+      headers: {
+        "x-client-id": process.env.CASHFREE_APP,
+        "x-client-secret": process.env.CASHFREE_SECRET,
+        "x-api-version": '2023-04-01',
+      }
+    });
+    console.log(auth.data);
+    
+
+    // const response = await axios.get(`https://sandbox.cashfree.com/gc/transactions`, {
+    //   headers: {
+    //     'Authorization': `Bearer ${process.env.CASHFREE_APP}`,
+    //   },
+    //   params: {
+    //     from: startDate,
+    //     to: endDate
+    //   }
+    // });
+    // console.log(response.data);
+    
+
+    // return response.data;
+
+  } catch (error) {
+    console.log("getPgReportOfCashfreeERROR::>", error);
+    return error;
+  }
+}
+
 export default {
   createPaymentLink,
   createCashfreeOrderData,
   createOrderId,
   createCustomerId,
+  getPgReportOfRazorpay,
+  getPgReportOfCashfree
 };

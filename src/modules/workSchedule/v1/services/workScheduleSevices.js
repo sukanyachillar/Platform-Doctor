@@ -5,7 +5,8 @@ import workScheduleModel from "../../../../models/workScheduleModel.js";
 import { handleResponse } from "../../../../utils/handlers.js";
 import { decrypt } from "../../../../utils/token.js";
 import doctorEntityModel from "../../../../models/doctorEntityModel.js";
-import { Op } from "sequelize";
+import { Op, where } from "sequelize";
+import weeklyTimeSlotsModel from "../../../../models/weeklyTimeSlotsModel.js";
 
 //Workschedule on weekely basis
 // const addWorkSchedule = async (data, userData, res) => {
@@ -417,7 +418,7 @@ const addWorkScheduleFromAdmin = async (body, res) => {
     }
 
     let workExists = await workScheduleModel.findOne({
-      where: { entity_id: entityId, day,session, doctor_id },
+      where: { entity_id: entityId, day, session, doctor_id },
     });
     if (workExists) {
       return handleResponse({
@@ -428,9 +429,9 @@ const addWorkScheduleFromAdmin = async (body, res) => {
     }
 
     let workData = await workScheduleModel.findOne({
-      where: { entity_id: entityId, day,session, doctor_id, startTime, endTime },
+      where: { entity_id: entityId, day, session, doctor_id, startTime, endTime },
     });
-    
+
 
     const consultation_time = doctorEntityData.consultationTime;
 
@@ -646,6 +647,43 @@ const addWork = async (data, userData, res) => {
       message,
       statusCode: 200,
     });
+  } catch (error) {
+    console.log({ error });
+    return handleResponse({
+      res,
+      message: "Error while adding work.",
+      statusCode: 422,
+    });
+  }
+};
+
+const docAvail = async (body, userData, res) => {
+  try {
+    let { entityId } = userData;
+    let { doctorId, date } = body;
+
+    let isTimeslot = weeklyTimeSlotsModel.findAll({
+      where: { entityId, doctorId, date }
+    })
+
+    if (!isTimeslot) {
+      return handleResponse({
+        res,
+        message: "Timeslot doesn't exists !",
+        statusCode: 404,
+      });
+    } else {
+      const doctorEntityData = await doctorEntityModel.findOne({
+        where: { doctorId: doctorId, entityId },
+      });
+      if (doctorEntityData) {
+        let updatedStatus = weeklyTimeSlotsModel.findAll({
+          where: { doctorEntityId: doctorEntityData.entityId, doctor_id: doctorId, date }
+        })
+      }
+
+    }
+
   } catch (error) {
     console.log({ error });
     return handleResponse({
@@ -1129,5 +1167,6 @@ export default {
   addWork,
   getSingleWorkSchedule,
   listWorkSchedule,
-  addWorkScheduleFromAdmin
+  addWorkScheduleFromAdmin,
+  docAvail
 };

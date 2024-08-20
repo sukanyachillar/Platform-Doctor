@@ -31,6 +31,7 @@ router.post(
 )
 router.post('/get-work-slots', workScheduleController.getWorkSlot)
 router.post('/addWork', verifyToken, workScheduleController.addWork)
+router.post('/doc-availability', verifyToken, workScheduleController.docAvailability)
 router.post('/cron-test',  cronJobs.timeSlotCron)
 
 export default router
