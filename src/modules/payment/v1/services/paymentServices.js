@@ -563,8 +563,13 @@ const getPgReport = async (requestData, res) => {
       return handleResponse({
         res,
         message: "No data found",
-        statusCode: 404,
-        data: {}
+        statusCode: 200,
+        data: {
+          report: [],
+          totalCount,
+          totalPages,
+          currentPage: page
+        }
       });
     }
 
