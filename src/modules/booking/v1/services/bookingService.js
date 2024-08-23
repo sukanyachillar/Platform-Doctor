@@ -508,7 +508,7 @@ const listBooking = async ({ doctorId, date, entityId }, res) => {
     if (!getDoctor) {
       return handleResponse({
         res,
-        statusCode: "404",
+        statusCode: 404,
         message: "Doctor ID not found",
         data: {},
       });

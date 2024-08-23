@@ -659,27 +659,51 @@ const addWork = async (data, userData, res) => {
 
 const docAvail = async (body, userData, res) => {
   try {
-    let { entityId } = userData;
-    let { doctorId, date } = body;
+    let { entity_id } = userData;
+    let { doctorId, date, status } = body;
 
-    let isTimeslot = weeklyTimeSlotsModel.findAll({
-      where: { entityId, doctorId, date }
-    })
+    const doctorEntityData = await doctorEntityModel.findOne({
+      where: { doctorId: doctorId, entityId: entity_id },
+    });
 
-    if (!isTimeslot) {
+
+    if (!doctorEntityData) {
       return handleResponse({
         res,
-        message: "Timeslot doesn't exists !",
+        message: "Doctor and entity doesn't exists !",
         statusCode: 404,
       });
     } else {
-      const doctorEntityData = await doctorEntityModel.findOne({
-        where: { doctorId: doctorId, entityId },
-      });
-      if (doctorEntityData) {
-        let updatedStatus = weeklyTimeSlotsModel.findAll({
-          where: { doctorEntityId: doctorEntityData.entityId, doctor_id: doctorId, date }
-        })
+
+      let isTimeslot = weeklyTimeSlotsModel.findAll({
+        where: { doctorEntityId: doctorEntityData.doctorEntityId, doctor_id: doctorId, date }
+      })
+
+      if (isTimeslot.length !== 0) {
+        let [updatedNo] = await weeklyTimeSlotsModel.update(
+          { status },
+          {
+            where: {
+              doctorEntityId: doctorEntityData.doctorEntityId,
+              doctor_id: doctorId,
+              date: date
+            }
+          }
+        );
+        if (updatedNo.length !== 0) {
+          return handleResponse({
+            res,
+            message: "Availability updated !",
+            statusCode: 200,
+          });
+        }
+
+      }else{
+        return handleResponse({
+          res,
+          message: "No slots found !",
+          statusCode: 400,
+        });
       }
 
     }
