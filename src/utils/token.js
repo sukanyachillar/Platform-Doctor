@@ -85,15 +85,17 @@ export const verifyRefreshToken = async (req, res) => {
     let verify = jwt.verify(refreshToken, refreshTokenSecret);
     let accessToken;
     if (verify) {
-      accessToken = jwt.sign({ phone: verify.phone }, accessTokenSecret, {
-        expiresIn: accessExpiry,
-      });
+      // accessToken = jwt.sign({ phone: verify.phone }, accessTokenSecret, {
+      //   expiresIn: accessExpiry,
+      // });
+     const newTokens=await generateTokens(verify.phone)
 
       return res.status(200).json({
         statusCode: 200,
         message: "Successfully generated access token.",
         data: {
-          accessToken,
+          accessToken: newTokens.accessToken,
+          refreshToken:newTokens.refreshToken,
         },
       });
     }
