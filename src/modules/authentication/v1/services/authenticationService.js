@@ -22,6 +22,57 @@ import { hashPassword, comparePasswords } from "../../../../utils/password.js";
 import { decrypt } from "../../../../utils/token.js";
 import guestUserModel from "../../../../models/guestUserModel.js";
 
+const userCheck = async (body, res) => {
+  try {
+    let { phone } = body;
+    let doctorExists;
+    const getUser = await entityModel.findOne({ where: { phone } });
+    if (!getUser) {
+      doctorExists = await profileModel.findOne({
+        where: { doctor_phone: phone },
+      });
+    } else {
+      return handleResponse({
+        res,
+        statusCode: 200,
+        message: "User exists",
+        data: { phone },
+      });
+    }
+    if (doctorExists) {
+      return handleResponse({
+        res,
+        statusCode: 200,
+        message: "User exists",
+        data: { phone },
+      });
+    }
+
+    if (!getUser || !doctorExists) {
+      const existingGuestUser = await guestUserModel.findOne({
+        where: { phone },
+      });
+      if (!existingGuestUser) {
+        const newGuestUser = new guestUserModel({ phone });
+        await newGuestUser.save();
+      }
+      return handleResponse({
+        res,
+        statusCode: 404,
+        message:
+          "Not a registered phone number.Please contact customer support !",
+        data: { phone },
+      });
+    }
+  } catch (error) {
+    console.log({ "Error while userCheck": error });
+    return handleResponse({
+      res,
+      message: "Internal error",
+      statusCode: "500",
+    });
+  }
+};
 const register = async (userData, res) => {
   try {
     let { phone, token } = userData;
@@ -122,7 +173,6 @@ const register = async (userData, res) => {
         message: "Admin will contact you soon !",
         data: { phone },
       });
-
     }
     // const newUser = new authenticationModel(userData);
     // const addedUser = await newUser.save();
@@ -163,15 +213,17 @@ export const getEntityDetailsOfTheDr = async (doctorPhone, type = 0) => {
       where: { doctor_phone: doctorPhone },
     });
 
-    const entities = doctor ? await doctorEntityModel.findAll({
-      where: { doctorId: doctor.doctor_id },
-      include: [
-        {
-          model: entityModel,
-          attributes: ["entity_id", "entity_name", "entity_type", "phone"],
-        },
-      ],
-    }) : null
+    const entities = doctor
+      ? await doctorEntityModel.findAll({
+          where: { doctorId: doctor.doctor_id },
+          include: [
+            {
+              model: entityModel,
+              attributes: ["entity_id", "entity_name", "entity_type", "phone"],
+            },
+          ],
+        })
+      : null;
 
     let entityDetails = entities?.map((entity) => ({
       entityId: entity.entity.entity_id,
@@ -650,7 +702,6 @@ const getProfileForCustomer = async (
 
     console.log("getDoctor=>", getDoctor);
 
-
     if (!getDoctor) {
       return handleResponse({
         res,
@@ -807,23 +858,23 @@ const getGeneralSettings = async (req, res) => {
         addStaff: getEntity
           ? getEntity.add_staff
           : doctorEntity
-            ? doctorEntity.add_staff
-            : "",
+          ? doctorEntity.add_staff
+          : "",
         addService: getEntity
           ? getEntity.add_service
           : doctorEntity
-            ? doctorEntity.add_service
-            : "",
+          ? doctorEntity.add_service
+          : "",
         entityStatus: getEntity
           ? getEntity.status
           : doctorEntity
-            ? doctorEntity.status
-            : "",
+          ? doctorEntity.status
+          : "",
         profile_completed: getEntity
           ? getEntity.profile_completed
           : doctorEntity
-            ? doctorEntity.profile_completed
-            : "",
+          ? doctorEntity.profile_completed
+          : "",
         entityDetails: getEntities,
       },
     });
@@ -942,6 +993,7 @@ const updateProfileDetails = async (doctorProfile, params, res) => {
 
 export default {
   register,
+  userCheck,
   addProfile,
   getProfile,
   getGeneralSettings,

@@ -14,6 +14,7 @@ import express from 'express';
 const router = express.Router();
 
 router.post('/register', authenticationController.register);
+router.post('/user-check', authenticationController.userCheck);
 router.post('/getProfile', verifyToken, authenticationController.getProfile);
 router.post('/profile', authenticationController.getProfileForCustomer);
 router.post(

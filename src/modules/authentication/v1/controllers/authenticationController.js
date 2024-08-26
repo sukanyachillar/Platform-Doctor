@@ -1,5 +1,16 @@
 import authenticationService from '../services/authenticationService.js'
 
+const userCheck = async (req, res) => {
+    try {
+        const isUserExists = await authenticationService.userCheck(
+            req.body,
+            res
+        )
+        return isUserExists
+    } catch (error) {
+        console.log('error', error)
+    }
+}
 const register = async (req, res) => {
     try {
         const registerResponse = await authenticationService.register(
@@ -105,6 +116,7 @@ const updateProfile = async (req, res) => {
 
 export default {
     register,
+    userCheck,
     addProfile,
     getProfile,
     addDept,
