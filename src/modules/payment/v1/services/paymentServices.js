@@ -586,9 +586,9 @@ const getPgReport = async (requestData, res) => {
 };
 
 
-const paymentVerify = async (req, res) => {
-  console.log("BODY=>",req.body);
-  const { orderId } = req.body;
+const paymentVerify = async (body, res) => {
+  console.log("BODY=>",body);
+  const { orderId } = body;
   try {
     const options = {
       method: "GET",
