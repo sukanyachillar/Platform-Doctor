@@ -11,6 +11,7 @@ import tokenModel from "../../../../models/tokenModel.js";
 import paymentGatewayModel from "../../../../models/paymentGatewayModel.js";
 import Razorpay from "razorpay";
 import pgFn from '../../../../utils/pg.js'
+import axios from "axios";
 
 
 const paymentStatusCapture = async (req, res) => {
