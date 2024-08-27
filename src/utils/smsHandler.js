@@ -11,9 +11,11 @@ const sendSms = async (content,phone) => {
     .request(config)
     .then((response) => {
       console.log(JSON.stringify(response.data));
+      return response.data;
     })
     .catch((error) => {
       console.log(error);
+      throw error;
     });
 };
 
