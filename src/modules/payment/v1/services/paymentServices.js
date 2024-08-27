@@ -627,11 +627,20 @@ const paymentVerify = async (body, res) => {
         let weeklyTimeSlot = bookingData.weeklyTimeSlot;
         let doctor = weeklyTimeSlot.doctor;
         let docName = doctor?.doctor_name.replace(/Dr\s+/, "");
+        const formatDate = (dateString) => {
+          const date = new Date(dateString);
 
-        const content = `Your appointment with Dr. ${docName} on ${weeklyTimeSlot.date} at ${weeklyTimeSlot.time_slot} has been confirmed. Thank you. Chillar`;
+          const day = String(date.getUTCDate()).padStart(2, "0");
+          const month = String(date.getUTCMonth() + 1).padStart(2, "0");
+          const year = date.getUTCFullYear();
+
+          // Format the date as "dd-mm-yyyy"
+          return `${day}-${month}-${year}`;
+        };
+        const dateOfBooking = formatDate(weeklyTimeSlot.date);
+        const content = `Your appointment with Dr. ${docName} on ${dateOfBooking} at ${weeklyTimeSlot.time_slot} has been confirmed. Thank you. Chillar`;
         const phone = bookingData.bookedPhoneNo;
 
-        // Await the SMS handler function if it's asynchronous
         const smsRes = await smsHandler.sendSms(content, phone);
 
         if (smsRes) {
