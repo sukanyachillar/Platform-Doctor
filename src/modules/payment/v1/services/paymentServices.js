@@ -10,9 +10,9 @@ import serviceAccount from "../../../../utils/chillarprototype-firebase-adminsdk
 import tokenModel from "../../../../models/tokenModel.js";
 import paymentGatewayModel from "../../../../models/paymentGatewayModel.js";
 import Razorpay from "razorpay";
-import pgFn from '../../../../utils/pg.js'
+import pgFn from "../../../../utils/pg.js";
 import axios from "axios";
-
+import smsHandler from "../../../../utils/smsHandler.js";
 
 const paymentStatusCapture = async (req, res) => {
   try {
@@ -265,7 +265,7 @@ const paymentFailUpdate = async (bookingData, res) => {
     const { orderId, paymentId } = bookingData;
 
     const bookingDetails = await bookingModel.findOne({
-      attributes: ['bookingId', 'workSlotId'],
+      attributes: ["bookingId", "workSlotId"],
       where: { orderId: orderId },
     });
 
@@ -517,9 +517,9 @@ const getPgReport = async (requestData, res) => {
     let report = [];
 
     if (pg == 1) {
-      report = await pgFn.getPgReportOfRazorpay(startDate, endDate)
+      report = await pgFn.getPgReportOfRazorpay(startDate, endDate);
     } else if (pg == 2) {
-      report = await pgFn.getPgReportOfCashfree(startDate, endDate)
+      report = await pgFn.getPgReportOfCashfree(startDate, endDate);
     }
 
     // console.log({report});
@@ -527,20 +527,24 @@ const getPgReport = async (requestData, res) => {
     // Search functionality
     const filteredItems = searchQuery
       ? report
-        .filter(item =>
-          Object.values(item).some(value =>
-            value ? value.toString().toLowerCase().includes(searchQuery.toLowerCase()) : false
+          .filter((item) =>
+            Object.values(item).some((value) =>
+              value
+                ? value
+                    .toString()
+                    .toLowerCase()
+                    .includes(searchQuery.toLowerCase())
+                : false
+            )
           )
-        )
-        .map((item, index) => ({
+          .map((item, index) => ({
+            slNo: index + 1,
+            ...item,
+          }))
+      : report.map((item, index) => ({
           slNo: index + 1,
           ...item,
-        }))
-      : report.map((item, index) => ({
-        slNo: index + 1,
-        ...item,
-      }));
-
+        }));
 
     // Pagination functionality
     const totalCount = filteredItems?.length;
@@ -557,8 +561,8 @@ const getPgReport = async (requestData, res) => {
           report: paginatedReport,
           totalCount,
           totalPages,
-          currentPage: page
-        }
+          currentPage: page,
+        },
       });
     } else {
       return handleResponse({
@@ -569,26 +573,21 @@ const getPgReport = async (requestData, res) => {
           report: [],
           totalCount,
           totalPages,
-          currentPage: page
-        }
+          currentPage: page,
+        },
       });
     }
-
-
-
   } catch (err) {
     console.log({ err });
     return handleResponse({
       res,
       message: "Something went wrong !",
-      statusCode: 500
+      statusCode: 500,
     });
   }
 };
 
-
 const paymentVerify = async (body, res) => {
-  console.log("BODY=>",body);
   const { orderId } = body;
   try {
     const options = {
@@ -608,12 +607,48 @@ const paymentVerify = async (body, res) => {
       .then(function (response) {
         console.log("GETorders==>", response.data);
         const data = response.data;
-        return handleResponse({
-          res,
-          message: "verify status",
-          statusCode: 200,
-          data,
-        });
+        if (data.order_status === "PAID") {
+          let bookingData = bookingModel.findOne({
+            where: { orderId },
+            include: [
+              {
+                model: weeklyTimeSlotsModel,
+                as: "weeklyTimeSlot", // Alias for the joined table
+                attributes: ["doctor_id", "date", "time_slot"], // Columns you want to retrieve
+                include: [
+                  {
+                    model: doctorModel,
+                    as: "doctor", // Alias for the joined table
+                    attributes: ["doctor_name"], // Retrieve the doctor's name
+                  },
+                ],
+              },
+            ],
+          });
+          if (bookingData && bookingData.weeklyTimeSlot) {
+            let weeklyTimeSlot = bookingData.weeklyTimeSlot;
+            let doctor = weeklyTimeSlot.doctor;
+
+            const content = `Your appointment with Dr. ${doctor.doctor_name} on ${weeklyTimeSlot.date} at ${weeklyTimeSlot.time_slot} has been confirmed. Thank you. Chillar`;
+            const phone = "8606500638";
+            const smsRes = smsHandler.sendSms(content, phone);
+            if (smsRes) {
+              return handleResponse({
+                res,
+                message: "verify status",
+                statusCode: 200,
+                data,
+              });
+            } else {
+              return handleResponse({
+                res,
+                message: "Sms failed but payment verified",
+                statusCode: 200,
+                data,
+              });
+            }
+          }
+        }
       })
       .catch(function (error) {
         console.error(error);
@@ -630,5 +665,5 @@ export default {
   findPaymentGateway,
   paymentFailUpdate,
   getPgReport,
-  paymentVerify
+  paymentVerify,
 };
