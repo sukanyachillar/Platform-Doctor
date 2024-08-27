@@ -102,11 +102,7 @@ const bookingModel = sequelize.define("booking", {
   },
 });
 
-bookingModel.belongsTo(weeklyTimeSlotsModel, { foreignKey: "workSlotId" });
 bookingModel.associate = function (models) {
-  bookingModel.belongsTo(models.weeklyTimeSlotsModel, {
-    foreignKey: "workSlotId",
-  });
   bookingModel.belongsTo(models.weeklyTimeSlotsModel, {
     foreignKey: "workSlotId",
   });

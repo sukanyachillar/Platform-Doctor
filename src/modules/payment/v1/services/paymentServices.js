@@ -592,7 +592,6 @@ const paymentVerify = async (body, res) => {
   try {
     const options = {
       method: "GET",
-      // url: `https://sandbox.cashfree.com/pg/orders/${orderId}`,
       url: `https://api.cashfree.com/pg/orders/${orderId}`,
       headers: {
         accept: "application/json",
@@ -602,59 +601,63 @@ const paymentVerify = async (body, res) => {
       },
     };
 
-    axios
-      .request(options)
-      .then(function (response) {
-        console.log("GETorders==>", response.data);
-        const data = response.data;
-        if (data.order_status === "PAID") {
-          let bookingData = bookingModel.findOne({
-            where: { orderId },
+    // Await the axios request
+    const response = await axios.request(options);
+    const data = response.data;
+
+    if (data.order_status === "PAID") {
+      // Await the bookingModel query
+      let bookingData = await bookingModel.findOne({
+        where: { orderId },
+        include: [
+          {
+            model: weeklyTimeSlotsModel,
+            attributes: ["doctor_id", "date", "time_slot"], // Columns you want to retrieve
             include: [
               {
-                model: weeklyTimeSlotsModel,
-                as: "weeklyTimeSlot", // Alias for the joined table
-                attributes: ["doctor_id", "date", "time_slot"], // Columns you want to retrieve
-                include: [
-                  {
-                    model: doctorModel,
-                    as: "doctor", // Alias for the joined table
-                    attributes: ["doctor_name"], // Retrieve the doctor's name
-                  },
-                ],
+                model: doctorModel,
+                attributes: ["doctor_name"], // Retrieve the doctor's name
               },
             ],
-          });
-          if (bookingData && bookingData.weeklyTimeSlot) {
-            let weeklyTimeSlot = bookingData.weeklyTimeSlot;
-            let doctor = weeklyTimeSlot.doctor;
-
-            const content = `Your appointment with Dr. ${doctor.doctor_name} on ${weeklyTimeSlot.date} at ${weeklyTimeSlot.time_slot} has been confirmed. Thank you. Chillar`;
-            const phone = "8606500638";
-            const smsRes = smsHandler.sendSms(content, phone);
-            if (smsRes) {
-              return handleResponse({
-                res,
-                message: "verify status",
-                statusCode: 200,
-                data,
-              });
-            } else {
-              return handleResponse({
-                res,
-                message: "Sms failed but payment verified",
-                statusCode: 200,
-                data,
-              });
-            }
-          }
-        }
-      })
-      .catch(function (error) {
-        console.error(error);
+          },
+        ],
       });
-  } catch (err) {
-    console.log({ err });
+
+      if (bookingData && bookingData.weeklyTimeSlot) {
+        let weeklyTimeSlot = bookingData.weeklyTimeSlot;
+        let doctor = weeklyTimeSlot.doctor;
+        let docName = doctor?.doctor_name.replace(/Dr\s+/, "");
+
+        const content = `Your appointment with Dr. ${docName} on ${weeklyTimeSlot.date} at ${weeklyTimeSlot.time_slot} has been confirmed. Thank you. Chillar`;
+        const phone = bookingData.bookedPhoneNo;
+
+        // Await the SMS handler function if it's asynchronous
+        const smsRes = await smsHandler.sendSms(content, phone);
+
+        if (smsRes) {
+          return handleResponse({
+            res,
+            message: "verify status",
+            statusCode: 200,
+            data,
+          });
+        } else {
+          return handleResponse({
+            res,
+            message: "Sms failed but payment verified",
+            statusCode: 200,
+            data,
+          });
+        }
+      }
+    }
+  } catch (error) {
+    console.log({ error });
+    return handleResponse({
+      res,
+      message: "Error verifying payment",
+      statusCode: 500,
+    });
   }
 };
 
