@@ -55,4 +55,24 @@ const paymentVerify = async (req, res) => {
   }
 };
 
-export default { paymentCapture, paymentUpdate, paymentVerify,getPg ,paymentFailed,getPgReport};
+const verifyPaymentWebhook = async (req, res) => {
+  try {
+    let verifyPaymentWebhook = await paymentService.verifyPaymentWebhook(
+      req.body,
+      res
+    );
+    return verifyPaymentWebhook;
+  } catch (err) {
+    console.log({ err });
+  }
+};
+
+export default {
+  paymentCapture,
+  paymentUpdate,
+  paymentVerify,
+  getPg,
+  paymentFailed,
+  getPgReport,
+  verifyPaymentWebhook,
+};

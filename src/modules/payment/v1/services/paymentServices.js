@@ -612,11 +612,11 @@ const paymentVerify = async (body, res) => {
         include: [
           {
             model: weeklyTimeSlotsModel,
-            attributes: ["doctor_id", "date", "time_slot"], // Columns you want to retrieve
+            attributes: ["doctor_id", "date", "time_slot"],
             include: [
               {
                 model: doctorModel,
-                attributes: ["doctor_name"], // Retrieve the doctor's name
+                attributes: ["doctor_name"],
               },
             ],
           },
@@ -627,6 +627,7 @@ const paymentVerify = async (body, res) => {
         let weeklyTimeSlot = bookingData.weeklyTimeSlot;
         let doctor = weeklyTimeSlot.doctor;
         let docName = doctor?.doctor_name.replace(/Dr\s+/, "");
+        docName = await docName?.split(" ")[0];
         const formatDate = (dateString) => {
           const date = new Date(dateString);
 
@@ -670,6 +671,87 @@ const paymentVerify = async (body, res) => {
   }
 };
 
+const verifyPaymentWebhook = async (body, res) => {
+  // const { order, payment, error_details, payment_gateway_details } = body.data;
+  // const { order_id, order_amount, order_currency } = order;
+  // const { cf_payment_id, payment_status, payment_amount, payment_message } =
+  //   payment;
+  // const { error_code, error_description } = error_details;
+
+  try {
+    console.log("WebhookData=>", body.data);
+
+    // if (payment_status === "PAID") {
+    //   // Await the bookingModel query
+    //   let bookingData = await bookingModel.findOne({
+    //     where: { orderId },
+    //     include: [
+    //       {
+    //         model: weeklyTimeSlotsModel,
+    //         attributes: ["doctor_id", "date", "time_slot"],
+    //         include: [
+    //           {
+    //             model: doctorModel,
+    //             attributes: ["doctor_name"],
+    //           },
+    //         ],
+    //       },
+    //     ],
+    //   });
+
+    //   if (bookingData && bookingData.weeklyTimeSlot) {
+    //     let weeklyTimeSlot = bookingData.weeklyTimeSlot;
+    //     let doctor = weeklyTimeSlot.doctor;
+    //     let docName = doctor?.doctor_name.replace(/Dr\s+/, "");
+    //     docName = await docName?.split(" ")[0];
+    //     const formatDate = (dateString) => {
+    //       const date = new Date(dateString);
+
+    //       const day = String(date.getUTCDate()).padStart(2, "0");
+    //       const month = String(date.getUTCMonth() + 1).padStart(2, "0");
+    //       const year = date.getUTCFullYear();
+
+    //       // Format the date as "dd-mm-yyyy"
+    //       return `${day}-${month}-${year}`;
+    //     };
+    //     const dateOfBooking = formatDate(weeklyTimeSlot.date);
+    //     const content = `Your appointment with Dr. ${docName} on ${dateOfBooking} at ${weeklyTimeSlot.time_slot} has been confirmed. Thank you. Chillar`;
+    //     const phone = bookingData.bookedPhoneNo;
+
+    //     const smsRes = await smsHandler.sendSms(content, phone);
+
+    //     if (smsRes) {
+    //       return handleResponse({
+    //         res,
+    //         message: "verify status",
+    //         statusCode: 200,
+    //         data,
+    //       });
+    //     } else {
+    //       return handleResponse({
+    //         res,
+    //         message: "Sms failed but payment verified",
+    //         statusCode: 200,
+    //         data,
+    //       });
+    //     }
+    //   }
+    // }
+    return handleResponse({
+      res,
+      message: "Webhook success",
+      statusCode: 200,
+    });
+  } catch (error) {
+    console.log({ error });
+    return handleResponse({
+      res,
+      message: "Error verifying payment",
+      statusCode: 500,
+    });
+  }
+};
+
 export default {
   paymentStatusCapture,
   paymentUpdate,
@@ -678,4 +760,5 @@ export default {
   paymentFailUpdate,
   getPgReport,
   paymentVerify,
+  verifyPaymentWebhook,
 };
