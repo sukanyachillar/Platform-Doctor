@@ -66,7 +66,7 @@ const createCashfreeOrderData = async (body) => {
     },
     order_meta: {
       // return_url: `http://localhost:4200/#/verify-payment?order_id=${orderId}`,
-      return_url: `https://booking.chillarpayments.com/#/verify-payment?order_id=${orderId}`,
+      return_url: `${process.env.RETURN_URL}/#/verify-payment?order_id=${orderId}`,
     },
   };
 
