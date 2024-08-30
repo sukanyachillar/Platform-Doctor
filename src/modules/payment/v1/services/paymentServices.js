@@ -673,9 +673,7 @@ const paymentVerify = async (body, res) => {
 };
 
 const verifySuccessPaymentWebhook = async (body, res) => {
-  const { order, payment } = body.data;
-  const { order_id } = order;
-  const { cf_payment_id, payment_status } = payment;
+ 
 
   try {
     await logModel.create({
@@ -684,6 +682,10 @@ const verifySuccessPaymentWebhook = async (body, res) => {
       requestData: body,
       responseStatus: 200,
     });
+
+    const { order, payment } = body.data;
+    const { order_id } = order;
+    const { cf_payment_id, payment_status } = payment;
 
     if (payment_status === "SUCCESS") {
       const paymentId = cf_payment_id;
