@@ -36,8 +36,14 @@ app.use((req, res, next) => {
   next();
 });
 
+// Sequelize.sync().then(() => {
+//   console.log("Connected to the database.");
+// });
+
 Sequelize.sync().then(() => {
-  console.log("Connected to the database.");
+  console.log("Connected to the database and synced all models.");
+}).catch(err => {
+  console.error("Failed to sync models:", err);
 });
 
 await associateModels();
