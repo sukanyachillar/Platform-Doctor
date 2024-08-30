@@ -13,6 +13,7 @@ import Razorpay from "razorpay";
 import pgFn from "../../../../utils/pg.js";
 import axios from "axios";
 import smsHandler from "../../../../utils/smsHandler.js";
+import logModel from "../../../../models/logModel.js";
 
 const paymentStatusCapture = async (req, res) => {
   try {
@@ -671,82 +672,199 @@ const paymentVerify = async (body, res) => {
   }
 };
 
-const verifyPaymentWebhook = async (body, res) => {
-  // const { order, payment, error_details, payment_gateway_details } = body.data;
-  // const { order_id, order_amount, order_currency } = order;
-  // const { cf_payment_id, payment_status, payment_amount, payment_message } =
-  //   payment;
-  // const { error_code, error_description } = error_details;
+const verifySuccessPaymentWebhook = async (body, res) => {
+  const { order, payment } = body.data;
+  const { order_id } = order;
+  const { cf_payment_id, payment_status } = payment;
 
   try {
-    console.log("WebhookData=>", body.data);
-
-    // if (payment_status === "PAID") {
-    //   // Await the bookingModel query
-    //   let bookingData = await bookingModel.findOne({
-    //     where: { orderId },
-    //     include: [
-    //       {
-    //         model: weeklyTimeSlotsModel,
-    //         attributes: ["doctor_id", "date", "time_slot"],
-    //         include: [
-    //           {
-    //             model: doctorModel,
-    //             attributes: ["doctor_name"],
-    //           },
-    //         ],
-    //       },
-    //     ],
-    //   });
-
-    //   if (bookingData && bookingData.weeklyTimeSlot) {
-    //     let weeklyTimeSlot = bookingData.weeklyTimeSlot;
-    //     let doctor = weeklyTimeSlot.doctor;
-    //     let docName = doctor?.doctor_name.replace(/Dr\s+/, "");
-    //     docName = await docName?.split(" ")[0];
-    //     const formatDate = (dateString) => {
-    //       const date = new Date(dateString);
-
-    //       const day = String(date.getUTCDate()).padStart(2, "0");
-    //       const month = String(date.getUTCMonth() + 1).padStart(2, "0");
-    //       const year = date.getUTCFullYear();
-
-    //       // Format the date as "dd-mm-yyyy"
-    //       return `${day}-${month}-${year}`;
-    //     };
-    //     const dateOfBooking = formatDate(weeklyTimeSlot.date);
-    //     const content = `Your appointment with Dr. ${docName} on ${dateOfBooking} at ${weeklyTimeSlot.time_slot} has been confirmed. Thank you. Chillar`;
-    //     const phone = bookingData.bookedPhoneNo;
-
-    //     const smsRes = await smsHandler.sendSms(content, phone);
-
-    //     if (smsRes) {
-    //       return handleResponse({
-    //         res,
-    //         message: "verify status",
-    //         statusCode: 200,
-    //         data,
-    //       });
-    //     } else {
-    //       return handleResponse({
-    //         res,
-    //         message: "Sms failed but payment verified",
-    //         statusCode: 200,
-    //         data,
-    //       });
-    //     }
-    //   }
-    // }
-    return handleResponse({
-      res,
-      message: "Webhook success",
-      statusCode: 200,
+    await logModel.create({
+      apiEndpoint: "/payment-success-webhook",
+      requestMethod: "POST",
+      requestData: body,
+      responseStatus: 200,
     });
+
+    if (payment_status === "SUCCESS") {
+      const paymentId = cf_payment_id;
+      const orderId = order_id;
+
+      const [updateBooking, timeSlot, updatePayment] = await Promise.all([
+        bookingModel.update(
+          {
+            bookingStatus: 0,
+            updatedAt: new Date(),
+          },
+          { where: { orderId } }
+        ),
+        bookingModel.findOne({
+          attributes: ["workSlotId", "entityId"],
+          where: { orderId },
+        }),
+        paymentModel.update(
+          {
+            paymentStatus: 1,
+            transactionId: paymentId,
+          },
+          { where: { orderId } }
+        ),
+      ]);
+
+      if (timeSlot) {
+        await weeklyTimeSlotsModel.update(
+          { booking_status: 1 },
+          { where: { time_slot_id: timeSlot.workSlotId } }
+        );
+      } else {
+        throw new Error("Time slot not found for the given orderId.");
+      }
+
+      let bookingData = await bookingModel.findOne({
+        where: { orderId },
+        include: [
+          {
+            model: weeklyTimeSlotsModel,
+            attributes: ["doctor_id", "date", "time_slot"],
+            include: [
+              {
+                model: doctorModel,
+                attributes: ["doctor_name"],
+              },
+            ],
+          },
+        ],
+      });
+
+      if (bookingData && bookingData.weeklyTimeSlot) {
+        let weeklyTimeSlot = bookingData.weeklyTimeSlot;
+        let doctor = weeklyTimeSlot.doctor;
+        let docName = doctor?.doctor_name.replace(/Dr\s+/, "");
+        docName = await docName?.split(" ")[0];
+        const formatDate = (dateString) => {
+          const date = new Date(dateString);
+
+          const day = String(date.getUTCDate()).padStart(2, "0");
+          const month = String(date.getUTCMonth() + 1).padStart(2, "0");
+          const year = date.getUTCFullYear();
+
+          // Format the date as "dd-mm-yyyy"
+          return `${day}-${month}-${year}`;
+        };
+        const dateOfBooking = formatDate(weeklyTimeSlot.date);
+        const content = `Your appointment with Dr. ${docName} on ${dateOfBooking} at ${weeklyTimeSlot.time_slot} has been confirmed. Thank you. Chillar`;
+        const phone = bookingData.bookedPhoneNo;
+
+        const smsRes = await smsHandler.sendSms(content, phone);
+
+        if (smsRes) {
+          await logModel.create({
+            apiEndpoint: "/payment-success-webhook",
+            requestMethod: "POST",
+            responseStatus: 200,
+            responseData: { message: "SMS sent successfully", phone },
+          });
+          return handleResponse({
+            res,
+            message: "verify status",
+            statusCode: 200,
+          });
+        } else {
+          await logModel.create({
+            apiEndpoint: "/payment-success-webhook",
+            requestMethod: "POST",
+            responseStatus: 400,
+            responseData: { message: "SMS failed", phone },
+          });
+          return handleResponse({
+            res,
+            message: "Sms failed but payment verified",
+            statusCode: 200,
+          });
+        }
+      }
+    }else{
+      return handleResponse({
+        res,
+        message: "Payment failed",
+        statusCode: 200,
+      });
+    }
   } catch (error) {
     console.log({ error });
+    await logModel.create({
+      apiEndpoint: "/payment-success-webhook",
+      requestMethod: "POST",
+      responseStatus: 500,
+      errorMessage: error.message,
+    });
     return handleResponse({
       res,
-      message: "Error verifying payment",
+      message: "Webhook error",
+      statusCode: 500,
+    });
+  }
+};
+
+const verifyFailPaymentWebhook = async (body, res) => {
+  const { order, payment } = body.data;
+  const { order_id } = order;
+  const { cf_payment_id, payment_status } = payment;
+
+  try {
+    await logModel.create({
+      apiEndpoint: "/payment-fail-webhook",
+      requestMethod: "POST",
+      requestData: body,
+      responseStatus: 200,
+    });
+
+    if (payment_status === "FAILED") {
+      const paymentId = cf_payment_id;
+      const orderId = order_id;
+
+      const bookingDetails = await bookingModel.findOne({
+        attributes: ["bookingId", "workSlotId"],
+        where: { orderId: orderId },
+      });
+
+      const [bookingUpdate] = await bookingModel.update(
+        { bookingStatus: 2 },
+        { where: { orderId: orderId } }
+      );
+
+      const [paymentUpdate] = await paymentModel.update(
+        { paymentStatus: 2, transactionId: paymentId },
+        { where: { orderId: orderId } }
+      );
+
+      const [timeslotUpdate] = await weeklyTimeSlotsModel.update(
+        { booking_status: 0 },
+        { where: { time_slot_id: bookingDetails.workSlotId } }
+      );
+
+      return handleResponse({
+        res,
+        message: "Payment failed",
+        statusCode: 200,
+      });
+    }else{
+      return handleResponse({
+        res,
+        message: "Payment success",
+        statusCode: 200,
+      });
+    }
+  } catch (error) {
+    console.log({ error });
+    await logModel.create({
+      apiEndpoint: "/payment-fail-webhook",
+      requestMethod: "POST",
+      responseStatus: 500,
+      errorMessage: error.message,
+    });
+    return handleResponse({
+      res,
+      message: "Webhook error",
       statusCode: 500,
     });
   }
@@ -760,5 +878,6 @@ export default {
   paymentFailUpdate,
   getPgReport,
   paymentVerify,
-  verifyPaymentWebhook,
+  verifySuccessPaymentWebhook,
+  verifyFailPaymentWebhook,
 };
