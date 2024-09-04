@@ -7,6 +7,8 @@ import { decrypt } from "../../../../utils/token.js";
 import doctorEntityModel from "../../../../models/doctorEntityModel.js";
 import { Op, where } from "sequelize";
 import weeklyTimeSlotsModel from "../../../../models/weeklyTimeSlotsModel.js";
+import smsHandler from "../../../../utils/smsHandler.js";
+import bookingModel from "../../../../models/bookingModel.js";
 
 //Workschedule on weekely basis
 // const addWorkSchedule = async (data, userData, res) => {
@@ -429,9 +431,15 @@ const addWorkScheduleFromAdmin = async (body, res) => {
     }
 
     let workData = await workScheduleModel.findOne({
-      where: { entity_id: entityId, day, session, doctor_id, startTime, endTime },
+      where: {
+        entity_id: entityId,
+        day,
+        session,
+        doctor_id,
+        startTime,
+        endTime,
+      },
     });
-
 
     const consultation_time = doctorEntityData.consultationTime;
 
@@ -527,7 +535,6 @@ const addWorkScheduleFromAdmin = async (body, res) => {
       );
     }
     if (errorMessages.length > 0 && message == "") {
-
     }
     return handleResponse({
       res,
@@ -575,15 +582,16 @@ const listWorkSchedule = async (req, res) => {
       ],
     };
 
-    let { count, rows: workScheduleData } = await workScheduleModel.findAndCountAll({
-      where: whereCondition,
-      limit: pageSize,
-      offset: offset,
-    });
+    let { count, rows: workScheduleData } =
+      await workScheduleModel.findAndCountAll({
+        where: whereCondition,
+        limit: pageSize,
+        offset: offset,
+      });
 
     const workScheduleListWithSerial = workScheduleData.map((item, index) => ({
       SlNo: offset + index + 1,
-      ...item.dataValues,  // Include all existing fields of workScheduleData
+      ...item.dataValues, // Include all existing fields of workScheduleData
     }));
 
     if (count > 0) {
@@ -664,8 +672,15 @@ const docAvail = async (body, userData, res) => {
 
     const doctorEntityData = await doctorEntityModel.findOne({
       where: { doctorId: doctorId, entityId: entity_id },
+      include: [
+        {
+          model: doctorModel,
+          attributes: ["doctor_name"],
+        },
+      ],
     });
 
+    const doctorName = doctorEntityData?.doctor?.doctor_name;
 
     if (!doctorEntityData) {
       return handleResponse({
@@ -674,46 +689,80 @@ const docAvail = async (body, userData, res) => {
         statusCode: 404,
       });
     } else {
-
-      let isTimeslot = weeklyTimeSlotsModel.findAll({
-        where: { doctorEntityId: doctorEntityData.doctorEntityId, doctor_id: doctorId, date }
-      })
-
+      let isTimeslot = await weeklyTimeSlotsModel.findAll({
+        where: {
+          doctorEntityId: doctorEntityData.doctorEntityId,
+          doctor_id: doctorId,
+          date,
+        },
+        include: [
+          {
+            model: bookingModel,
+            required: false,
+          },
+        ],
+      });
+      // console.log("isTimeslot:", isTimeslot);
       if (isTimeslot.length !== 0) {
         let [updatedNo] = await weeklyTimeSlotsModel.update(
-          { status },
+          { status: 0 },
           {
             where: {
               doctorEntityId: doctorEntityData.doctorEntityId,
               doctor_id: doctorId,
-              date: date
-            }
+              date: date,
+            },
           }
         );
-        if (updatedNo.length !== 0) {
-          return handleResponse({
-            res,
-            message: "Availability updated !",
-            statusCode: 200,
-          });
+
+        let bookingIds = isTimeslot
+          .filter((slot) => slot.booking)
+          .map((slot) => slot.booking.bookingId);
+
+        if (bookingIds.length > 0) {
+          // Update the booking status to 4 for the associated bookings
+          await bookingModel.update(
+            { bookingStatus: 4 },
+            {
+              where: {
+                bookingId: bookingIds,
+              },
+            }
+          );
         }
 
-      }else{
+        for (let slot of isTimeslot) {
+          if (slot.booking) {
+            const content = `We regret to inform you that Dr. ${doctorName} has cancelled your appointment on ${slot.date} at ${slot.time_slot}. Please book another appointment at your convenience. Chillar`;
+            //  const content = `Your appointment with Dr. ${doctorName} on ${slot.date} at ${slot.time_slot} has been confirmed. Thank you. Chillar`;
+            const phone = slot.booking.bookedPhoneNo;
+            // const phone = "8606500638";
+            // console.log({phone});
+
+            const smsRes = await smsHandler.sendSms(content, phone);
+            //  console.log({smsRes});
+          }
+        }
+
+        return handleResponse({
+          res,
+          message: "This date is marked as leave",
+          statusCode: 200,
+        });
+      } else {
         return handleResponse({
           res,
           message: "No slots found !",
-          statusCode: 400,
+          statusCode: 404,
         });
       }
-
     }
-
   } catch (error) {
     console.log({ error });
     return handleResponse({
       res,
-      message: "Error while adding work.",
-      statusCode: 422,
+      message: "Internal error",
+      statusCode: 500,
     });
   }
 };
@@ -807,21 +856,21 @@ const getWorkSchedule = async (data, user, res) => {
           daySchedule.length > 0
             ? daySchedule
             : [
-              {
-                day,
-                status: dayStatus,
-                startTime: null,
-                endTime: null,
-                work_schedule_id: null,
-                entity_id: parseInt(user?.entity_id),
-                session: null,
-                doctor_id: Number(doctor_id),
-                created_date_time: null,
-                update_date_time: null,
-                createdAt: null,
-                updatedAt: null,
-              },
-            ],
+                {
+                  day,
+                  status: dayStatus,
+                  startTime: null,
+                  endTime: null,
+                  work_schedule_id: null,
+                  entity_id: parseInt(user?.entity_id),
+                  session: null,
+                  doctor_id: Number(doctor_id),
+                  created_date_time: null,
+                  update_date_time: null,
+                  createdAt: null,
+                  updatedAt: null,
+                },
+              ],
       });
     });
 
@@ -1031,8 +1080,8 @@ const generateTimeSlots = async (startTime, endTime, consultationTime) => {
     const startDateTime = `${currentYear}-${currentMonth
       .toString()
       .padStart(2, "0")}-${currentDay
-        .toString()
-        .padStart(2, "0")}T${startTime}`;
+      .toString()
+      .padStart(2, "0")}T${startTime}`;
     const endDateTime = `${currentYear}-${currentMonth
       .toString()
       .padStart(2, "0")}-${currentDay.toString().padStart(2, "0")}T${endTime}`;
@@ -1192,5 +1241,5 @@ export default {
   getSingleWorkSchedule,
   listWorkSchedule,
   addWorkScheduleFromAdmin,
-  docAvail
+  docAvail,
 };
