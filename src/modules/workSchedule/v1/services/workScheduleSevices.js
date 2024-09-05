@@ -733,11 +733,21 @@ const docAvail = async (body, userData, res) => {
 
         for (let slot of isTimeslot) {
           if (slot.booking) {
-            const content = `We regret to inform you that Dr. ${doctorName} has cancelled your appointment on ${slot.date} at ${slot.time_slot}. Please book another appointment at your convenience. Chillar`;
+            const formatDate = (dateString) => {
+              const date = new Date(dateString);
+              const day = String(date.getUTCDate()).padStart(2, "0");
+              const month = String(date.getUTCMonth() + 1).padStart(2, "0");
+              const year = date.getUTCFullYear();
+
+              // Format the date as "dd-mm-yyyy"
+              return `${day}-${month}-${year}`;
+            };
+            const dateOfBooking = formatDate(slot.date);
+            const content = `We regret to inform you that Dr. ${doctorName} has cancelled your appointment on ${dateOfBooking} at ${slot.time_slot}. Please book another appointment at your convenience. Chillar`;
             const phone = slot.booking.bookedPhoneNo;
             const templateId = "1607100000000323225";
 
-            const smsRes = await smsHandler.sendSms(content, phone,templateId);
+            const smsRes = await smsHandler.sendSms(content, phone, templateId);
           }
         }
 
