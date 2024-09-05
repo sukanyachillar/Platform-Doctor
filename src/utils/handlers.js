@@ -16,11 +16,10 @@ import logModel from "../models/logModel.js";
 export const handleResponse = async (responseObj) => {
   const { res, statusCode, message, data } = responseObj;
   const { logId } = res;
-  console.log({ logId });
 
   try {
     // Send the response
-    const response = res.status(statusCode).json({ statusCode, message, data });
+    const response = res.status(200).json({ statusCode, message, data });
 
     // Update the log entry with response data
     if (logId) {
