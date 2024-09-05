@@ -1,7 +1,7 @@
-import { DataTypes } from 'sequelize';
-import sequelize from '../dbConnect.js';
+import { DataTypes } from "sequelize";
+import sequelize from "../dbConnect.js";
 
-const logModel = sequelize.define('log', {
+const logModel = sequelize.define("log", {
   logId: {
     type: DataTypes.INTEGER,
     primaryKey: true,
@@ -22,7 +22,7 @@ const logModel = sequelize.define('log', {
   },
   responseStatus: {
     type: DataTypes.INTEGER,
-    allowNull: false,
+    allowNull: true,
   },
   responseData: {
     type: DataTypes.JSON, // Store response data as JSON
@@ -44,6 +44,11 @@ const logModel = sequelize.define('log', {
   updatedAt: {
     type: DataTypes.DATE,
     defaultValue: DataTypes.NOW,
+    allowNull: false,
+  },
+  expiresAt: {
+    type: DataTypes.DATE,
+    defaultValue: sequelize.literal("CURRENT_TIMESTAMP + INTERVAL 30 DAY"),
     allowNull: false,
   },
 });

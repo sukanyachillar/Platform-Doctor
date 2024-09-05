@@ -202,7 +202,6 @@ const departmentList = async (requestData, params, res) => {
 
     const totalPages = Math.ceil(count / pageSize);
     if (data) {
-
       const dataWithSerialNumbers = data.map((item, index) => ({
         ...item.toJSON(),
         sl_no: offset + index + 1,
@@ -1027,8 +1026,17 @@ const addIndvDoctor = async (
 
       addedIndvEntity = await newIndvEntity.save();
 
+      let doctorName = doctor_name;
+
+      if (doctorName.startsWith("Dr. ")) {
+        doctorName = doctorName.slice(4); 
+      } else if (doctorName.startsWith("Dr ")) {
+        doctorName = doctorName.slice(3); 
+      }
+
+      // Capitalize the first letter of the remaining name
       const capitalizedDoctorName =
-        doctor_name.charAt(0).toUpperCase() + doctor_name.slice(1);
+        doctorName.charAt(0).toUpperCase() + doctorName.slice(1);
 
       const newDoctor = await new doctorModel({
         doctor_name: capitalizedDoctorName,
@@ -1179,8 +1187,18 @@ const addDoctorByClinic = async (
     //         };
     //     };
 
+   
+    let doctorName = doctor_name;
+
+    if (doctorName.startsWith("Dr. ")) {
+      doctorName = doctorName.slice(4); 
+    } else if (doctorName.startsWith("Dr ")) {
+      doctorName = doctorName.slice(3); 
+    }
+
+    // Capitalize the first letter of the remaining name
     const capitalizedDoctorName =
-      doctor_name.charAt(0).toUpperCase() + doctor_name.slice(1);
+      doctorName.charAt(0).toUpperCase() + doctorName.slice(1);
 
     const newDoctor = await new doctorModel({
       doctor_name: capitalizedDoctorName,
@@ -1407,10 +1425,21 @@ const updateDoctor = async (data, profileImage, res) => {
         data: {},
       });
     }
+    
+    let doctorName = doctor_name;
+
+    if (doctorName.startsWith("Dr. ")) {
+      doctorName = doctorName.slice(4); 
+    } else if (doctorName.startsWith("Dr ")) {
+      doctorName = doctorName.slice(3); 
+    }
+
+    const capitalizedDoctorName =
+      doctorName.charAt(0).toUpperCase() + doctorName.slice(1);
 
     await doctorModel.update(
       {
-        doctor_name,
+        doctor_name:capitalizedDoctorName,
         qualification,
         email,
         department_id,
@@ -2227,9 +2256,9 @@ const bookingReport_admin = async (requestParams, requestData, res) => {
     let bookingCondition = {};
 
     if (reportStatus == 0) {
-      bookingCondition = { bookingStatus: 0 }
+      bookingCondition = { bookingStatus: 0 };
     } else if (reportStatus == 1) {
-      bookingCondition = { bookingStatus: 1 }
+      bookingCondition = { bookingStatus: 1 };
     } else if (reportStatus == 2) {
       bookingCondition = { bookingStatus: 2 };
     }
@@ -2286,17 +2315,22 @@ const bookingReport_admin = async (requestParams, requestData, res) => {
       });
 
     const totalPages = Math.ceil(count / pageSize);
-    console.log({bookingReport});
-    
-    const modifiedBookingReport = bookingReport.map((booking, index) => {
-      let appointmentDate = new Date(booking.booking.dataValues.appointmentDate);
+    console.log({ bookingReport });
 
-      let formattedAppointmentDate = appointmentDate.toLocaleDateString('en-IN', {
-        timeZone: 'Asia/Kolkata',
-        day: '2-digit',
-        month: '2-digit',
-        year: 'numeric',
-      });
+    const modifiedBookingReport = bookingReport.map((booking, index) => {
+      let appointmentDate = new Date(
+        booking.booking.dataValues.appointmentDate
+      );
+
+      let formattedAppointmentDate = appointmentDate.toLocaleDateString(
+        "en-IN",
+        {
+          timeZone: "Asia/Kolkata",
+          day: "2-digit",
+          month: "2-digit",
+          year: "numeric",
+        }
+      );
       return {
         slNo: offset + index + 1,
         time_slot_id: booking.dataValues.time_slot_id,

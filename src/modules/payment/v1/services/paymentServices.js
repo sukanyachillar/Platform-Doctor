@@ -642,8 +642,8 @@ const paymentVerify = async (body, res) => {
         const dateOfBooking = formatDate(weeklyTimeSlot.date);
         const content = `Your appointment with Dr. ${docName} on ${dateOfBooking} at ${weeklyTimeSlot.time_slot} has been confirmed. Thank you. Chillar`;
         const phone = bookingData.bookedPhoneNo;
-
-        const smsRes = await smsHandler.sendSms(content, phone);
+        const templateId = "1607100000000323224";
+        const smsRes = await smsHandler.sendSms(content, phone,templateId);
 
         if (smsRes) {
           return handleResponse({
@@ -673,8 +673,6 @@ const paymentVerify = async (body, res) => {
 };
 
 const verifySuccessPaymentWebhook = async (body, res) => {
- 
-
   try {
     await logModel.create({
       apiEndpoint: "/payment-success-webhook",
@@ -784,7 +782,7 @@ const verifySuccessPaymentWebhook = async (body, res) => {
           });
         }
       }
-    }else{
+    } else {
       return handleResponse({
         res,
         message: "Payment failed",
@@ -849,7 +847,7 @@ const verifyFailPaymentWebhook = async (body, res) => {
         message: "Payment failed",
         statusCode: 200,
       });
-    }else{
+    } else {
       return handleResponse({
         res,
         message: "Payment success",

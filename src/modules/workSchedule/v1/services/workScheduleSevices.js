@@ -705,7 +705,7 @@ const docAvail = async (body, userData, res) => {
       // console.log("isTimeslot:", isTimeslot);
       if (isTimeslot.length !== 0) {
         let [updatedNo] = await weeklyTimeSlotsModel.update(
-          { status: 0 },
+          { status: 0, booking_status: 0 },
           {
             where: {
               doctorEntityId: doctorEntityData.doctorEntityId,
@@ -734,13 +734,10 @@ const docAvail = async (body, userData, res) => {
         for (let slot of isTimeslot) {
           if (slot.booking) {
             const content = `We regret to inform you that Dr. ${doctorName} has cancelled your appointment on ${slot.date} at ${slot.time_slot}. Please book another appointment at your convenience. Chillar`;
-            //  const content = `Your appointment with Dr. ${doctorName} on ${slot.date} at ${slot.time_slot} has been confirmed. Thank you. Chillar`;
             const phone = slot.booking.bookedPhoneNo;
-            // const phone = "8606500638";
-            // console.log({phone});
+            const templateId = "1607100000000323225";
 
-            const smsRes = await smsHandler.sendSms(content, phone);
-            //  console.log({smsRes});
+            const smsRes = await smsHandler.sendSms(content, phone,templateId);
           }
         }
 
