@@ -122,17 +122,17 @@ app.post("*", (req, res) => {
 });
 
 // Error logging middleware
-app.use(async (err, req, res, next) => {
-  await logModel.update(
-    {
-      errorMessage: err.message,
-    },
-    {
-      where: { logId: req.logId },
-    }
-  );
-  res.status(500).send("Something went wrong");
-});
+// app.use(async (err, req, res, next) => {
+//   await logModel.update(
+//     {
+//       errorMessage: err.message,
+//     },
+//     {
+//       where: { logId: req.logId },
+//     }
+//   );
+//   res.status(500).send("Something went wrong");
+// });
 
 app.listen(currentConfig.PORT, (err) => {
   if (err) console.log(`server error.`);
