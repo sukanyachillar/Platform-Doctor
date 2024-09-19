@@ -6,7 +6,7 @@ import {
   generateTokens,
   generateAdminTokens,
 } from "../../../../utils/token.js";
-import { Op } from "sequelize";
+import { Op, where } from "sequelize";
 // import upload from '../../../../middlewares/multerConfig.js';
 import awsUtils from "../../../../utils/aws.js";
 import DigitalOceanUtils from "../../../../utils/DOFileUpload.js";
@@ -21,6 +21,7 @@ import tokenModel from "../../../../models/tokenModel.js";
 import { hashPassword, comparePasswords } from "../../../../utils/password.js";
 import { decrypt } from "../../../../utils/token.js";
 import guestUserModel from "../../../../models/guestUserModel.js";
+import weeklyTimeSlotsModel from "../../../../models/weeklyTimeSlotsModel.js";
 
 const userCheck = async (body, res) => {
   try {
@@ -991,6 +992,473 @@ const updateProfileDetails = async (doctorProfile, params, res) => {
   }
 };
 
+const phoneRegisterService = async (data, res) => {
+  try {
+    const { phone } = data;
+    if (phone) {
+      let phoneExists = await doctorModel.findOne({
+        where: { doctor_phone: phone },
+      });
+      let phoneExistsEntity = await entityModel.findOne({
+        where: { phone },
+      });
+      if (phoneExists || phoneExistsEntity) {
+        return handleResponse({
+          res,
+          statusCode: 409,
+          message: "Phone number already exists",
+        });
+      } else {
+        let phoneAddEntity = await entityModel.create({ phone });
+        if (phoneAddEntity) {
+          let phoneAdd = await doctorModel.create({
+            doctor_phone: phone,
+            entity_id: phoneAddEntity.entity_id,
+          });
+          if (phoneAdd) {
+            return handleResponse({
+              res,
+              statusCode: 200,
+              message: "Phone number added successfully",
+              data: {
+                entityId: phoneAddEntity.entity_id,
+                doctorId: phoneAdd.doctor_id,
+                doctorPhone: phoneAdd.doctor_phone,
+              },
+            });
+          } else {
+            return handleResponse({
+              res,
+              statusCode: 500,
+              message: "Error while adding phone number",
+            });
+          }
+        }
+      }
+    } else {
+      return handleResponse({
+        res,
+        statusCode: 400,
+        message: "Phone number is mandatory",
+      });
+    }
+  } catch (error) {
+    console.log({ error });
+    return handleResponse({
+      res,
+      message: "Internal error",
+      statusCode: 500,
+    });
+  }
+};
+const listSpecialityService = async (data, res) => {
+  try {
+    let specialities = await departmentModel.findAll({
+      attributes: ["department_id", "department_name", "status"],
+    });
+    if (specialities) {
+      return handleResponse({
+        res,
+        statusCode: 200,
+        message: "Specialities feteched successfully",
+        data: specialities,
+      });
+    } else {
+      return handleResponse({
+        res,
+        statusCode: 400,
+        message: "Error while fetching specialities",
+        data: specialities,
+      });
+    }
+  } catch (error) {
+    console.log({ error });
+    return handleResponse({
+      res,
+      message: "Internal error",
+      statusCode: 500,
+    });
+  }
+};
+
+const onboardDoctorService = async (data, res) => {
+  try {
+    const {
+      doctor_id,
+      entity_id,
+      doctor_phone,
+      doctor_name,
+      department_id,
+      consultation_time,
+      session,
+      workingHours,
+    } = data;
+
+    // let imageUrl;
+    // if (image) {
+    //   imageUrl = await DigitalOceanUtils.uploadObject(image);
+    // }
+    let existingIndvEntity = await entityModel.findOne({
+      where: { phone: doctor_phone },
+    });
+
+    let existingDr = await doctorModel.findOne({
+      where: { doctor_phone: doctor_phone },
+    });
+
+    // const capitalizedEntityName =
+    //   entityName.charAt(0).toUpperCase() + entityName.slice(1);
+
+    if (existingIndvEntity) {
+      const [entityUpdate, addedIndvEntity] = await entityModel.update(
+        {
+          phone: doctor_phone,
+          business_type_id: 0,
+          entity_type: 2,
+        },
+        {
+          where: { phone: doctor_phone },
+        }
+      );
+      if (existingDr) {
+        let doctorName = doctor_name;
+
+        if (doctorName.startsWith("Dr. ")) {
+          doctorName = doctorName.slice(4);
+        } else if (doctorName.startsWith("Dr ")) {
+          doctorName = doctorName.slice(3);
+        }
+
+        const capitalizedDoctorName =
+          doctorName.charAt(0).toUpperCase() + doctorName.slice(1);
+
+        const [doctorUpdate, addedDoctor] = await doctorModel.update(
+          {
+            doctor_name: capitalizedDoctorName,
+            doctor_phone,
+            department_id,
+            entity_id: addedIndvEntity?.entity_id,
+            bookingType:"token"
+          },
+          {
+            where: { doctor_phone },
+          }
+        );
+
+        const doctorId = addedDoctor
+          ? addedDoctor.doctor_id
+          : existingDr.doctor_id;
+
+        const userExists = await userModel.findOne({
+          where: { phone: doctor_phone },
+        });
+        if (!userExists) {
+          userModel.create({
+            uuid: await generateUuid(),
+            userType: 2,
+            name: capitalizedDoctorName,
+            phone: doctor_phone,
+          });
+        }
+
+        await doctorEntityModel.create({
+          doctorId: doctor_id,
+          entityId: entity_id,
+          consultationTime: consultation_time,
+        });
+
+        let tokens = await generateTokens(doctor_phone);
+
+        if (entityUpdate > 0 && doctorUpdate > 0) {
+          handleResponse({
+            res,
+            message: "Doctor onboarded successfully",
+            statusCode: 200,
+            data: {
+              entity_id,
+              doctor_id: doctorId,
+              phone: doctor_phone,
+              access_token: tokens.accessToken,
+              refresh_token: tokens.refreshToken,
+            },
+          });
+        } else {
+          return handleResponse({
+            res,
+            message: "Update error",
+            statusCode: 400,
+          });
+        }
+
+        const workscheduleData = {
+          doctor_id: doctorId,
+          session,
+          entityId: entity_id,
+          workingHours,
+          consultation_time
+        };
+
+        createWorkScheduleFor28Days(workscheduleData);
+      } else {
+        return handleResponse({
+          res,
+          message: "Doctor not found",
+          statusCode: 200,
+        });
+      }
+    } else {
+      return handleResponse({
+        res,
+        message: "Entity not found",
+        statusCode: 200,
+      });
+    }
+  } catch (error) {
+    console.log({ error });
+    return handleResponse({
+      res,
+      message: "Internal error",
+      statusCode: 500,
+    });
+  }
+};
+
+const createWorkScheduleFor28Days = async (data) => {
+  console.log("Work schedule creation");
+  try {
+    let { workingHours, doctor_id, entityId ,consultation_time} = data;
+    let errorMessages = [];
+    let status = 1;
+    let message = "";
+
+    // Fetch doctor data to verify status and booking type
+    let doctorData = await doctorModel.findOne({
+      where: { status: 1, doctor_id },
+      attributes: ["doctor_id", "consultation_time", "tokens", "bookingType"],
+    });
+
+    if (!doctorData) {
+      console.log("Invalid input doctor data!");
+    }
+
+    const doctorEntityData = await doctorEntityModel.findOne({
+      where: { doctorId: doctor_id, entityId },
+    });
+
+    // Loop through working hours
+    for (let work of workingHours) {
+      const { day, startTime, endTime, session } = work;
+      let daysArray = [
+        "monday",
+        "tuesday",
+        "wednesday",
+        "thursday",
+        "friday",
+        "saturday",
+        "sunday",
+      ];
+
+      // Validate day
+      let dayIn = daysArray.includes(day.toLowerCase());
+      if (!dayIn) {
+        console.log(`Invalid day: ${day}`);
+        continue;
+      }
+
+      let dayOfWeek = await getDayOfWeekIndex(day);
+      let datefromDay = await dateFromDay(dayOfWeek);
+
+      // Check if work schedule exists
+      let workExists = await workScheduleModel.findOne({
+        where: { entity_id: entityId, day, session, doctor_id },
+      });
+
+      if (workExists) {
+        console.log(
+          `Work schedule already exists for ${day} for session: ${session}`
+        );
+        continue;
+      }
+
+      let time_slots;
+
+      time_slots = await generateTokenBasedTimeSlots(
+        startTime,
+        endTime,
+        consultation_time
+      );
+
+      // Loop through the next 4 weeks
+      for (let i = 0; i < 4; i++) {
+        const currentDate = new Date(datefromDay);
+        currentDate.setDate(currentDate.getDate() + i * 7);
+        const year = currentDate.getFullYear();
+        const month = String(currentDate.getMonth() + 1).padStart(2, "0");
+        const date = String(currentDate.getDate()).padStart(2, "0");
+        const formattedDate = `${year}-${month}-${date}`;
+
+        await Promise.all(
+          time_slots.map(async (ele, index) => {
+            // Check if time slot exists
+            let existingTimeSlot = await weeklyTimeSlotsModel.findOne({
+              where: {
+                date: formattedDate,
+                day: day,
+                time_slot: ele,
+                doctor_id: doctor_id,
+              },
+            });
+
+            if (existingTimeSlot) {
+              console.log(
+                `Time slot ${ele} already exists for doctor on ${formattedDate}`
+              );
+            } else {
+              // Create new time slot
+              let newTimeSlot = new weeklyTimeSlotsModel({
+                date: formattedDate,
+                day,
+                time_slot: ele,
+                doctor_id,
+                doctorEntityId: doctorEntityData
+                  ? doctorEntityData.doctorEntityId
+                  : null,
+                token_number: index + 1,
+              });
+
+              const result = await newTimeSlot.save();
+              if (result) {
+                console.log(
+                  `Time slot ${ele} added for doctor on ${formattedDate}`
+                );
+              }
+            }
+          })
+        );
+      }
+
+      // Create new work schedule
+      let workData = new workScheduleModel({
+        entity_id: entityId,
+        day,
+        session,
+        startTime,
+        endTime,
+        status,
+        doctor_id,
+      });
+
+      let workSchedule = await workData.save();
+      if (workSchedule) {
+        console.log(
+          `Successfully added work schedule for ${day}, session: ${session}.`
+        );
+      }
+    }
+
+    if (errorMessages.length > 0) {
+      console.log("ERROR while creating workschedule =>>", errorMessages);
+    }
+  } catch (error) {
+    console.log("Timeslot creation ERROR =>>", error);
+  }
+};
+
+const generateTokenBasedTimeSlots = async (
+  startTime,
+  endTime,
+  consultation_time
+) => {
+  try {
+    console.log(
+      "startTime, endTime, tokens",
+      startTime,
+      endTime,
+      consultation_time
+    );
+
+    const currentDate = new Date();
+    const currentYear = currentDate.getFullYear();
+    const currentMonth = currentDate.getMonth() + 1;
+    const currentDay = currentDate.getDate();
+
+    // Parse start and end times correctly with AM/PM
+    const startDateTime = new Date(
+      `${currentYear}-${currentMonth.toString().padStart(2, "0")}-${currentDay
+        .toString()
+        .padStart(2, "0")} ${startTime}`
+    );
+    const endDateTime = new Date(
+      `${currentYear}-${currentMonth.toString().padStart(2, "0")}-${currentDay
+        .toString()
+        .padStart(2, "0")} ${endTime}`
+    );
+
+    const totalTime = (endDateTime - startDateTime) / 60000; // Total time in minutes
+
+    const tokens = Math.floor(totalTime / consultation_time); // Rounding down
+
+    const timeSlots = [];
+    let current = new Date(startDateTime);
+
+    for (let i = 0; i < tokens; i++) {
+      const formattedTime = current.toLocaleTimeString([], {
+        hour: "2-digit",
+        minute: "2-digit",
+      });
+      timeSlots.push(formattedTime);
+
+      // Increment current time by consultationTime, rounding to avoid floating point issues
+      current.setMinutes(current.getMinutes() + Math.floor(consultation_time));
+      if (consultation_time % 1 !== 0) {
+        current.setSeconds(current.getSeconds() + 30);
+      }
+    }
+
+    return timeSlots;
+  } catch (error) {
+    console.log({ error });
+  }
+};
+
+const dateFromDay = async (day) => {
+  try {
+    const currentDate = new Date();
+    const currentDayOfWeek = currentDate.getDay();
+    let daysToAdd = day - currentDayOfWeek;
+    if (daysToAdd <= 0) {
+      daysToAdd += 7;
+    }
+    const nextDate = new Date(currentDate);
+    nextDate.setDate(currentDate.getDate() + daysToAdd);
+    return nextDate;
+  } catch (error) {
+    console.log({ error });
+  }
+};
+
+const getDayOfWeekIndex = async (dayName) => {
+  try {
+    console.log({ dayName });
+    const lowercaseDayName = dayName.toLowerCase();
+    const dayOfWeekMap = {
+      sunday: 0,
+      monday: 1,
+      tuesday: 2,
+      wednesday: 3,
+      thursday: 4,
+      friday: 5,
+      saturday: 6,
+    };
+
+    return dayOfWeekMap[lowercaseDayName] !== undefined
+      ? dayOfWeekMap[lowercaseDayName]
+      : null;
+  } catch (err) {
+    console.log({ err });
+  }
+};
+
 export default {
   register,
   userCheck,
@@ -1001,4 +1469,7 @@ export default {
   getProfileForCustomer,
   updateEntityStatus,
   updateProfileDetails,
+  phoneRegisterService,
+  listSpecialityService,
+  onboardDoctorService,
 };

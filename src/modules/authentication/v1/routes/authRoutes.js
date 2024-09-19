@@ -38,5 +38,8 @@ router.post(
     authenticationController.updateEntityStatus
 );
 router.post('/update-profile', authenticationController.updateProfile);
+router.post('/phone-register', authenticationController.phoneRegister);
+router.post('/list-specialities', authenticationController.listSpeciality);
+router.post('/onboard-doctor', authenticationController.onboardDoctor);
 
 export default router;

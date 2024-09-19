@@ -48,7 +48,7 @@ const doctorModel = sequelize.define("doctor", {
   },
   tokens: {
     type: DataTypes.INTEGER,
-    allowNull: false,
+    allowNull: true,
     unique: false,
     defaultValue: 0,
   },

@@ -113,6 +113,39 @@ const updateProfile = async (req, res) => {
         console.log({ error })
     }
 }
+const phoneRegister = async (req, res) => {
+    try {
+        let data = await authenticationService.phoneRegisterService(
+            req.body,
+            res
+        )
+        return data
+    } catch (error) {
+        console.log({ error })
+    }
+}
+const listSpeciality = async (req, res) => {
+    try {
+        let data = await authenticationService.listSpecialityService(
+            req.body,
+            res
+        )
+        return data
+    } catch (error) {
+        console.log({ error })
+    }
+}
+const onboardDoctor = async (req, res) => {
+    try {
+        let data = await authenticationService.onboardDoctorService(
+            req.body,
+            res
+        )
+        return data
+    } catch (error) {
+        console.log({ error })
+    }
+}
 
 export default {
     register,
@@ -125,5 +158,8 @@ export default {
     getProfileForCustomer,
     updateEntityStatus,
     updateProfile,
+    phoneRegister,
+    listSpeciality,
+    onboardDoctor
     
 }
