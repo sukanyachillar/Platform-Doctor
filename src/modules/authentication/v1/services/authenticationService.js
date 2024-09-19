@@ -687,17 +687,17 @@ const getProfileForCustomer = async (
           model: departmentModel,
           attributes: ["department_name"],
         },
-        {
-          model: doctorEntityModel,
-          attributes: ["consultationTime", "consultationCharge", "entityId"],
-          where: { entityId, doctorId: isValidDr.doctor_id },
-          // include: [
-          //   {
-          //     model: entityModel,
-          //     attributes: ["entity_name"],
-          //   },
-          // ],
-        },
+        // {
+        //   model: doctorEntityModel,
+        //   attributes: ["consultationTime", "consultationCharge", "entityId"],
+        //   where: { entityId, doctorId: isValidDr.doctor_id },
+        //   // include: [
+        //   //   {
+        //   //     model: entityModel,
+        //   //     attributes: ["entity_name"],
+        //   //   },
+        //   // ],
+        // },
       ],
     });
 
