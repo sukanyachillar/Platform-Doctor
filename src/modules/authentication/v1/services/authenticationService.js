@@ -691,12 +691,12 @@ const getProfileForCustomer = async (
           model: doctorEntityModel,
           attributes: ["consultationTime", "consultationCharge", "entityId"],
           where: { entityId, doctorId: isValidDr.doctor_id },
-          include: [
-            {
-              model: entityModel,
-              attributes: ["entity_name"],
-            },
-          ],
+          // include: [
+          //   {
+          //     model: entityModel,
+          //     attributes: ["entity_name"],
+          //   },
+          // ],
         },
       ],
     });
