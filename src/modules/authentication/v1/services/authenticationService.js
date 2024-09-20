@@ -1002,11 +1002,15 @@ const phoneRegisterService = async (data, res) => {
       let phoneExistsEntity = await entityModel.findOne({
         where: { phone },
       });
-      if (phoneExists || phoneExistsEntity) {
+      if (phoneExists && phoneExistsEntity) {
         return handleResponse({
           res,
-          statusCode: 409,
+          statusCode: 200,
           message: "Phone number already exists",
+          data:{
+            entity_id:phoneExistsEntity?.entity_id,
+            doctor_id:phoneExists?.doctor_id
+          }
         });
       } else {
         let phoneAddEntity = await entityModel.create({ phone });
