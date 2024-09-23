@@ -990,6 +990,7 @@ const getSingleWorkSchedule = async (req, res) => {
 
         // Assign 'morning' for AM and 'evening' for PM
         let session = slot.time_slot.includes("am") ? "morning" : "evening";
+        session = slot.time_slot.includes("AM") ? "morning" : "evening";
 
         // Create the updated slot object
         let updatedSlot = {
@@ -1083,8 +1084,8 @@ const getSingleWorkSchedule = async (req, res) => {
       return timeA - timeB;
     };
     let sortedWorkSlots = {
-      morning:{},
-      evening:{},
+      morning: {},
+      evening: {},
     };
 
     sortedWorkSlots.morning = groupedData.morning.sort(customSort);
