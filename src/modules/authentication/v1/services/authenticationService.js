@@ -1007,10 +1007,11 @@ const phoneRegisterService = async (data, res) => {
           res,
           statusCode: 200,
           message: "Phone number already exists",
-          data:{
-            entity_id:phoneExistsEntity?.entity_id,
-            doctor_id:phoneExists?.doctor_id
-          }
+          data: {
+            entity_id: phoneExistsEntity?.entity_id,
+            doctor_id: phoneExists?.doctor_id,
+            profile_completed: 0,
+          },
         });
       } else {
         let phoneAddEntity = await entityModel.create({ phone });
@@ -1028,6 +1029,7 @@ const phoneRegisterService = async (data, res) => {
                 entityId: phoneAddEntity.entity_id,
                 doctorId: phoneAdd.doctor_id,
                 doctorPhone: phoneAdd.doctor_phone,
+                profile_completed: 0,
               },
             });
           } else {
@@ -1142,7 +1144,9 @@ const onboardDoctorService = async (data, res) => {
             doctor_phone,
             department_id,
             entity_id: addedIndvEntity?.entity_id,
-            bookingType:"token"
+            bookingType: "token",
+            profileImageUrl:
+              "https://cdn-icons-png.freepik.com/256/3983/3983551.png?ga=GA1.1.188670520.1712644471&semt=ais_hybrid",
           },
           {
             where: { doctor_phone },
@@ -1184,6 +1188,7 @@ const onboardDoctorService = async (data, res) => {
               phone: doctor_phone,
               access_token: tokens.accessToken,
               refresh_token: tokens.refreshToken,
+              profile_completed: 1,
             },
           });
         } else {
@@ -1199,7 +1204,7 @@ const onboardDoctorService = async (data, res) => {
           session,
           entityId: entity_id,
           workingHours,
-          consultation_time
+          consultation_time,
         };
 
         createWorkScheduleFor28Days(workscheduleData);
@@ -1230,7 +1235,7 @@ const onboardDoctorService = async (data, res) => {
 const createWorkScheduleFor28Days = async (data) => {
   console.log("Work schedule creation");
   try {
-    let { workingHours, doctor_id, entityId ,consultation_time} = data;
+    let { workingHours, doctor_id, entityId, consultation_time } = data;
     let errorMessages = [];
     let status = 1;
     let message = "";

@@ -963,18 +963,55 @@ const getSingleWorkSchedule = async (req, res) => {
       attbr.push("token_number");
     }
 
-    let data = await weeklyTimeSlots.findAll({
+    let weeklyTimeSlotsData = await weeklyTimeSlotsModel.findAll({
       where: {
         date: formattedDate,
         doctor_id: doctorData.doctor_id,
         doctorEntityId: doctorEntityId,
       },
       attributes: attbr,
-      // order: [
-      //     [Sequelize.fn('TIME_TO_SEC', Sequelize.fn('STR_TO_DATE', Sequelize.literal("CONCAT(date, ' ', time_slot)"), '%Y-%m-%d %h:%i %p')), 'ASC']
-      // ],
     });
-    if (data.length > 0 && data[0].status === 0) {
+
+    // Fetch workSchedule separately
+    let workScheduleData = await workScheduleModel.findAll({
+      where: {
+        doctor_id: doctorData.doctor_id,
+        day: weeklyTimeSlotsData.map((slot) => slot.day), // Get days from weeklyTimeSlots
+      },
+      attributes: ["session", "day"],
+    });
+    console.log({ workScheduleData });
+
+    // Merge both results
+    let groupedData = weeklyTimeSlotsData.reduce(
+      (acc, slot) => {
+        // Find the work schedule data matching the day
+        let workSchedule = workScheduleData.find((ws) => ws.day === slot.day);
+
+        // Assign 'morning' for AM and 'evening' for PM
+        let session = slot.time_slot.includes("am") ? "morning" : "evening";
+
+        // Create the updated slot object
+        let updatedSlot = {
+          ...slot.toJSON(), // Convert timeslot to plain object
+          session, // Assign session
+        };
+
+        // Group by session: morning or evening
+        if (session === "morning") {
+          acc.morning.push(updatedSlot);
+        } else {
+          acc.evening.push(updatedSlot);
+        }
+
+        return acc;
+      },
+      { morning: [], evening: [] } // Initial value for reduce: separate arrays for morning and evening
+    );
+
+    console.log(groupedData);
+
+    if (groupedData.length > 0 && groupedData[0].status === 0) {
       return handleResponse({
         res,
         statusCode: 200,
@@ -1026,18 +1063,18 @@ const getSingleWorkSchedule = async (req, res) => {
 
     // Debugging log
     // console.log("Filtered data:", data);
-    data = data.filter((slot) => {
-      const slotDate = new Date(slot.date);
-      const slotTime = new Date(`${slot.date}T${slot.time_slot}`);
+    // groupedData = groupedData.filter((slot) => {
+    //   const slotDate = new Date(slot.date);
+    //   const slotTime = new Date(`${slot.date}T${slot.time_slot}`);
 
-      // If the slot date is not the current date, keep it
-      if (slotDate.toDateString() !== now.toDateString()) {
-        return true;
-      }
+    //   // If the slot date is not the current date, keep it
+    //   if (slotDate.toDateString() !== now.toDateString()) {
+    //     return true;
+    //   }
 
-      // If the slot date is the current date, compare times
-      return slotTime > now;
-    });
+    //   // If the slot date is the current date, compare times
+    //   return slotTime > now;
+    // });
 
     const customSort = (a, b) => {
       const timeA = new Date("1970-01-01 " + a.time_slot);
@@ -1045,9 +1082,13 @@ const getSingleWorkSchedule = async (req, res) => {
 
       return timeA - timeB;
     };
+    let sortedWorkSlots = {
+      morning:{},
+      evening:{},
+    };
 
-    // Sorting the workSlots array using the custom sorting function
-    const sortedWorkSlots = data.sort(customSort);
+    sortedWorkSlots.morning = groupedData.morning.sort(customSort);
+    sortedWorkSlots.evening = groupedData.evening.sort(customSort);
 
     // console.log(sortedWorkSlots);
 
@@ -1058,7 +1099,7 @@ const getSingleWorkSchedule = async (req, res) => {
       data: {
         workSlots: sortedWorkSlots,
         // sortedWorkSlots,
-        availableWorkSlots: data.length,
+        availableWorkSlots: groupedData.length,
         type: doctorData?.bookingType,
       },
     });
