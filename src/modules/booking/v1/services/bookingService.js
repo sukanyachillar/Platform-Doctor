@@ -42,22 +42,21 @@ const bookAppointment = async (req, res) => {
     const getEntity = await entityModel.findOne({
       where: { entity_id: entityId }, // doctorProfile.entity_id
     });
-    const existingTimeslot = await weeklyTimeSlotsModel.findOne({
-      where: {
-        time_slot: timeSlot,
-        doctor_id: doctorId,
-        date: appointmentDate,
-        booking_status: 3
-      },
-    });
+    // const existingTimeslot = await weeklyTimeSlotsModel.findOne({
+    //   where: {
+    //     time_slot: timeSlot,
+    //     doctor_id: doctorId,
+    //     booking_status: 3
+    //   },
+    // });
 
-    if (!existingTimeslot) {
-      return handleResponse({
-        res,
-        message: "Slot not found on this date",
-        statusCode: 404,
-      });
-    }
+    // if (!existingTimeslot) {
+    //   return handleResponse({
+    //     res,
+    //     message: "Slot not found on this date",
+    //     statusCode: 404,
+    //   });
+    // }
 
     if (doctorProfile.status === 0) {
       return handleResponse({
@@ -83,20 +82,20 @@ const bookAppointment = async (req, res) => {
       });
     }
 
-    if (!existingTimeslot) {
-      return handleResponse({
-        res,
-        message: "Slot not found on this date",
-        statusCode: 404,
-      });
-    }
-    if (existingTimeslot.booking_status === 1) {
-      return handleResponse({
-        res,
-        message: "Slot already booked",
-        statusCode: 400,
-      });
-    }
+    // if (!existingTimeslot) {
+    //   return handleResponse({
+    //     res,
+    //     message: "Slot not found on this date",
+    //     statusCode: 404,
+    //   });
+    // // }
+    // if (existingTimeslot.booking_status === 1) {
+    //   return handleResponse({
+    //     res,
+    //     message: "Slot already booked",
+    //     statusCode: 400,
+    //   });
+    // }
 
     const doctorEntityData = await doctorEntityModel.findOne({
       where: {
@@ -105,22 +104,22 @@ const bookAppointment = async (req, res) => {
       },
     });
     // existingTimeslot.booking_status= 1;
-    if (existingTimeslot) {
-      await weeklyTimeSlotsModel.update(
-        {
-          // booking_status: 0,
-          booking_status: 3,
-        },
-        {
-          where: {
-            time_slot: timeSlot,
-            doctor_id: doctorId,
-            date: appointmentDate,
-            doctorEntityId: doctorEntityData.doctorEntityId,
-          },
-        }
-      );
-    }
+    // if (existingTimeslot) {
+    //   await weeklyTimeSlotsModel.update(
+    //     {
+    //       // booking_status: 0,
+    //       booking_status: 3,
+    //     },
+    //     {
+    //       where: {
+    //         time_slot: timeSlot,
+    //         doctor_id: doctorId,
+    //         date: appointmentDate,
+    //         doctorEntityId: doctorEntityData.doctorEntityId,
+    //       },
+    //     }
+    //   );
+    // }
 
     let orderIDFree;
     let data;
@@ -253,8 +252,8 @@ const slotOnHold = async (req, res) => {
       where: {
         time_slot: timeSlot,
         doctor_id: docData.doctor_id,
-        date: appointmentDate,
       },
+      attributes:["time_slot_id"]
     });
 
     if (!existingTimeslot) {
@@ -271,10 +270,14 @@ const slotOnHold = async (req, res) => {
         entityId,
       },
     });
+    const bookingData={
+      bookingDate:"",
+      appointmentDate:""
+    }
 
-    const [updatedRows] = await weeklyTimeSlotsModel.update(
+    const addBooking = await bookingModel.update(
       {
-        booking_status: 3,
+        bookingStatus: 3,
       },
       {
         where: {

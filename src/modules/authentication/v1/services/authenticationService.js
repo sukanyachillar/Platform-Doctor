@@ -1207,7 +1207,8 @@ const onboardDoctorService = async (data, res) => {
           consultation_time,
         };
 
-        createWorkScheduleFor28Days(workscheduleData);
+        // createWorkScheduleFor28Days(workscheduleData);
+        createWorkScheduleNew(workscheduleData);
       } else {
         return handleResponse({
           res,
@@ -1229,6 +1230,111 @@ const onboardDoctorService = async (data, res) => {
       message: "Internal error",
       statusCode: 500,
     });
+  }
+};
+
+const createWorkScheduleNew = async (data) => {
+  console.log("Work schedule creation");
+  try {
+    let { workingHours, doctor_id, entityId, consultation_time } = data;
+    let errorMessages = [];
+    let status = 1;
+    let message = "";
+
+    let doctorData = await doctorModel.findOne({
+      where: { status: 1, doctor_id },
+      attributes: ["doctor_id", "consultation_time", "tokens", "bookingType"],
+    });
+
+    if (!doctorData) {
+      console.log("Invalid input doctor data!");
+    }
+
+    const doctorEntityData = await doctorEntityModel.findOne({
+      where: { doctorId: doctor_id, entityId },
+    });
+
+    for (let work of workingHours) {
+      const { day, startTime, endTime, session } = work;
+      let daysArray = [
+        "monday",
+        "tuesday",
+        "wednesday",
+        "thursday",
+        "friday",
+        "saturday",
+        "sunday",
+      ];
+
+      // Validate day
+      let dayIn = daysArray.includes(day.toLowerCase());
+      if (!dayIn) {
+        console.log(`Invalid day: ${day}`);
+        continue;
+      }
+
+      let dayOfWeek = await getDayOfWeekIndex(day);
+      let datefromDay = await dateFromDay(dayOfWeek);
+
+      // Check if work schedule exists
+      let workExists = await workScheduleModel.findOne({
+        where: { entity_id: entityId, day, session, doctor_id },
+      });
+
+      if (workExists) {
+        console.log(
+          `Work schedule already exists for ${day} for session: ${session}`
+        );
+        continue;
+      }
+
+      let time_slots;
+
+      time_slots = await generateTokenBasedTimeSlots(
+        startTime,
+        endTime,
+        consultation_time
+      );
+
+      await Promise.all(
+        time_slots.map(async (ele, index) => {
+          // Check if time slot exists
+          let existingTimeSlot = await weeklyTimeSlotsModel.findOne({
+            where: {
+              day: day,
+              time_slot: ele,
+              doctor_id: doctor_id,
+            },
+          });
+
+          if (existingTimeSlot) {
+            console.log(
+              `Time slot ${ele} already exists for doctor `
+            );
+          } else {
+            // Create new time slot
+            let newTimeSlot = new weeklyTimeSlotsModel({
+              day,
+              time_slot: ele,
+              doctor_id,
+              doctorEntityId: doctorEntityData
+                ? doctorEntityData.doctorEntityId
+                : null,
+              token_number: index + 1,
+            });
+
+            const result = await newTimeSlot.save();
+            if (result) {
+              console.log(
+                `Time slot ${ele} added for doctor `
+              );
+            }
+          }
+        })
+      );
+    }
+  } catch (error) {
+    console.log("Timeslot creation ERROR =>>", error);
   }
 };
 

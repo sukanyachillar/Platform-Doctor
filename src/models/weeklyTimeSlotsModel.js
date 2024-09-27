@@ -10,10 +10,6 @@ const weeklyTimeSlotsModel = sequelize.define("weeklyTimeSlots", {
     autoIncrement: true,
     allowNull: false,
   },
-  date: {
-    type: DataTypes.STRING,
-    allowNull: false,
-  },
   day: {
     type: DataTypes.STRING,
     allowNull: false,
@@ -22,7 +18,6 @@ const weeklyTimeSlotsModel = sequelize.define("weeklyTimeSlots", {
     type: DataTypes.STRING,
     allowNull: false,
   },
-
   token_number: {
     type: DataTypes.STRING,
     allowNull: true,

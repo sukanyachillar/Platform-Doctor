@@ -1517,7 +1517,7 @@ const getBookingDetails = async (customerId) => {
 
 const getDoctorDetails = async (workSlotId) => {
   const weeklyTimeSlots = await weeklyTimeSlotsModel.findAll({
-    attributes: ["time_slot", "time_slot_id", "date", "day", "doctor_id"],
+    attributes: ["time_slot", "time_slot_id",  "day", "doctor_id"],
     where: {
       time_slot_id: workSlotId,
     },

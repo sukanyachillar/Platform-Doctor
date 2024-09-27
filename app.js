@@ -51,9 +51,9 @@ Sequelize.sync()
 
 await associateModels();
 
-cron.schedule("5 0 * * *", async () => {
-  cronJobs.timeSlotCron();
-});
+// cron.schedule("5 0 * * *", async () => {
+//   cronJobs.timeSlotCron();
+// });
 
 cron.schedule("*/10 * * * *", async () => {
   await cronJobs.paymentVerifyCheck();
