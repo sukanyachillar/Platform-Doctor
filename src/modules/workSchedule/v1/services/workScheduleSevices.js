@@ -908,6 +908,10 @@ const getSingleWorkSchedule = async (req, res) => {
     const month = String(date.getMonth() + 1).padStart(2, "0");
     const slotDate = String(date.getDate()).padStart(2, "0");
     const formattedDate = `${year}-${month}-${slotDate}`;
+
+    const daysOfWeek = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
+    const dayOfWeek = daysOfWeek[date.getDay()];  
+
     let phoneNo;
     let decryptedPhone;
     if (encryptedPhone) {
@@ -954,7 +958,7 @@ const getSingleWorkSchedule = async (req, res) => {
       "doctor_id",
       "booking_status",
       "doctorEntityId",
-      "status",
+      // "status",
       "createdAt",
       "updatedAt",
     ];
@@ -965,52 +969,74 @@ const getSingleWorkSchedule = async (req, res) => {
 
     let weeklyTimeSlotsData = await weeklyTimeSlotsModel.findAll({
       where: {
-        date: formattedDate,
+        day:dayOfWeek.toLowerCase(),
         doctor_id: doctorData.doctor_id,
         doctorEntityId: doctorEntityId,
+        status:1
       },
       attributes: attbr,
     });
 
-    // Fetch workSchedule separately
-    let workScheduleData = await workScheduleModel.findAll({
+
+    const timeSlotIds = weeklyTimeSlotsData.map(slot => slot.time_slot_id);
+ console.log({timeSlotIds});
+
+
+    const bookings  = await bookingModel.findAll({
       where: {
-        doctor_id: doctorData.doctor_id,
-        day: weeklyTimeSlotsData.map((slot) => slot.day), // Get days from weeklyTimeSlots
-      },
-      attributes: ["session", "day"],
+        workSlotId: timeSlotIds
+      }
     });
-    console.log({ workScheduleData });
 
-    // Merge both results
-    let groupedData = weeklyTimeSlotsData.reduce(
-      (acc, slot) => {
-        // Find the work schedule data matching the day
-        let workSchedule = workScheduleData.find((ws) => ws.day === slot.day);
+    const bookingStatusMap = {};
+    bookings.forEach(booking => {
+      bookingStatusMap[booking.workSlotId] = booking.bookingStatus;
+    });
 
-        // Assign 'morning' for AM and 'evening' for PM
-        let session = slot.time_slot.includes("am") ? "morning" : "evening";
-        session = slot.time_slot.includes("AM") ? "morning" : "evening";
 
-        // Create the updated slot object
-        let updatedSlot = {
-          ...slot.toJSON(), // Convert timeslot to plain object
-          session, // Assign session
-        };
+    const timeSlotsWithStatus = weeklyTimeSlotsData.map(slot => {
+      const bookingStatus = bookingStatusMap[slot.time_slot_id]; // Get the booking status if exists
+    
+      if (bookingStatus === undefined) {
+        // No entry in booking table
+        return { ...slot.dataValues, booking_status: 0 }; // Slot is open
+      } else if (bookingStatus === 2) {
+        // Booking status is canceled
+        return { ...slot.dataValues, booking_status: 0 }; // Slot is open
+      } else {
+        // Other booking statuses (0 or 1) mean allocated
+        return { ...slot.dataValues, booking_status: 1 }; // Slot is allocated
+      }
+    });
+    
+    console.log({timeSlotsWithStatus});
+ 
 
-        // Group by session: morning or evening
-        if (session === "morning") {
-          acc.morning.push(updatedSlot);
-        } else {
-          acc.evening.push(updatedSlot);
-        }
+    
 
-        return acc;
-      },
-      { morning: [], evening: [] } // Initial value for reduce: separate arrays for morning and evening
-    );
+    // let workScheduleData = await workScheduleModel.findAll({
+    //   where: {
+    //     doctor_id: doctorData.doctor_id,
+    //     day: availableTimeSlots.map((slot) => slot.day), // Get days from weeklyTimeSlots
+    //   },
+    //   attributes: ["session", "day"],
+    // });
+    // console.log({ workScheduleData });
 
-    console.log(groupedData);
+    const groupedData = timeSlotsWithStatus.reduce((acc, slot) => {
+      const session = slot.time_slot.toLowerCase().includes("am") ? "morning" : "evening";
+      const updatedSlot = { ...slot, session };
+
+      if (session === "morning") {
+        acc.morning.push(updatedSlot);
+      } else {
+        acc.evening.push(updatedSlot);
+      }
+
+      return acc;
+    }, { morning: [], evening: [] });
+
+    // console.log(groupedData);
 
     if (groupedData.length > 0 && groupedData[0].status === 0) {
       return handleResponse({

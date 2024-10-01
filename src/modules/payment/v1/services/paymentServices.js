@@ -199,11 +199,11 @@ const paymentUpdate = async (bookingData, res) => {
         where: { userId: timeSlot.entityId },
         attributes: ["token"],
       }),
-      weeklyTimeSlotsModel.update(
-        // { booking_status: 0 },
-        { booking_status: 1 },
-        { where: { time_slot_id: timeSlot.workSlotId } }
-      ),
+      // weeklyTimeSlotsModel.update(
+      //   // { booking_status: 0 },
+      //   { booking_status: 1 },
+      //   { where: { time_slot_id: timeSlot.workSlotId } }
+      // ),
     ]);
 
     const registration_tokens = registrationIds.map((token) => token.token);
@@ -303,10 +303,10 @@ const paymentFailUpdate = async (bookingData, res) => {
       });
     }
 
-    const [timeslotUpdate] = await weeklyTimeSlotsModel.update(
-      { booking_status: 0 },
-      { where: { time_slot_id: bookingDetails.workSlotId } }
-    );
+    // const [timeslotUpdate] = await weeklyTimeSlotsModel.update(
+    //   { booking_status: 0 },
+    //   { where: { time_slot_id: bookingDetails.workSlotId } }
+    // );
 
     if (!timeslotUpdate > 0) {
       return handleResponse({

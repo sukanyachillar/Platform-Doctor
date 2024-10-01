@@ -409,7 +409,7 @@ const amountDetails = async (req, res) => {
 
                 {
                     model: doctorEntityModel,
-                    attributes: ['consultationTime', 'consultationCharge', 'entityId'],
+                    attributes: ['consultationTime',  'entityId'],
                     where: { entityId, doctorId: isValidDr.doctor_id },
                     include: [
                         {
