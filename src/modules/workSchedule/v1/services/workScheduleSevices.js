@@ -968,6 +968,7 @@ const getSingleWorkSchedule = async (req, res) => {
         date: formattedDate,
         doctor_id: doctorData.doctor_id,
         doctorEntityId: doctorEntityId,
+        status:1
       },
       attributes: attbr,
     });
@@ -1010,7 +1011,7 @@ const getSingleWorkSchedule = async (req, res) => {
       { morning: [], evening: [] } // Initial value for reduce: separate arrays for morning and evening
     );
 
-    console.log(groupedData);
+    // console.log(groupedData);
 
     if (groupedData.length > 0 && groupedData[0].status === 0) {
       return handleResponse({
