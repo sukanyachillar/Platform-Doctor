@@ -254,6 +254,7 @@ const slotOnHold = async (req, res) => {
         time_slot: timeSlot,
         doctor_id: docData.doctor_id,
         date: appointmentDate,
+        booking_status:0
       },
     });
 
