@@ -325,13 +325,13 @@ const slotOnHold = async (req, res) => {
       });
     }
 
-    const doctorEntityData = await doctorEntityModel.findOne({
-      where: {
-        doctorId: docData.doctor_id,
-        entityId,
-      },
-    });
-    console.log({ doctorEntityData });
+    // const doctorEntityData = await doctorEntityModel.findOne({
+    //   where: {
+    //     doctorId: docData.doctor_id,
+    //     entityId,
+    //   },
+    // });
+    // console.log({ doctorEntityData });
 
     const bookingData = {
       bookingDate: new Date(),

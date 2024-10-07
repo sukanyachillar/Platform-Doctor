@@ -979,7 +979,7 @@ const getSingleWorkSchedule = async (req, res) => {
 
 
     const timeSlotIds = weeklyTimeSlotsData.map(slot => slot.time_slot_id);
- console.log({timeSlotIds});
+//  console.log({timeSlotIds});
 
 
     const bookings  = await bookingModel.findAll({
@@ -1009,7 +1009,7 @@ const getSingleWorkSchedule = async (req, res) => {
       }
     });
     
-    console.log({timeSlotsWithStatus});
+    // console.log({timeSlotsWithStatus});
  
 
     

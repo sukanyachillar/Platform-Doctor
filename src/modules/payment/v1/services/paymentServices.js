@@ -613,7 +613,7 @@ const paymentVerify = async (body, res) => {
         include: [
           {
             model: weeklyTimeSlotsModel,
-            attributes: ["doctor_id", "date", "time_slot"],
+            attributes: ["doctor_id", "time_slot"],
             include: [
               {
                 model: doctorModel,
@@ -639,11 +639,12 @@ const paymentVerify = async (body, res) => {
           // Format the date as "dd-mm-yyyy"
           return `${day}-${month}-${year}`;
         };
-        const dateOfBooking = formatDate(weeklyTimeSlot.date);
-        const content = `Your appointment with Dr. ${docName} on ${dateOfBooking} at ${weeklyTimeSlot.time_slot} has been confirmed. Thank you. Chillar`;
-        const phone = bookingData.bookedPhoneNo;
+        const dateOfBooking = formatDate(bookingData.appointmentDate);
+        const content = `Your appointment with Dr. ${docName} on ${dateOfBooking} at ${bookingData.appointmentDate} has been confirmed. Thank you. Chillar`;
+        // const phone = bookingData.bookedPhoneNo;
+        const phone = 8606500638;
         const templateId = "1607100000000323224";
-        const smsRes = await smsHandler.sendSms(content, phone,templateId);
+        const smsRes = await smsHandler.sendSms(content, phone, templateId);
 
         if (smsRes) {
           return handleResponse({
