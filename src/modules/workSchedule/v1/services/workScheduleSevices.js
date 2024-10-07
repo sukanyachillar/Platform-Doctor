@@ -968,10 +968,21 @@ const getSingleWorkSchedule = async (req, res) => {
         date: formattedDate,
         doctor_id: doctorData.doctor_id,
         doctorEntityId: doctorEntityId,
-        status:1
       },
       attributes: attbr,
     });
+
+    if (weeklyTimeSlotsData.length > 0 && weeklyTimeSlotsData[0].status === 0) {
+      return handleResponse({
+        res,
+        statusCode: 200,
+        message: "Doctor not available today",
+        data: {
+          workSlots: { morning: [], evening: [] },
+          isDocUnavailable: true,
+        },
+      });
+    }
 
     // Fetch workSchedule separately
     let workScheduleData = await workScheduleModel.findAll({
@@ -981,7 +992,7 @@ const getSingleWorkSchedule = async (req, res) => {
       },
       attributes: ["session", "day"],
     });
-    console.log({ workScheduleData });
+    // console.log({ workScheduleData });
 
     // Merge both results
     let groupedData = weeklyTimeSlotsData.reduce(
@@ -1012,17 +1023,6 @@ const getSingleWorkSchedule = async (req, res) => {
 
     // console.log(groupedData);
 
-    if (groupedData.length > 0 && groupedData[0].status === 0) {
-      return handleResponse({
-        res,
-        statusCode: 200,
-        message: "Doctor not available today",
-        data: {
-          workSlots: [],
-          isDocUnavailable: true,
-        },
-      });
-    }
     console.log({ formattedDate });
     let availableWorkSlots = await weeklyTimeSlots.findAll({
       where: {
@@ -1084,8 +1084,8 @@ const getSingleWorkSchedule = async (req, res) => {
       return timeA - timeB;
     };
     let sortedWorkSlots = {
-      morning:{},
-      evening:{},
+      morning: {},
+      evening: {},
     };
 
     sortedWorkSlots.morning = groupedData.morning.sort(customSort);
