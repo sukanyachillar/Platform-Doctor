@@ -1005,7 +1005,7 @@ const phoneRegisterService = async (data, res) => {
       if (phoneExists && phoneExistsEntity) {
         return handleResponse({
           res,
-          statusCode: 200,
+          statusCode: 400,
           message: "Phone number already exists",
           data: {
             entity_id: phoneExistsEntity?.entity_id,
