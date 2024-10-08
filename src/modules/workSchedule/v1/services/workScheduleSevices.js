@@ -669,6 +669,8 @@ const docAvail = async (body, userData, res) => {
   try {
     let { entity_id } = userData;
     let { doctorId, date, status } = body;
+    const daysOfWeek = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
+    const dayOfWeek = daysOfWeek[date.getDay()];  
 
     const doctorEntityData = await doctorEntityModel.findOne({
       where: { doctorId: doctorId, entityId: entity_id },
@@ -693,7 +695,7 @@ const docAvail = async (body, userData, res) => {
         where: {
           doctorEntityId: doctorEntityData.doctorEntityId,
           doctor_id: doctorId,
-          date,
+          day:dayOfWeek.toLowerCase(),
         },
         include: [
           {
@@ -704,16 +706,16 @@ const docAvail = async (body, userData, res) => {
       });
       // console.log("isTimeslot:", isTimeslot);
       if (isTimeslot.length !== 0) {
-        let [updatedNo] = await weeklyTimeSlotsModel.update(
-          { status: 0, booking_status: 0 },
-          {
-            where: {
-              doctorEntityId: doctorEntityData.doctorEntityId,
-              doctor_id: doctorId,
-              date: date,
-            },
-          }
-        );
+        // let [updatedNo] = await weeklyTimeSlotsModel.update(
+        //   { status: 0, booking_status: 0 },
+        //   {
+        //     where: {
+        //       doctorEntityId: doctorEntityData.doctorEntityId,
+        //       doctor_id: doctorId,
+        //       date: date,
+        //     },
+        //   }
+        // );
 
         let bookingIds = isTimeslot
           .filter((slot) => slot.booking)
@@ -742,7 +744,7 @@ const docAvail = async (body, userData, res) => {
               // Format the date as "dd-mm-yyyy"
               return `${day}-${month}-${year}`;
             };
-            const dateOfBooking = formatDate(slot.date);
+            const dateOfBooking = formatDate(slot.booking.appointmentDate);
             const content = `We regret to inform you that Dr. ${doctorName} has cancelled your appointment on ${dateOfBooking} at ${slot.time_slot}. Please book another appointment at your convenience. Chillar`;
             const phone = slot.booking.bookedPhoneNo;
             const templateId = "1607100000000323225";
@@ -917,7 +919,7 @@ const getSingleWorkSchedule = async (req, res) => {
     if (encryptedPhone) {
       decryptedPhone = await decrypt(encryptedPhone, process.env.CRYPTO_SECRET);
       phoneNo = decryptedPhone;
-      console.log("phoneNo", phoneNo, decryptedPhone);
+      // console.log("phoneNo", phoneNo, decryptedPhone);
     } else {
       phoneNo = phone;
     }
@@ -1004,7 +1006,7 @@ const getSingleWorkSchedule = async (req, res) => {
         // Booking status is canceled
         return { ...slot.dataValues, booking_status: 0 }; // Slot is open
       } else {
-        // Other booking statuses (0 or 1) mean allocated
+        // Other booking statuses  means allocated
         return { ...slot.dataValues, booking_status: 1 }; // Slot is allocated
       }
     });

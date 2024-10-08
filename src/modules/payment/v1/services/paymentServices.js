@@ -4,7 +4,7 @@ import userModel from "../../../../models/userModel.js";
 import doctorModel from "../../../../models/doctorModel.js";
 import weeklyTimeSlotsModel from "../../../../models/weeklyTimeSlotsModel.js";
 import { handleResponse } from "../../../../utils/handlers.js";
-import { Op, Sequelize } from "sequelize";
+import { Op, Sequelize, where } from "sequelize";
 import admin from "firebase-admin";
 import serviceAccount from "../../../../utils/chillarprototype-firebase-adminsdk-7wsnl-aff859ec9b.json" assert { type: "json" };
 import tokenModel from "../../../../models/tokenModel.js";
@@ -675,7 +675,7 @@ const paymentVerify = async (body, res) => {
 
 const verifySuccessPaymentWebhook = async (body, res) => {
   try {
-    await logModel.create({
+    const logAdded=await logModel.create({
       apiEndpoint: "/payment-success-webhook",
       requestMethod: "POST",
       requestData: body,
@@ -711,78 +711,101 @@ const verifySuccessPaymentWebhook = async (body, res) => {
         ),
       ]);
 
-      if (timeSlot) {
-        await weeklyTimeSlotsModel.update(
-          { booking_status: 1 },
-          { where: { time_slot_id: timeSlot.workSlotId } }
-        );
-      } else {
-        throw new Error("Time slot not found for the given orderId.");
+      // if (timeSlot) {
+      //   await weeklyTimeSlotsModel.update(
+      //     { booking_status: 1 },
+      //     { where: { time_slot_id: timeSlot.workSlotId } }
+      //   );
+      // } else {
+      //   throw new Error("Time slot not found for the given orderId.");
+      // }
+
+      // let bookingData = await bookingModel.findOne({
+      //   where: { orderId },
+      //   include: [
+      //     {
+      //       model: weeklyTimeSlotsModel,
+      //       attributes: ["doctor_id", "date", "time_slot"],
+      //       include: [
+      //         {
+      //           model: doctorModel,
+      //           attributes: ["doctor_name"],
+      //         },
+      //       ],
+      //     },
+      //   ],
+      // });
+
+      await logModel.update({
+        apiEndpoint: "/payment-success-webhook",
+        requestMethod: "POST",
+        responseStatus: 200,
+        responseData: { message: "Webhook success", phone },
+      },
+      {where:{
+        logId:logAdded.logId
+      }});
+
+      if (updatePayment) {
+        return handleResponse({
+          res,
+          message: "Payment verified",
+          statusCode: 200,
+        });
+      }else{
+        console.log("Payment update failed in payment success webhook");
+        await logModel.create({
+          apiEndpoint: "/payment-success-webhook",
+          requestMethod: "POST",
+          responseStatus: 400,
+          responseData: { message: "Payment update failed", phone },
+        });
       }
 
-      let bookingData = await bookingModel.findOne({
-        where: { orderId },
-        include: [
-          {
-            model: weeklyTimeSlotsModel,
-            attributes: ["doctor_id", "date", "time_slot"],
-            include: [
-              {
-                model: doctorModel,
-                attributes: ["doctor_name"],
-              },
-            ],
-          },
-        ],
-      });
-
-      if (bookingData && bookingData.weeklyTimeSlot) {
-        let weeklyTimeSlot = bookingData.weeklyTimeSlot;
-        let doctor = weeklyTimeSlot.doctor;
-        let docName = doctor?.doctor_name.replace(/Dr\s+/, "");
-        docName = await docName?.split(" ")[0];
-        const formatDate = (dateString) => {
-          const date = new Date(dateString);
-
-          const day = String(date.getUTCDate()).padStart(2, "0");
-          const month = String(date.getUTCMonth() + 1).padStart(2, "0");
-          const year = date.getUTCFullYear();
-
-          // Format the date as "dd-mm-yyyy"
-          return `${day}-${month}-${year}`;
-        };
-        const dateOfBooking = formatDate(weeklyTimeSlot.date);
-        const content = `Your appointment with Dr. ${docName} on ${dateOfBooking} at ${weeklyTimeSlot.time_slot} has been confirmed. Thank you. Chillar`;
-        const phone = bookingData.bookedPhoneNo;
-
-        const smsRes = await smsHandler.sendSms(content, phone);
-
-        if (smsRes) {
-          await logModel.create({
-            apiEndpoint: "/payment-success-webhook",
-            requestMethod: "POST",
-            responseStatus: 200,
-            responseData: { message: "SMS sent successfully", phone },
-          });
-          return handleResponse({
-            res,
-            message: "verify status",
-            statusCode: 200,
-          });
-        } else {
-          await logModel.create({
-            apiEndpoint: "/payment-success-webhook",
-            requestMethod: "POST",
-            responseStatus: 400,
-            responseData: { message: "SMS failed", phone },
-          });
-          return handleResponse({
-            res,
-            message: "Sms failed but payment verified",
-            statusCode: 200,
-          });
-        }
+      if (updateBooking) {
+        return handleResponse({
+          res,
+          message: "Payment verified",
+          statusCode: 200,
+        });
+      }else{
+        console.log("Booking update failed in payment success webhook");
+        await logModel.create({
+          apiEndpoint: "/payment-success-webhook",
+          requestMethod: "POST",
+          responseStatus: 400,
+          responseData: { message: "Booking update failed", phone },
+        });
       }
+
+      
+
+      // if (bookingData && bookingData.weeklyTimeSlot) {
+        // let weeklyTimeSlot = bookingData.weeklyTimeSlot;
+        // let doctor = weeklyTimeSlot.doctor;
+        // let docName = doctor?.doctor_name.replace(/Dr\s+/, "");
+        // docName = await docName?.split(" ")[0];
+        // const formatDate = (dateString) => {
+        //   const date = new Date(dateString);
+
+        //   const day = String(date.getUTCDate()).padStart(2, "0");
+        //   const month = String(date.getUTCMonth() + 1).padStart(2, "0");
+        //   const year = date.getUTCFullYear();
+
+        //   // Format the date as "dd-mm-yyyy"
+        //   return `${day}-${month}-${year}`;
+        // };
+        // const dateOfBooking = formatDate(weeklyTimeSlot.date);
+        // const content = `Your appointment with Dr. ${docName} on ${dateOfBooking} at ${weeklyTimeSlot.time_slot} has been confirmed. Thank you. Chillar`;
+        // const phone = bookingData.bookedPhoneNo;
+
+        // const smsRes = await smsHandler.sendSms(content, phone);
+
+        
+          
+      // }
+
+
     } else {
       return handleResponse({
         res,
@@ -838,10 +861,10 @@ const verifyFailPaymentWebhook = async (body, res) => {
         { where: { orderId: orderId } }
       );
 
-      const [timeslotUpdate] = await weeklyTimeSlotsModel.update(
-        { booking_status: 0 },
-        { where: { time_slot_id: bookingDetails.workSlotId } }
-      );
+      // const [timeslotUpdate] = await weeklyTimeSlotsModel.update(
+      //   { booking_status: 0 },
+      //   { where: { time_slot_id: bookingDetails.workSlotId } }
+      // );
 
       return handleResponse({
         res,
