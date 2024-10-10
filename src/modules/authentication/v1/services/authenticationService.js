@@ -1010,6 +1010,7 @@ const phoneRegisterService = async (data, res) => {
           data: {
             entity_id: phoneExistsEntity?.entity_id,
             doctor_id: phoneExists?.doctor_id,
+            doctorPhone: phone,
             profile_completed: 0,
           },
         });
@@ -1026,8 +1027,8 @@ const phoneRegisterService = async (data, res) => {
               statusCode: 200,
               message: "Phone number added successfully",
               data: {
-                entityId: phoneAddEntity.entity_id,
-                doctorId: phoneAdd.doctor_id,
+                entity_id: phoneAddEntity.entity_id,
+                doctor_id: phoneAdd.doctor_id,
                 doctorPhone: phoneAdd.doctor_phone,
                 profile_completed: 0,
               },
