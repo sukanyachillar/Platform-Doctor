@@ -758,7 +758,7 @@ const listBooking_admin = async (
           model: weeklyTimeSlotsModel,
           where: {
             doctor_id: doctorId,
-            date: date,
+            day: dayOfWeek,
           },
         },
       ],
