@@ -1003,17 +1003,62 @@ const phoneRegisterService = async (data, res) => {
         where: { phone },
       });
       if (phoneExists && phoneExistsEntity) {
-        return handleResponse({
-          res,
-          statusCode: 400,
-          message: "Phone number already exists",
-          data: {
-            entity_id: phoneExistsEntity?.entity_id,
-            doctor_id: phoneExists?.doctor_id,
-            doctorPhone: phone,
-            profile_completed: 0,
-          },
-        });
+        if (phoneExists.doctor_name == "" || phoneExists.doctor_name == null) {
+          return handleResponse({
+            res,
+            statusCode: 200,
+            message: "Please complete registration",
+            data: {
+              entity_id: phoneExistsEntity?.entity_id,
+              doctor_id: phoneExists?.doctor_id,
+              doctorPhone: phone,
+              profile_completed: 0,
+            },
+          });
+        } else if (
+          !phoneExists.department_id ||
+          phoneExists.department_id == null
+        ) {
+          return handleResponse({
+            res,
+            statusCode: 200,
+            message: "Please complete registration",
+            data: {
+              entity_id: phoneExistsEntity?.entity_id,
+              doctor_id: phoneExists?.doctor_id,
+              doctorPhone: phone,
+              profile_completed: 0,
+            },
+          });
+        } else if (
+          (phoneExists.doctor_name !== "" ||
+            phoneExists.doctor_name !== null) &&
+          (phoneExists.entity_id || phoneExists.entity_id !== null)
+        ) {
+          return handleResponse({
+            res,
+            statusCode: 400,
+            message: "User already registered",
+            data: {
+              entity_id: phoneExistsEntity?.entity_id,
+              doctor_id: phoneExists?.doctor_id,
+              doctorPhone: phone,
+              profile_completed: 1,
+            },
+          });
+        } else {
+          return handleResponse({
+            res,
+            statusCode: 200,
+            message: "Please complete registration",
+            data: {
+              entity_id: phoneExistsEntity?.entity_id,
+              doctor_id: phoneExists?.doctor_id,
+              doctorPhone: phone,
+              profile_completed: 0,
+            },
+          });
+        }
       } else {
         let phoneAddEntity = await entityModel.create({ phone });
         if (phoneAddEntity) {
