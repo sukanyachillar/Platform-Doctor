@@ -557,6 +557,20 @@ const slotOnHold = async (req, res) => {
 // };
 
 const listBooking = async ({ doctorId, date, entityId }, res) => {
+
+  let dateObj = new Date(date);
+
+  const daysOfWeek = [
+    "Sunday",
+    "Monday",
+    "Tuesday",
+    "Wednesday",
+    "Thursday",
+    "Friday",
+    "Saturday",
+  ];
+  const dayOfWeek = daysOfWeek[dateObj.getDay()];
+
   try {
     let whereBookingCond = {};
 
@@ -582,7 +596,7 @@ const listBooking = async ({ doctorId, date, entityId }, res) => {
       weeklyTimeSlotsModel.count({
         where: {
           doctor_id: doctorId,
-          date: date,
+          day: dayOfWeek,
           // bookingStatus: 0,
         },
       }),
@@ -616,7 +630,7 @@ const listBooking = async ({ doctorId, date, entityId }, res) => {
             attributes: ["time_slot"],
             where: {
               doctor_id: doctorId,
-              date: date,
+              day: dayOfWeek,
             },
           },
         ],
@@ -647,7 +661,7 @@ const listBooking = async ({ doctorId, date, entityId }, res) => {
       customerPhone: booking.bookedPhoneNo ? booking.bookedPhoneNo : "",
       bookingStatus: booking.bookingStatus,
     }));
-    console.log("APP==>", appointmentList);
+    // console.log("APP==>", appointmentList);
 
     const completedAppointments = appointmentList.filter(
       (appointment) => appointment.bookingStatus === 1
@@ -685,6 +699,19 @@ const listBooking_admin = async (
   params,
   res
 ) => {
+
+  let dateObj = new Date(date);
+
+  const daysOfWeek = [
+    "Sunday",
+    "Monday",
+    "Tuesday",
+    "Wednesday",
+    "Thursday",
+    "Friday",
+    "Saturday",
+  ];
+  const dayOfWeek = daysOfWeek[dateObj.getDay()];
   try {
     const page = parseInt(params.page) || 1;
     const pageSize = parseInt(params.limit) || 10;

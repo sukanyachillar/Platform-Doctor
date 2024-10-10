@@ -675,7 +675,7 @@ const paymentVerify = async (body, res) => {
 
 const verifySuccessPaymentWebhook = async (body, res) => {
   try {
-    const logAdded=await logModel.create({
+    const logAdded = await logModel.create({
       apiEndpoint: "/payment-success-webhook",
       requestMethod: "POST",
       requestData: body,
@@ -736,15 +736,19 @@ const verifySuccessPaymentWebhook = async (body, res) => {
       //   ],
       // });
 
-      await logModel.update({
-        apiEndpoint: "/payment-success-webhook",
-        requestMethod: "POST",
-        responseStatus: 200,
-        responseData: { message: "Webhook success", phone },
-      },
-      {where:{
-        logId:logAdded.logId
-      }});
+      await logModel.update(
+        {
+          apiEndpoint: "/payment-success-webhook",
+          requestMethod: "POST",
+          responseStatus: 200,
+          responseData: { message: "Webhook success", phone },
+        },
+        {
+          where: {
+            logId: logAdded?.logId,
+          },
+        }
+      );
 
       if (updatePayment) {
         return handleResponse({
@@ -752,14 +756,21 @@ const verifySuccessPaymentWebhook = async (body, res) => {
           message: "Payment verified",
           statusCode: 200,
         });
-      }else{
+      } else {
         console.log("Payment update failed in payment success webhook");
-        await logModel.create({
-          apiEndpoint: "/payment-success-webhook",
-          requestMethod: "POST",
-          responseStatus: 400,
-          responseData: { message: "Payment update failed", phone },
-        });
+        await logModel.update(
+          {
+            apiEndpoint: "/payment-success-webhook",
+            requestMethod: "POST",
+            responseStatus: 400,
+            responseData: { message: "Payment update failed", phone },
+          },
+          {
+            where: {
+              logId: logAdded?.logId,
+            },
+          }
+        );
       }
 
       if (updateBooking) {
@@ -768,44 +779,45 @@ const verifySuccessPaymentWebhook = async (body, res) => {
           message: "Payment verified",
           statusCode: 200,
         });
-      }else{
+      } else {
         console.log("Booking update failed in payment success webhook");
-        await logModel.create({
-          apiEndpoint: "/payment-success-webhook",
-          requestMethod: "POST",
-          responseStatus: 400,
-          responseData: { message: "Booking update failed", phone },
-        });
+        await logModel.update(
+          {
+            apiEndpoint: "/payment-success-webhook",
+            requestMethod: "POST",
+            responseStatus: 400,
+            responseData: { message: "Booking update failed", phone },
+          },
+          {
+            where: {
+              logId: logAdded?.logId,
+            },
+          }
+        );
       }
 
-      
-
       // if (bookingData && bookingData.weeklyTimeSlot) {
-        // let weeklyTimeSlot = bookingData.weeklyTimeSlot;
-        // let doctor = weeklyTimeSlot.doctor;
-        // let docName = doctor?.doctor_name.replace(/Dr\s+/, "");
-        // docName = await docName?.split(" ")[0];
-        // const formatDate = (dateString) => {
-        //   const date = new Date(dateString);
+      // let weeklyTimeSlot = bookingData.weeklyTimeSlot;
+      // let doctor = weeklyTimeSlot.doctor;
+      // let docName = doctor?.doctor_name.replace(/Dr\s+/, "");
+      // docName = await docName?.split(" ")[0];
+      // const formatDate = (dateString) => {
+      //   const date = new Date(dateString);
 
-        //   const day = String(date.getUTCDate()).padStart(2, "0");
-        //   const month = String(date.getUTCMonth() + 1).padStart(2, "0");
-        //   const year = date.getUTCFullYear();
+      //   const day = String(date.getUTCDate()).padStart(2, "0");
+      //   const month = String(date.getUTCMonth() + 1).padStart(2, "0");
+      //   const year = date.getUTCFullYear();
 
-        //   // Format the date as "dd-mm-yyyy"
-        //   return `${day}-${month}-${year}`;
-        // };
-        // const dateOfBooking = formatDate(weeklyTimeSlot.date);
-        // const content = `Your appointment with Dr. ${docName} on ${dateOfBooking} at ${weeklyTimeSlot.time_slot} has been confirmed. Thank you. Chillar`;
-        // const phone = bookingData.bookedPhoneNo;
+      //   // Format the date as "dd-mm-yyyy"
+      //   return `${day}-${month}-${year}`;
+      // };
+      // const dateOfBooking = formatDate(weeklyTimeSlot.date);
+      // const content = `Your appointment with Dr. ${docName} on ${dateOfBooking} at ${weeklyTimeSlot.time_slot} has been confirmed. Thank you. Chillar`;
+      // const phone = bookingData.bookedPhoneNo;
 
-        // const smsRes = await smsHandler.sendSms(content, phone);
+      // const smsRes = await smsHandler.sendSms(content, phone);
 
-        
-          
       // }
-
-
     } else {
       return handleResponse({
         res,
@@ -815,12 +827,21 @@ const verifySuccessPaymentWebhook = async (body, res) => {
     }
   } catch (error) {
     console.log({ error });
-    await logModel.create({
-      apiEndpoint: "/payment-success-webhook",
-      requestMethod: "POST",
-      responseStatus: 500,
-      errorMessage: error.message,
-    });
+
+    await logModel.update(
+      {
+        apiEndpoint: "/payment-success-webhook",
+        requestMethod: "POST",
+        responseStatus: 500,
+        errorMessage: error.message,
+      },
+      {
+        where: {
+          logId: logAdded?.logId,
+        },
+      }
+    );
+
     return handleResponse({
       res,
       message: "Webhook error",
