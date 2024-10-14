@@ -770,7 +770,7 @@ const listBooking_admin = async (
       weeklyTimeSlotsModel.count({
         where: {
           doctor_id: doctorId,
-          date: date,
+          day: dayOfWeek,
         },
       }),
 
@@ -801,7 +801,7 @@ const listBooking_admin = async (
             attributes: ["time_slot"],
             where: {
               doctor_id: doctorId,
-              date: date,
+              day: dayOfWeek,
             },
           },
         ],
