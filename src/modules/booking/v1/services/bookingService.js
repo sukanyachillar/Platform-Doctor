@@ -58,7 +58,7 @@ const bookAppointment = async (req, res) => {
       where: {
         time_slot: timeSlot,
         doctor_id: doctorId,
-        day:dayOfWeek,
+        day: dayOfWeek,
         // booking_status: 3
       },
     });
@@ -557,7 +557,6 @@ const slotOnHold = async (req, res) => {
 // };
 
 const listBooking = async ({ doctorId, date, entityId }, res) => {
-
   let dateObj = new Date(date);
 
   const daysOfWeek = [
@@ -699,7 +698,6 @@ const listBooking_admin = async (
   params,
   res
 ) => {
-
   let dateObj = new Date(date);
 
   const daysOfWeek = [
@@ -870,6 +868,18 @@ const listBooking_admin = async (
 const getBookingReport = async (req, res) => {
   try {
     const { doctorId, date } = req.body;
+    let dateObj = new Date(date);
+
+    const daysOfWeek = [
+      "Sunday",
+      "Monday",
+      "Tuesday",
+      "Wednesday",
+      "Thursday",
+      "Friday",
+      "Saturday",
+    ];
+    const dayOfWeek = daysOfWeek[dateObj.getDay()];
     // console.log("DOC=>", doctorId);
     const whereCondition = {
       appointmentDate: { [Op.eq]: new Date(date) },
@@ -878,7 +888,7 @@ const getBookingReport = async (req, res) => {
 
     const weeklyTimeSlotData = await weeklyTimeSlotsModel.findAll({
       where: {
-        date: date,
+        day: dayOfWeek,
         doctor_id: doctorId,
       },
     });
@@ -1010,7 +1020,7 @@ const bookingConfirmationData = async (bookingData, res) => {
 
     console.log({ response });
     const weeklyTimeSlot = await weeklyTimeSlotsModel.findOne({
-      attributes: ["time_slot", "date", "doctor_id"],
+      attributes: ["time_slot", "doctor_id"],
       where: {
         time_slot_id: response.workSlotId,
       },
@@ -1047,7 +1057,7 @@ const bookingConfirmationData = async (bookingData, res) => {
           ? response.bookedPhoneNo
           : userData.phone,
         appointmentTimeSlot: weeklyTimeSlot.time_slot,
-        appointmentDate: weeklyTimeSlot.date,
+        appointmentDate: response?.appointmentDate,
         paymentDate: data.updatedAt,
         // paymentID: data.transactionId,
         paymentID: paymentData ? paymentData.transactionId : "",
