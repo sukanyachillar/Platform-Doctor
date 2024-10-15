@@ -5,6 +5,25 @@ import doctorModel from "../models/doctorModel.js";
 import paymentModel from "../models/paymentModel.js";
 import weeklyTimeSlotsModel from "../models/weeklyTimeSlotsModel.js";
 import workScheduleModel from "../models/workScheduleModel.js";
+import { generateUuid } from "./generateUuid.js";
+
+const genUuidUpdate = async () => {
+  let data = await doctorModel.update(
+    {
+      uuid: await generateUuid(),
+    },
+    {
+      where: {
+        [Op.or]: [{ uuid: null }, { uuid: "" }],
+      },
+    }
+  );
+  if (data) {
+    return (res.message = "worked");
+  } else {
+    return (res.message = "ERROR");
+  }
+};
 
 const generateTimeslots = (startTime, endTime, consultationTime) => {
   const startDate = new Date(`2000-01-01T${startTime}`);
@@ -45,8 +64,8 @@ const generateTokenBasedTimeSlots = async (startTime, endTime, tokens) => {
     const startDateTime = `${currentYear}-${currentMonth
       .toString()
       .padStart(2, "0")}-${currentDay
-        .toString()
-        .padStart(2, "0")}T${startTime}`;
+      .toString()
+      .padStart(2, "0")}T${startTime}`;
     const endDateTime = `${currentYear}-${currentMonth
       .toString()
       .padStart(2, "0")}-${currentDay.toString().padStart(2, "0")}T${endTime}`;
@@ -307,7 +326,6 @@ const timeSlotCron = async () => {
   }
 };
 
-
 // const timeSlotCron = async () => {
 //   console.log("Inside crone");
 //   try {
@@ -499,7 +517,15 @@ const timeSlotCron = async () => {
 // };
 
 const getDayOfWeekIndex = (dayName) => {
-  const daysArray = ["sunday", "monday", "tuesday", "wednesday", "thursday", "friday", "saturday"];
+  const daysArray = [
+    "sunday",
+    "monday",
+    "tuesday",
+    "wednesday",
+    "thursday",
+    "friday",
+    "saturday",
+  ];
   return daysArray.indexOf(dayName.toLowerCase());
 };
 
@@ -564,14 +590,12 @@ const getDayOfWeekIndex = (dayName) => {
 //       const dayIndexAfter28Days = dateAfter28Days.getDay();
 //       console.log({dayIndexAfter28Days});
 
-
 //       // Calculate the number of days to the next target day of the week
 //       let daysUntilTargetDay = (targetDayIndex - dayIndexAfter28Days + 7) % 7;
 //       if (daysUntilTargetDay === 0) {
 //         daysUntilTargetDay = 7; // Move to the next occurrence of the same day
 //       }
 //       console.log({daysUntilTargetDay});
-
 
 //       // Calculate the date of the same day of the week after 28 days
 //       dateAfter28Days.setDate(dateAfter28Days.getDate() + daysUntilTargetDay);
@@ -621,8 +645,6 @@ const getDayOfWeekIndex = (dayName) => {
 //   }
 // };
 
-
-
 const dateFromDay = async (day) => {
   try {
     const currentDate = new Date();
@@ -661,4 +683,4 @@ const dateFromDay = async (day) => {
 //   }
 // };
 
-export default { timeSlotCron, paymentVerifyCheck, blockedSlotCheck };
+export default { timeSlotCron, paymentVerifyCheck, blockedSlotCheck,genUuidUpdate };

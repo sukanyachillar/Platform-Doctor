@@ -1065,6 +1065,7 @@ const phoneRegisterService = async (data, res) => {
           let phoneAdd = await doctorModel.create({
             doctor_phone: phone,
             entity_id: phoneAddEntity.entity_id,
+            uuid: await generateUuid()
           });
           if (phoneAdd) {
             return handleResponse({

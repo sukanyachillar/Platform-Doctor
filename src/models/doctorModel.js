@@ -10,6 +10,11 @@ const doctorModel = sequelize.define("doctor", {
     autoIncrement: true,
     allowNull: false,
   },
+  uuid: {
+    type: DataTypes.STRING,
+    primaryKey: true,
+    allowNull: true,
+  },
   doctor_name: {
     type: DataTypes.STRING,
     allowNull: true,
