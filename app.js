@@ -113,7 +113,7 @@ app.use("/api/v1/payment", paymentRouter);
 app.use("/api/v1/app", businessRouter);
 app.use("/api/v1/customer", customerRouter);
 app.use("/api/v1/clinic", clinicRouter);
-app.use("/api/v1/root", cronJobs.updateUuid);
+// app.use("/api/v1/root", cronJobs.updateUuid);
 
 app.post("*", (req, res) => {
   res.status(404).json({

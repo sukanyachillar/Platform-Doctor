@@ -7,28 +7,28 @@ import weeklyTimeSlotsModel from "../models/weeklyTimeSlotsModel.js";
 import workScheduleModel from "../models/workScheduleModel.js";
 import { generateUuid } from "./generateUuid.js";
 
-const updateUuid = async (req, res) => {
-  try {
-    let [affectedRows] = await doctorEntityModel.update(
-      { uuid: await generateUuid() }, 
-      {
-        where: {
-          [Op.or]: [
-            { uuid: null }, // Where uuid is NULL
-            { uuid: "" }, // Where uuid is an empty string
-          ],
-        },
-      }
-    );
-    console.log({affectedRows});
+// const updateUuid = async (req, res) => {
+//   try {
+//     let [affectedRows] = await doctorEntityModel.update(
+//       { uuid: await generateUuid() }, 
+//       {
+//         where: {
+//           [Op.or]: [
+//             { uuid: null }, // Where uuid is NULL
+//             { uuid: "" }, // Where uuid is an empty string
+//           ],
+//         },
+//       }
+//     );
+//     console.log({affectedRows});
     
-    if (affectedRows > 0) {
-      return (res.message = "done");
-    } else {
-      return res;
-    }
-  } catch (error) {}
-};
+//     if (affectedRows > 0) {
+//       return (res.message = "done");
+//     } else {
+//       return res;
+//     }
+//   } catch (error) {}
+// };
 
 const generateTimeslots = (startTime, endTime, consultationTime) => {
   const startDate = new Date(`2000-01-01T${startTime}`);
@@ -692,5 +692,5 @@ export default {
   timeSlotCron,
   paymentVerifyCheck,
   blockedSlotCheck,
-  updateUuid,
+  // updateUuid,
 };

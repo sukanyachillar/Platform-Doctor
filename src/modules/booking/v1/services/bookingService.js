@@ -906,7 +906,6 @@ const generateBookingLink = async (userData, res) => {
         res,
         statusCode: 404,
         message: "Doctor not found",
-        data: link,
       });
     }
 
@@ -914,8 +913,8 @@ const generateBookingLink = async (userData, res) => {
 
     const doctorEntity = await doctorEntityModel.findOne({
       where: {
-        entity_id: entity_id,
-        doctor_id: doctorId,
+        entityId: entity_id,
+        doctorId: doctorId,
       },
       attributes: ["uuid"], // only fetching uuid
     });
@@ -925,13 +924,13 @@ const generateBookingLink = async (userData, res) => {
         res,
         statusCode: 404,
         message: "Doctor entity not found",
-        data: link,
       });
     }
 
     const uuid = doctorEntity.uuid;
+    const encodedUuid = encodeURIComponent(uuid);
 
-    const link = `${process.env.BOOKING_LINK}/#/doctor?id=${encodedId}&entity=${encodedEntity}`;
+    const link = `${process.env.BOOKING_LINK}/#/doctor?id=${encodedUuid}`;
 
     return handleResponse({
       res,
