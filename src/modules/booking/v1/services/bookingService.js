@@ -31,10 +31,10 @@ const bookAppointment = async (req, res) => {
     } = req.body;
 
     const bookingFee = await bookingFeeModel.findOne({
-      where: { status: 1 }, attributes: ["fee"]
-    })
+      where: { status: 1 },
+      attributes: ["fee"],
+    });
     const amount = await bookingFee.fee;
-
 
     const doctorProfile = await doctorProfileModel.findOne({
       where: { doctor_id: doctorId },
@@ -47,7 +47,7 @@ const bookAppointment = async (req, res) => {
         time_slot: timeSlot,
         doctor_id: doctorId,
         date: appointmentDate,
-        booking_status: 3
+        booking_status: 3,
       },
     });
 
@@ -128,7 +128,7 @@ const bookAppointment = async (req, res) => {
     if (amount === 0) {
       pg = {
         id: null,
-        name: "FREE"
+        name: "FREE",
       };
       orderIDFree = PgFunctions.createOrderId();
       data = {
@@ -156,9 +156,7 @@ const bookAppointment = async (req, res) => {
           amount: amount,
         });
       }
-
     }
-
 
     if (data?.Error?.statusCode == 400)
       return handleResponse({
@@ -254,7 +252,7 @@ const slotOnHold = async (req, res) => {
         time_slot: timeSlot,
         doctor_id: docData.doctor_id,
         date: appointmentDate,
-        booking_status:0
+        booking_status: 0,
       },
     });
 
@@ -731,18 +729,18 @@ const listBooking_admin = async (
     }
 
     let appointmentList = bookingList
-    .map((booking) => ({
-      bookingId: booking.bookingId,
-      timeSlot: booking.weeklyTimeSlot.time_slot,
-      customerName: booking.patientName ? booking.patientName : "",
-      customerPhone: booking.bookedPhoneNo ? booking.bookedPhoneNo : "",
-      bookingStatus: booking.bookingStatus,
-    }))
-    .sort((a, b) => a.timeSlot.localeCompare(b.timeSlot))
-    .map((booking, index) => ({
-      ...booking,
-      slNo: offset + index + 1
-    }));
+      .map((booking) => ({
+        bookingId: booking.bookingId,
+        timeSlot: booking.weeklyTimeSlot.time_slot,
+        customerName: booking.patientName ? booking.patientName : "",
+        customerPhone: booking.bookedPhoneNo ? booking.bookedPhoneNo : "",
+        bookingStatus: booking.bookingStatus,
+      }))
+      .sort((a, b) => a.timeSlot.localeCompare(b.timeSlot))
+      .map((booking, index) => ({
+        ...booking,
+        slNo: offset + index + 1,
+      }));
 
     const completedAppointments = appointmentList.filter(
       (appointment) => appointment.bookingStatus === 1
@@ -889,10 +887,50 @@ const getBookingReport = async (req, res) => {
 const generateBookingLink = async (userData, res) => {
   const { encryptPh, entity_id } = userData;
 
+  let phone = await decrypt(encryptPh, process.env.CRYPTO_SECRET);
+
   // Encode the parameters
   const encodedId = encodeURIComponent(encryptPh);
   const encodedEntity = encodeURIComponent(entity_id);
   try {
+
+    const doctor = await doctorModel.findOne({
+      where: {
+        doctor_phone: phone,
+      },
+      attributes: ["doctor_id"], 
+    });
+
+    if (!doctor) {
+      return handleResponse({
+        res,
+        statusCode: 404,
+        message: "Doctor not found",
+        data: link,
+      });
+    }
+
+    const doctorId = doctor.doctor_id;
+
+    const doctorEntity = await doctorEntityModel.findOne({
+      where: {
+        entity_id: entity_id,
+        doctor_id: doctorId,
+      },
+      attributes: ["uuid"], // only fetching uuid
+    });
+
+    if (!doctorEntity) {
+      return handleResponse({
+        res,
+        statusCode: 404,
+        message: "Doctor entity not found",
+        data: link,
+      });
+    }
+
+    const uuid = doctorEntity.uuid;
+
     const link = `${process.env.BOOKING_LINK}/#/doctor?id=${encodedId}&entity=${encodedEntity}`;
 
     return handleResponse({
@@ -1080,16 +1118,18 @@ const cancelBookingFromDoctor = async (userType, req, res) => {
     }
 
     if (notFoundBookings.length > 0) {
-      message += ` ${notFoundBookings.length
-        } bookings not found: ${notFoundBookings
-          .map((b) => b.bookingId)
-          .join(", ")}.`;
+      message += ` ${
+        notFoundBookings.length
+      } bookings not found: ${notFoundBookings
+        .map((b) => b.bookingId)
+        .join(", ")}.`;
     }
     if (failedUpdates.length > 0) {
-      message += ` ${failedUpdates.length
-        } bookings failed to update: ${failedUpdates
-          .map((b) => b.bookingId)
-          .join(", ")}.`;
+      message += ` ${
+        failedUpdates.length
+      } bookings failed to update: ${failedUpdates
+        .map((b) => b.bookingId)
+        .join(", ")}.`;
     }
 
     return handleResponse({
