@@ -7,23 +7,6 @@ import weeklyTimeSlotsModel from "../models/weeklyTimeSlotsModel.js";
 import workScheduleModel from "../models/workScheduleModel.js";
 import { generateUuid } from "./generateUuid.js";
 
-const genUuidUpdate = async () => {
-  let data = await doctorModel.update(
-    {
-      uuid: await generateUuid(),
-    },
-    {
-      where: {
-        [Op.or]: [{ uuid: null }, { uuid: "" }],
-      },
-    }
-  );
-  if (data) {
-    return (res.message = "worked");
-  } else {
-    return (res.message = "ERROR");
-  }
-};
 
 const generateTimeslots = (startTime, endTime, consultationTime) => {
   const startDate = new Date(`2000-01-01T${startTime}`);
@@ -683,4 +666,4 @@ const dateFromDay = async (day) => {
 //   }
 // };
 
-export default { timeSlotCron, paymentVerifyCheck, blockedSlotCheck,genUuidUpdate };
+export default { timeSlotCron, paymentVerifyCheck, blockedSlotCheck };
