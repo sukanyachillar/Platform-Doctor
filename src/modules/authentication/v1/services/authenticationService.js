@@ -1220,6 +1220,7 @@ const onboardDoctorService = async (data, res) => {
           doctorId: doctor_id,
           entityId: entity_id,
           consultationTime: consultation_time,
+          uuid: await generateUuid()
         });
 
         let tokens = await generateTokens(doctor_phone);
