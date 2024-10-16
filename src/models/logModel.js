@@ -48,8 +48,8 @@ const logModel = sequelize.define("log", {
   },
   expiresAt: {
     type: DataTypes.DATE,
-    defaultValue: sequelize.literal("CURRENT_TIMESTAMP + INTERVAL 30 DAY"),
-    allowNull: false,
+    // defaultValue: sequelize.literal("CURRENT_TIMESTAMP + INTERVAL 30 DAY"),
+    allowNull: true,
   },
 });
 
