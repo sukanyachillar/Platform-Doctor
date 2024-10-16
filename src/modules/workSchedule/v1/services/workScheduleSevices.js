@@ -668,7 +668,9 @@ const addWork = async (data, userData, res) => {
 const docAvail = async (body, userData, res) => {
   try {
     let { entity_id } = userData;
-    let { doctorId, date, status } = body;
+    let { doctorId, date } = body;
+    console.log({entity_id});
+    
 
     const doctorEntityData = await doctorEntityModel.findOne({
       where: { doctorId: doctorId, entityId: entity_id },
@@ -704,6 +706,17 @@ const docAvail = async (body, userData, res) => {
       });
       // console.log("isTimeslot:", isTimeslot);
       if (isTimeslot.length !== 0) {
+
+        const slotWithLeave = isTimeslot.find(slot => slot.status === 0);
+
+        if (slotWithLeave) {
+          return handleResponse({
+            res,
+            message: "This date is already marked as leave",
+            statusCode: 400,
+          });
+        }
+
         let [updatedNo] = await weeklyTimeSlotsModel.update(
           { status: 0, booking_status: 0 },
           {
