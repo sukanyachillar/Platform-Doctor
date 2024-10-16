@@ -807,9 +807,9 @@ const updateWorkScheduleStatus = async (workData, res) => {
 
 const getWorkSchedule = async (data, user, res) => {
   try {
-    let { doctor_id } = data;
+    let { doctor_id, entity_id } = data;
     let workScheduleData = await workScheduleModel.findAll({
-      where: { doctor_id: doctor_id },
+      where: { doctor_id, entity_id },
     });
 
     workScheduleData.sort((a, b) => {
@@ -863,21 +863,21 @@ const getWorkSchedule = async (data, user, res) => {
           daySchedule.length > 0
             ? daySchedule
             : [
-                {
-                  day,
-                  status: dayStatus,
-                  startTime: null,
-                  endTime: null,
-                  work_schedule_id: null,
-                  entity_id: parseInt(user?.entity_id),
-                  session: null,
-                  doctor_id: Number(doctor_id),
-                  created_date_time: null,
-                  update_date_time: null,
-                  createdAt: null,
-                  updatedAt: null,
-                },
-              ],
+              {
+                day,
+                status: dayStatus,
+                startTime: null,
+                endTime: null,
+                work_schedule_id: null,
+                entity_id: parseInt(user?.entity_id),
+                session: null,
+                doctor_id: Number(doctor_id),
+                created_date_time: null,
+                update_date_time: null,
+                createdAt: null,
+                updatedAt: null,
+              },
+            ],
       });
     });
 
@@ -1130,8 +1130,8 @@ const generateTimeSlots = async (startTime, endTime, consultationTime) => {
     const startDateTime = `${currentYear}-${currentMonth
       .toString()
       .padStart(2, "0")}-${currentDay
-      .toString()
-      .padStart(2, "0")}T${startTime}`;
+        .toString()
+        .padStart(2, "0")}T${startTime}`;
     const endDateTime = `${currentYear}-${currentMonth
       .toString()
       .padStart(2, "0")}-${currentDay.toString().padStart(2, "0")}T${endTime}`;
