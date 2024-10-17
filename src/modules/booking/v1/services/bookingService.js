@@ -989,59 +989,56 @@ const getBookingReport = async (req, res) => {
 const generateBookingLink = async (userData, res) => {
   const { encryptPh, entity_id } = userData;
 
-  
-    // const encodedId = encodeURIComponent(encryptPh);
-    // const encodedEntity = encodeURIComponent(entity_id);
-    // const link = `${process.env.BOOKING_LINK}/#/doctor?id=${encodedId}&entity=${encodedEntity}`;
+  // const encodedId = encodeURIComponent(encryptPh);
+  // const encodedEntity = encodeURIComponent(entity_id);
+  // const link = `${process.env.BOOKING_LINK}/#/doctor?id=${encodedId}&entity=${encodedEntity}`;
 
-    // return handleResponse({
-    //   res,
-    //   statusCode: 200,
-    //   message: "Successfully fetched booking link.",
-    //   data: link,
-    // });
-  
-    
+  // return handleResponse({
+  //   res,
+  //   statusCode: 200,
+  //   message: "Successfully fetched booking link.",
+  //   data: link,
+  // });
 
-
-    try {
+  try {
     let phone = await decrypt(encryptPh, process.env.CRYPTO_SECRET);
 
-      const doctor = await doctorModel.findOne({
-        where: {
-          doctor_phone: phone,
-        },
-        attributes: ["doctor_id"],
+    const doctor = await doctorModel.findOne({
+      where: {
+        doctor_phone: phone,
+      },
+      attributes: ["doctor_id"],
+    });
+
+    if (!doctor) {
+      return handleResponse({
+        res,
+        statusCode: 404,
+        message: "Doctor not found",
       });
+    }
 
-      if (!doctor) {
-        return handleResponse({
-          res,
-          statusCode: 404,
-          message: "Doctor not found",
-        });
-      }
+    const doctorId = doctor.doctor_id;
 
-      const doctorId = doctor.doctor_id;
+    const doctorEntity = await doctorEntityModel.findOne({
+      where: {
+        entityId: entity_id,
+        doctorId: doctorId,
+      },
+      attributes: ["uuid"], // only fetching uuid
+    });
+    console.log({ doctorEntity });
 
-      const doctorEntity = await doctorEntityModel.findOne({
-        where: {
-          entityId: entity_id,
-          doctorId: doctorId,
-        },
-        attributes: ["uuid"], // only fetching uuid
+    if (!doctorEntity) {
+      return handleResponse({
+        res,
+        statusCode: 404,
+        message: "Doctor entity not found",
       });
-
-      if (!doctorEntity) {
-        return handleResponse({
-          res,
-          statusCode: 404,
-          message: "Doctor entity not found",
-        });
-      }
-
-      const uuid = doctorEntity.uuid;
+    } else {
+      const uuid = doctorEntity?.dataValues?.uuid;
       const encodedUuid = encodeURIComponent(uuid);
+      
 
       const link = `${process.env.BOOKING_LINK}/#/doctor?id=${encodedUuid}`;
 
@@ -1051,16 +1048,16 @@ const generateBookingLink = async (userData, res) => {
         message: "Successfully fetched booking link.",
         data: link,
       });
-    } catch (error) {
-      console.log({ error });
-      return handleResponse({
-        res,
-        statusCode: 500,
-        message: "Something went wrong",
-        data: {},
-      });
     }
-  
+  } catch (error) {
+    console.log({ error });
+    return handleResponse({
+      res,
+      statusCode: 500,
+      message: "Something went wrong",
+      data: {},
+    });
+  }
 };
 
 const bookingConfirmationData = async (bookingData, res) => {
