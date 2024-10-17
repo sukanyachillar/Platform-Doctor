@@ -890,7 +890,7 @@ const generateBookingLink = async (userData, res) => {
   
     const encodedId = encodeURIComponent(encryptPh);
     const encodedEntity = encodeURIComponent(entity_id);
-    const link = `${process.env.BOOKING_LINK}/#/doctor?id=${encodedId}?&entity=${encodedEntity}`;
+    const link = `${process.env.BOOKING_LINK}/#/doctor?id=${encodedId}&entity=${encodedEntity}`;
 
     return handleResponse({
       res,
