@@ -30,6 +30,15 @@ const amountDetails = async (req, res)=> {
     }
   };
 
+const getEncryptPhone = async (req, res)=> {
+    try {
+        const data = await customerServices.getEncryptPhoneService(req, res );
+        return data;
+    } catch (error) {
+        console.log({ err });
+    }
+  };
 
-export default { listDoctorsForCustomers, getSingleEntityDetails, amountDetails };
+
+export default { listDoctorsForCustomers, getSingleEntityDetails, amountDetails,getEncryptPhone };
     

@@ -472,5 +472,66 @@ const amountDetails = async (req, res) => {
     }
 };
 
+const getEncryptPhoneService = async (req, res) => {
+  try {
+    const { uuid } = req.body;
 
-export default { listDoctorsForCustomers, getSingleEntityDetails, amountDetails };
+    const docEntitydata = await doctorEntityModel.findOne({
+      where: {
+        uuid,
+      },
+    });
+
+    if (docEntitydata) {
+      const docPhone = await doctorModel.findOne({
+        where: {
+          doctor_id: docEntitydata.doctorId,
+        },
+        attributes: ["doctor_phone"],
+      });
+
+      if (docPhone) {
+        // console.log({ docPhone });
+        const phoneNumber = docPhone.doctor_phone;
+
+        const encryptedPhone = await encrypt(
+          phoneNumber,
+          process.env.CRYPTO_SECRET
+        );
+
+        return handleResponse({
+          res,
+          statusCode: 200,
+          message: "Encripted phone number found",
+          data: { encryptedPhone: encryptedPhone, entityId: docEntitydata?.entityId },
+        });
+        // console.log({ encryptedPhone });
+      } else {
+        return handleResponse({
+          res,
+          statusCode: 404,
+          message: "No doctor phone found!",
+          data: {},
+        });
+      }
+    } else {
+      return handleResponse({
+        res,
+        statusCode: 404,
+        message: "No doctor entity data found!",
+        data: {},
+      });
+    }
+  } catch (error) {
+    console.log(error);
+    return handleResponse({
+      res,
+      statusCode: 500,
+      message: "Something went wrong",
+      data: {},
+    });
+  }
+};
+
+
+export default { listDoctorsForCustomers, getSingleEntityDetails, amountDetails,getEncryptPhoneService };
