@@ -83,6 +83,19 @@ const addDept = async (req, res) => {
     }
 }
 
+const listDocLeave = async (req, res) => {
+    try {
+        const leave = await authenticationService.listDocLeaveService(
+            req.body,
+            req.user,
+            res
+        )
+        return leave
+    } catch (error) {
+        console.log({ error })
+    }
+}
+
 const fetchBankDetails = async (req, res) => {
     try {
         let bankData = await authenticationService.getBankDetails(req.user, res)
@@ -160,6 +173,6 @@ export default {
     updateProfile,
     phoneRegister,
     listSpeciality,
-    onboardDoctor
-    
+    onboardDoctor,
+    listDocLeave
 }

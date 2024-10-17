@@ -368,6 +368,54 @@ const addProfile = async (userData, user, image, res) => {
   }
 };
 
+const listDocLeaveService = async (body, userData, res) => {
+  try {
+    let { doctorId, entityId } = body;
+
+    const doctorEntity = await doctorEntityModel.findOne({
+      where: {
+        doctorId,
+        entityId,
+      },
+    });
+    if (!doctorEntity) {
+      return handleResponse({
+        res,
+        message: "No doctor with entity found",
+        statusCode: 404,
+      });
+    } else {
+      const slotData = await weeklyTimeSlotsModel.findAll({
+        where: { doctorEntityId: doctorEntity?.doctorEntityId,status:0 },
+      });
+      if (!slotData) {
+        return handleResponse({
+          res,
+          message: "No leaves found",
+          statusCode: 404,
+        });
+      }else{
+        const leaveDays = slotData.map(slot => slot.date);
+
+        return handleResponse({
+          res,
+          message: "Leaves found",
+          statusCode: 200,
+          data: leaveDays, // Return the array of leave days
+        });
+        
+      }
+    }
+  } catch (error) {
+    console.log({ "Error while list leave": error });
+    return handleResponse({
+      res,
+      message: "Internal error",
+      statusCode: 500,
+    });
+  }
+};
+
 // const getProfile = async (req, res) => {
 //     try {
 //         const phone = req.user.phone;
@@ -1065,7 +1113,7 @@ const phoneRegisterService = async (data, res) => {
           let phoneAdd = await doctorModel.create({
             doctor_phone: phone,
             entity_id: phoneAddEntity.entity_id,
-            uuid: await generateUuid()
+            uuid: await generateUuid(),
           });
           if (phoneAdd) {
             return handleResponse({
@@ -1220,7 +1268,7 @@ const onboardDoctorService = async (data, res) => {
           doctorId: doctor_id,
           entityId: entity_id,
           consultationTime: consultation_time,
-          uuid: await generateUuid()
+          uuid: await generateUuid(),
         });
 
         let tokens = await generateTokens(doctor_phone);
@@ -1529,4 +1577,5 @@ export default {
   phoneRegisterService,
   listSpecialityService,
   onboardDoctorService,
+  listDocLeaveService,
 };
