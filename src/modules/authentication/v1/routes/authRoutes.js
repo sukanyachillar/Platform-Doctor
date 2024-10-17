@@ -40,7 +40,7 @@ router.post(
 router.post('/update-profile', authenticationController.updateProfile);
 router.post('/phone-register', authenticationController.phoneRegister);
 router.post('/list-specialities', authenticationController.listSpeciality);
-router.post('/list-leave', authenticationController.listDocLeave);
+router.post('/list-leave',verifyToken, authenticationController.listDocLeave);
 router.post('/onboard-doctor', authenticationController.onboardDoctor);
 
 export default router;
