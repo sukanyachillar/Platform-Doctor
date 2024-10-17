@@ -395,13 +395,13 @@ const listDocLeaveService = async (body, userData, res) => {
           statusCode: 404,
         });
       }else{
-        const leaveDays = slotData.map(slot => slot.date);
+        const leaveDates = [...new Set(slotData.map(slot => slot.date))];
 
         return handleResponse({
           res,
           message: "Leaves found",
           statusCode: 200,
-          data: leaveDays, // Return the array of leave days
+          data: leaveDates, // Return the array of leave days
         });
         
       }
