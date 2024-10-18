@@ -943,6 +943,7 @@ const getSingleWorkSchedule = async (req, res) => {
         res,
         message: "Clinic is closed please check other dates.",
         statusCode: 404,
+        data:{isDocUnavailable: false}
       });
     }
 
@@ -1116,14 +1117,15 @@ const getSingleWorkSchedule = async (req, res) => {
         // sortedWorkSlots,
         availableWorkSlots: groupedData.length,
         type: doctorData?.bookingType,
+        isDocUnavailable: false
       },
     });
   } catch (error) {
     console.log({ error });
     return handleResponse({
       res,
-      message: "Error while fetching single work schedule.",
-      statusCode: 422,
+      message: "Internal error",
+      statusCode: 500,
     });
   }
 };
